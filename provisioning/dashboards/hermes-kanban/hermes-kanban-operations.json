@@ -102,7 +102,7 @@
           }
         }
       ],
-      "title": "Kanban Tasks",
+      "title": "칸반 작업",
       "type": "stat"
     },
     {
@@ -172,7 +172,7 @@
           "refId": "A"
         }
       ],
-      "title": "Needs Attention",
+      "title": "확인 필요",
       "type": "stat"
     },
     {
@@ -238,7 +238,7 @@
           "refId": "A"
         }
       ],
-      "title": "Stale Running",
+      "title": "응답 없는 실행",
       "type": "stat"
     },
     {
@@ -305,11 +305,11 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT status AS metric, count(*) AS value\nFROM observability.hermes_kanban_tasks\nWHERE board ~ '${board:regex}'\n  AND status ~ '${status:regex}'\n  AND assignee ~ '${assignee:regex}'\nGROUP BY status\nORDER BY value DESC;",
+          "rawSql": "SELECT\n  CASE status\n    WHEN 'done' THEN '완료'\n    WHEN 'archived' THEN '보관'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'running' THEN '실행 중'\n    WHEN 'triage' THEN '검토'\n    ELSE status\n  END AS metric,\n  count(*) AS value\nFROM observability.hermes_kanban_tasks\nWHERE board ~ '${board:regex}'\n  AND status ~ '${status:regex}'\n  AND assignee ~ '${assignee:regex}'\nGROUP BY status\nORDER BY value DESC;",
           "refId": "A"
         }
       ],
-      "title": "Status Distribution",
+      "title": "상태 분포",
       "type": "piechart"
     },
     {
@@ -392,7 +392,7 @@
           "refId": "A"
         }
       ],
-      "title": "Task Creation Throughput",
+      "title": "작업 생성 추이",
       "type": "timeseries"
     },
     {
@@ -471,11 +471,11 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\n  $__timeGroupAlias(COALESCE(ended_at, started_at), $__interval),\n  status AS metric,\n  count(*) AS value\nFROM observability.hermes_kanban_task_runs\nWHERE $__timeFilter(COALESCE(ended_at, started_at))\n  AND board ~ '${board:regex}'\nGROUP BY 1, status\nORDER BY 1, status;",
+          "rawSql": "SELECT\n  $__timeGroupAlias(event_time, $__interval),\n  CASE run_result\n    WHEN 'completed' THEN '완료'\n    WHEN 'done' THEN '완료'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'crashed' THEN '실패'\n    WHEN 'reclaimed' THEN '회수'\n    WHEN 'timed_out' THEN '시간 초과'\n    WHEN 'running' THEN '실행 중'\n    WHEN 'unknown' THEN '알 수 없음'\n    ELSE run_result\n  END AS metric,\n  count(*) AS value\nFROM (\n  SELECT\n    COALESCE(ended_at, started_at) AS event_time,\n    board,\n    COALESCE(NULLIF(outcome, ''), NULLIF(status, ''), 'unknown') AS run_result\n  FROM observability.hermes_kanban_task_runs\n) AS runs\nWHERE $__timeFilter(event_time)\n  AND board ~ '${board:regex}'\nGROUP BY 1, run_result\nORDER BY 1, run_result;",
           "refId": "A"
         }
       ],
-      "title": "Worker Run Result Trend",
+      "title": "작업 실행 결과 추이",
       "type": "timeseries"
     },
     {
@@ -538,11 +538,11 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n  COALESCE(last_heartbeat_at, started_at, created_at) AS \"time\",\n  board,\n  task_id,\n  title,\n  title_hash,\n  assignee,\n  status,\n  latest_run_status,\n  latest_run_outcome,\n  consecutive_failures,\n  block_kind,\n  run_count,\n  result_present\nFROM observability.hermes_kanban_tasks\nWHERE board ~ '${board:regex}'\n  AND assignee ~ '${assignee:regex}'\n  AND status IN ('running', 'blocked', 'triage')\nORDER BY \"time\" DESC\nLIMIT 100;",
+          "rawSql": "SELECT\n  COALESCE(last_heartbeat_at, started_at, created_at) AS \"시각\",\n  board AS \"보드\",\n  task_id AS \"작업 ID\",\n  title AS \"제목\",\n  title_hash AS \"제목 해시\",\n  assignee AS \"담당자\",\n  CASE status\n    WHEN 'running' THEN '실행 중'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'triage' THEN '검토'\n    ELSE status\n  END AS \"상태\",\n  latest_run_status AS \"최근 실행 상태\",\n  latest_run_outcome AS \"최근 실행 결과\",\n  consecutive_failures AS \"연속 실패 수\",\n  block_kind AS \"차단 유형\",\n  run_count AS \"실행 수\",\n  result_present AS \"결과 존재\"\nFROM observability.hermes_kanban_tasks\nWHERE board ~ '${board:regex}'\n  AND assignee ~ '${assignee:regex}'\n  AND status IN ('running', 'blocked', 'triage')\nORDER BY COALESCE(last_heartbeat_at, started_at, created_at) DESC\nLIMIT 100;",
           "refId": "A"
         }
       ],
-      "title": "Open, Blocked, Or Triage Tasks",
+      "title": "진행 중·차단·검토 작업",
       "type": "table"
     },
     {
@@ -605,11 +605,11 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n  board,\n  task_id,\n  title,\n  title_hash,\n  assignee,\n  status,\n  parent_count,\n  child_count,\n  run_count,\n  comment_count,\n  attachment_count\nFROM observability.hermes_kanban_tasks\nWHERE board ~ '${board:regex}'\n  AND assignee ~ '${assignee:regex}'\n  AND (parent_count > 0 OR child_count > 0)\nORDER BY child_count DESC, parent_count DESC, created_at DESC\nLIMIT 100;",
+          "rawSql": "SELECT\n  board AS \"보드\",\n  task_id AS \"작업 ID\",\n  title AS \"제목\",\n  title_hash AS \"제목 해시\",\n  assignee AS \"담당자\",\n  CASE status\n    WHEN 'done' THEN '완료'\n    WHEN 'archived' THEN '보관'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'running' THEN '실행 중'\n    WHEN 'triage' THEN '검토'\n    ELSE status\n  END AS \"상태\",\n  parent_count AS \"상위 작업 수\",\n  child_count AS \"하위 작업 수\",\n  run_count AS \"실행 수\",\n  comment_count AS \"댓글 수\",\n  attachment_count AS \"첨부 수\"\nFROM observability.hermes_kanban_tasks\nWHERE board ~ '${board:regex}'\n  AND assignee ~ '${assignee:regex}'\n  AND (parent_count > 0 OR child_count > 0)\nORDER BY child_count DESC, parent_count DESC, created_at DESC\nLIMIT 100;",
           "refId": "A"
         }
       ],
-      "title": "Dependency Fan-In / Fan-Out",
+      "title": "작업 종속성 현황",
       "type": "table"
     },
     {
@@ -672,11 +672,11 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n  COALESCE(last_heartbeat_at, started_at, created_at) AS \"time\",\n  board,\n  task_id,\n  title,\n  title_hash,\n  assignee,\n  status,\n  latest_run_status,\n  last_heartbeat_at,\n  max_runtime_seconds,\n  consecutive_failures\nFROM observability.hermes_kanban_tasks\nWHERE board ~ '${board:regex}'\n  AND assignee ~ '${assignee:regex}'\n  AND status = 'running'\n  AND (last_heartbeat_at IS NULL OR last_heartbeat_at < now() - interval '10 minutes')\nORDER BY \"time\" ASC\nLIMIT 100;",
+          "rawSql": "SELECT\n  COALESCE(last_heartbeat_at, started_at, created_at) AS \"시각\",\n  board AS \"보드\",\n  task_id AS \"작업 ID\",\n  title AS \"제목\",\n  title_hash AS \"제목 해시\",\n  assignee AS \"담당자\",\n  '실행 중' AS \"상태\",\n  latest_run_status AS \"최근 실행 상태\",\n  last_heartbeat_at AS \"마지막 신호 시각\",\n  max_runtime_seconds AS \"최대 실행 시간(초)\",\n  consecutive_failures AS \"연속 실패 수\"\nFROM observability.hermes_kanban_tasks\nWHERE board ~ '${board:regex}'\n  AND assignee ~ '${assignee:regex}'\n  AND status = 'running'\n  AND (last_heartbeat_at IS NULL OR last_heartbeat_at < now() - interval '10 minutes')\nORDER BY COALESCE(last_heartbeat_at, started_at, created_at) ASC\nLIMIT 100;",
           "refId": "A"
         }
       ],
-      "title": "Stale Running Tasks",
+      "title": "응답 없는 실행 작업",
       "type": "table"
     }
   ],
@@ -703,7 +703,7 @@
         "definition": "SELECT DISTINCT board AS __text, board AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;",
         "hide": 0,
         "includeAll": true,
-        "label": "Board",
+        "label": "보드",
         "multi": true,
         "name": "board",
         "options": [],
@@ -724,14 +724,14 @@
           "type": "postgres",
           "uid": "ffskrzljzwr28b"
         },
-        "definition": "SELECT DISTINCT status AS __text, status AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;",
+        "definition": "SELECT DISTINCT\n  CASE status\n    WHEN 'done' THEN '완료'\n    WHEN 'archived' THEN '보관'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'running' THEN '실행 중'\n    WHEN 'triage' THEN '검토'\n    ELSE status\n  END AS __text,\n  status AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;",
         "hide": 0,
         "includeAll": true,
-        "label": "Status",
+        "label": "상태",
         "multi": true,
         "name": "status",
         "options": [],
-        "query": "SELECT DISTINCT status AS __text, status AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;",
+        "query": "SELECT DISTINCT\n  CASE status\n    WHEN 'done' THEN '완료'\n    WHEN 'archived' THEN '보관'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'running' THEN '실행 중'\n    WHEN 'triage' THEN '검토'\n    ELSE status\n  END AS __text,\n  status AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -751,7 +751,7 @@
         "definition": "SELECT DISTINCT COALESCE(assignee, 'unassigned') AS __text, COALESCE(assignee, 'unassigned') AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;",
         "hide": 0,
         "includeAll": true,
-        "label": "Assignee",
+        "label": "담당자",
         "multi": true,
         "name": "assignee",
         "options": [],
@@ -770,7 +770,7 @@
   },
   "timepicker": {},
   "timezone": "Asia/Seoul",
-  "title": "Hermes Kanban Operations",
+  "title": "Hermes 칸반 운영 현황",
   "uid": "hermes-kanban-ops",
   "version": 1,
   "weekStart": ""
