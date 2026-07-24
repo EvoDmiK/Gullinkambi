@@ -55,14 +55,20 @@ ORDER BY 1, board, assignee;
 
 -- 5. Worker run result trend.
 SELECT
-  time_bucket('$__interval', COALESCE(ended_at, started_at)) AS time,
+  time_bucket('$__interval', event_time) AS time,
   board,
-  status,
+  run_result,
   count(*) AS runs
-FROM observability.hermes_kanban_task_runs
-WHERE $__timeFilter(COALESCE(ended_at, started_at))
-GROUP BY 1, board, status
-ORDER BY 1, board, status;
+FROM (
+  SELECT
+    COALESCE(ended_at, started_at) AS event_time,
+    board,
+    COALESCE(NULLIF(outcome, ''), NULLIF(status, ''), 'unknown') AS run_result
+  FROM observability.hermes_kanban_task_runs
+) AS runs
+WHERE $__timeFilter(event_time)
+GROUP BY 1, board, run_result
+ORDER BY 1, board, run_result;
 
 -- 6. Stale running tasks.
 SELECT
