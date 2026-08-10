@@ -28,6 +28,7 @@ SELECT
   result_present
 FROM observability.hermes_kanban_tasks
 WHERE status IN ('running', 'blocked', 'triage')
+  AND $__timeFilter(COALESCE(last_heartbeat_at, started_at, created_at))
 ORDER BY time DESC
 LIMIT 100;
 
@@ -85,6 +86,7 @@ SELECT
   consecutive_failures
 FROM observability.hermes_kanban_tasks
 WHERE status = 'running'
+  AND $__timeFilter(COALESCE(last_heartbeat_at, started_at, created_at))
   AND (
     last_heartbeat_at IS NULL
     OR last_heartbeat_at < now() - interval '10 minutes'
@@ -117,6 +119,7 @@ SELECT
   comment_count,
   attachment_count
 FROM observability.hermes_kanban_tasks
-WHERE parent_count > 0 OR child_count > 0
+WHERE $__timeFilter(created_at)
+  AND (parent_count > 0 OR child_count > 0)
 ORDER BY child_count DESC, parent_count DESC, created_at DESC
 LIMIT 100;
