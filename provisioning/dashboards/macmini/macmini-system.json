@@ -55,7 +55,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{job=\"macmini_node\",instance=\"$instance\",mode=\"idle\"}[5m])))",
+          "expr": "clamp_max(clamp_min(100 * (1 - avg(rate(node_cpu_seconds_total{job=\"macmini_node\",instance=\"$instance\",mode=\"idle\"}[5m]))), 0), 100)",
           "legendFormat": "CPU",
           "range": true,
           "refId": "A"
@@ -100,7 +100,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 * macmon_memory_ram_used_bytes{job=\"macmini_soc\"} / macmon_memory_ram_total_bytes{job=\"macmini_soc\"}",
+          "expr": "100 * (1 - node_memory_MemAvailable_bytes{job=\"macmini_node\",instance=\"$instance\"} / node_memory_MemTotal_bytes{job=\"macmini_node\",instance=\"$instance\"})",
           "legendFormat": "RAM",
           "range": true,
           "refId": "A"
@@ -145,7 +145,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "max(100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$instance\",fstype=\"apfs\",mountpoint=~\"/|/System/Volumes/Data|/Volumes/.*\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$instance\",fstype=\"apfs\",mountpoint=~\"/|/System/Volumes/Data|/Volumes/.*\"}))",
+          "expr": "max(100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/host/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/host/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)\"}))",
           "legendFormat": "Disk",
           "range": true,
           "refId": "A"
@@ -322,7 +322,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "avg by (mode) (rate(node_cpu_seconds_total{job=\"macmini_node\",instance=\"$instance\",mode!=\"idle\"}[5m])) * 100",
+          "expr": "clamp_max(clamp_min(avg by (mode) (rate(node_cpu_seconds_total{job=\"macmini_node\",instance=\"$instance\",mode!=\"idle\"}[5m])) * 100, 0), 100)",
           "legendFormat": "{{mode}}",
           "range": true,
           "refId": "A"
@@ -371,14 +371,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "macmon_memory_ram_used_bytes{job=\"macmini_soc\"}",
+          "expr": "node_memory_MemTotal_bytes{job=\"macmini_node\",instance=\"$instance\"} - node_memory_MemAvailable_bytes{job=\"macmini_node\",instance=\"$instance\"}",
           "legendFormat": "Used",
           "range": true,
           "refId": "A"
         },
         {
           "editorMode": "code",
-          "expr": "macmon_memory_ram_total_bytes{job=\"macmini_soc\"} - macmon_memory_ram_used_bytes{job=\"macmini_soc\"}",
+          "expr": "node_memory_MemAvailable_bytes{job=\"macmini_node\",instance=\"$instance\"}",
           "legendFormat": "Available",
           "range": true,
           "refId": "B"
@@ -424,7 +424,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$instance\",fstype=\"apfs\",mountpoint=~\"/|/System/Volumes/Data|/Volumes/.*\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$instance\",fstype=\"apfs\",mountpoint=~\"/|/System/Volumes/Data|/Volumes/.*\"})",
+          "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/host/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/host/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)\"})",
           "legendFormat": "{{mountpoint}} ({{device}})",
           "range": true,
           "refId": "A"
@@ -473,15 +473,15 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "rate(node_network_receive_bytes_total{job=\"macmini_node\",instance=\"$instance\",device=\"en0\"}[5m])",
-          "legendFormat": "{{device}} RX",
+          "expr": "sum(rate(node_network_receive_bytes_total{job=\"macmini_node\",instance=\"$instance\",device!~\"lo|veth.*|docker.*|br-.*\"}[5m]))",
+          "legendFormat": "RX",
           "range": true,
           "refId": "A"
         },
         {
           "editorMode": "code",
-          "expr": "-rate(node_network_transmit_bytes_total{job=\"macmini_node\",instance=\"$instance\",device=\"en0\"}[5m])",
-          "legendFormat": "{{device}} TX",
+          "expr": "-sum(rate(node_network_transmit_bytes_total{job=\"macmini_node\",instance=\"$instance\",device!~\"lo|veth.*|docker.*|br-.*\"}[5m]))",
+          "legendFormat": "TX",
           "range": true,
           "refId": "B"
         }
@@ -911,7 +911,7 @@
         "definition": "label_values(node_uname_info{job=\"macmini_node\"}, instance)",
         "hide": 0,
         "includeAll": false,
-        "label": "NAS",
+        "label": "인스턴스",
         "multi": false,
         "name": "instance",
         "options": [],
@@ -929,6 +929,6 @@
   "timezone": "browser",
   "title": "Mac mini 시스템 모니터링",
   "uid": "macmini-system-monitoring",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }
