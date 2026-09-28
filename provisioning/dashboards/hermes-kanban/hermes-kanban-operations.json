@@ -1,0 +1,777 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "ffskrzljzwr28b"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ffskrzljzwr28b"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) AS value\nFROM observability.hermes_kanban_tasks\nWHERE $__timeFilter(created_at)\n  AND board ~ '${board:regex}'\n  AND status ~ '${status:regex}'\n  AND assignee ~ '${assignee:regex}';",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "칸반 작업",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "ffskrzljzwr28b"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ffskrzljzwr28b"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) AS value\nFROM observability.hermes_kanban_tasks\nWHERE $__timeFilter(COALESCE(last_heartbeat_at, started_at, created_at))\n  AND board ~ '${board:regex}'\n  AND status IN ('running', 'blocked', 'triage')\n  AND assignee ~ '${assignee:regex}';",
+          "refId": "A"
+        }
+      ],
+      "title": "확인 필요",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "ffskrzljzwr28b"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ffskrzljzwr28b"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) AS value\nFROM observability.hermes_kanban_tasks\nWHERE $__timeFilter(COALESCE(last_heartbeat_at, started_at, created_at))\n  AND board ~ '${board:regex}'\n  AND status = 'running'\n  AND assignee ~ '${assignee:regex}'\n  AND (last_heartbeat_at IS NULL OR last_heartbeat_at < now() - interval '10 minutes');",
+          "refId": "A"
+        }
+      ],
+      "title": "응답 없는 실행",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "ffskrzljzwr28b"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "displayLabels": [
+          "name",
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ffskrzljzwr28b"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  CASE status\n    WHEN 'done' THEN '완료'\n    WHEN 'archived' THEN '보관'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'running' THEN '실행 중'\n    WHEN 'triage' THEN '검토'\n    ELSE status\n  END AS metric,\n  count(*) AS value\nFROM observability.hermes_kanban_tasks\nWHERE $__timeFilter(created_at)\n  AND board ~ '${board:regex}'\n  AND status ~ '${status:regex}'\n  AND assignee ~ '${assignee:regex}'\nGROUP BY status\nORDER BY value DESC;",
+          "refId": "A"
+        }
+      ],
+      "title": "상태 분포",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "ffskrzljzwr28b"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 5
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ffskrzljzwr28b"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__timeGroupAlias(created_at, $__interval),\n  board AS metric,\n  count(*) AS value\nFROM observability.hermes_kanban_tasks\nWHERE $__timeFilter(created_at)\n  AND board ~ '${board:regex}'\n  AND status ~ '${status:regex}'\n  AND assignee ~ '${assignee:regex}'\nGROUP BY 1, board\nORDER BY 1, board;",
+          "refId": "A"
+        }
+      ],
+      "title": "작업 생성 추이",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "ffskrzljzwr28b"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 5
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ffskrzljzwr28b"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__timeGroupAlias(event_time, $__interval),\n  CASE run_result\n    WHEN 'completed' THEN '완료'\n    WHEN 'done' THEN '완료'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'crashed' THEN '실패'\n    WHEN 'reclaimed' THEN '회수'\n    WHEN 'timed_out' THEN '시간 초과'\n    WHEN 'running' THEN '실행 중'\n    WHEN 'unknown' THEN '알 수 없음'\n    ELSE run_result\n  END AS metric,\n  count(*) AS value\nFROM (\n  SELECT\n    COALESCE(ended_at, started_at) AS event_time,\n    board,\n    COALESCE(NULLIF(outcome, ''), NULLIF(status, ''), 'unknown') AS run_result\n  FROM observability.hermes_kanban_task_runs\n) AS runs\nWHERE $__timeFilter(event_time)\n  AND board ~ '${board:regex}'\nGROUP BY 1, run_result\nORDER BY 1, run_result;",
+          "refId": "A"
+        }
+      ],
+      "title": "작업 실행 결과 추이",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "ffskrzljzwr28b"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 7,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ffskrzljzwr28b"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  COALESCE(last_heartbeat_at, started_at, created_at) AS \"시각\",\n  board AS \"보드\",\n  task_id AS \"작업 ID\",\n  title AS \"제목\",\n  title_hash AS \"제목 해시\",\n  assignee AS \"담당자\",\n  CASE status\n    WHEN 'running' THEN '실행 중'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'triage' THEN '검토'\n    ELSE status\n  END AS \"상태\",\n  latest_run_status AS \"최근 실행 상태\",\n  latest_run_outcome AS \"최근 실행 결과\",\n  consecutive_failures AS \"연속 실패 수\",\n  block_kind AS \"차단 유형\",\n  run_count AS \"실행 수\",\n  result_present AS \"결과 존재\"\nFROM observability.hermes_kanban_tasks\nWHERE $__timeFilter(COALESCE(last_heartbeat_at, started_at, created_at))\n  AND board ~ '${board:regex}'\n  AND assignee ~ '${assignee:regex}'\n  AND status IN ('running', 'blocked', 'triage')\nORDER BY COALESCE(last_heartbeat_at, started_at, created_at) DESC\nLIMIT 100;",
+          "refId": "A"
+        }
+      ],
+      "title": "진행 중·차단·검토 작업",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "ffskrzljzwr28b"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 23
+      },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ffskrzljzwr28b"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  board AS \"보드\",\n  task_id AS \"작업 ID\",\n  title AS \"제목\",\n  title_hash AS \"제목 해시\",\n  assignee AS \"담당자\",\n  CASE status\n    WHEN 'done' THEN '완료'\n    WHEN 'archived' THEN '보관'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'running' THEN '실행 중'\n    WHEN 'triage' THEN '검토'\n    ELSE status\n  END AS \"상태\",\n  parent_count AS \"상위 작업 수\",\n  child_count AS \"하위 작업 수\",\n  run_count AS \"실행 수\",\n  comment_count AS \"댓글 수\",\n  attachment_count AS \"첨부 수\"\nFROM observability.hermes_kanban_tasks\nWHERE $__timeFilter(created_at)\n  AND board ~ '${board:regex}'\n  AND assignee ~ '${assignee:regex}'\n  AND (parent_count > 0 OR child_count > 0)\nORDER BY child_count DESC, parent_count DESC, created_at DESC\nLIMIT 100;",
+          "refId": "A"
+        }
+      ],
+      "title": "작업 종속성 현황",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "ffskrzljzwr28b"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 23
+      },
+      "id": 9,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "ffskrzljzwr28b"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  COALESCE(last_heartbeat_at, started_at, created_at) AS \"시각\",\n  board AS \"보드\",\n  task_id AS \"작업 ID\",\n  title AS \"제목\",\n  title_hash AS \"제목 해시\",\n  assignee AS \"담당자\",\n  '실행 중' AS \"상태\",\n  latest_run_status AS \"최근 실행 상태\",\n  last_heartbeat_at AS \"마지막 신호 시각\",\n  max_runtime_seconds AS \"최대 실행 시간(초)\",\n  consecutive_failures AS \"연속 실패 수\"\nFROM observability.hermes_kanban_tasks\nWHERE $__timeFilter(COALESCE(last_heartbeat_at, started_at, created_at))\n  AND board ~ '${board:regex}'\n  AND assignee ~ '${assignee:regex}'\n  AND status = 'running'\n  AND (last_heartbeat_at IS NULL OR last_heartbeat_at < now() - interval '10 minutes')\nORDER BY COALESCE(last_heartbeat_at, started_at, created_at) ASC\nLIMIT 100;",
+          "refId": "A"
+        }
+      ],
+      "title": "응답 없는 실행 작업",
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "refresh": "1m",
+  "schemaVersion": 41,
+  "tags": [
+    "hermes",
+    "kanban",
+    "observability"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "ffskrzljzwr28b"
+        },
+        "definition": "SELECT DISTINCT board AS __text, board AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;",
+        "hide": 0,
+        "includeAll": true,
+        "label": "보드",
+        "multi": true,
+        "name": "board",
+        "options": [],
+        "query": "SELECT DISTINCT board AS __text, board AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "ffskrzljzwr28b"
+        },
+        "definition": "SELECT DISTINCT\n  CASE status\n    WHEN 'done' THEN '완료'\n    WHEN 'archived' THEN '보관'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'running' THEN '실행 중'\n    WHEN 'triage' THEN '검토'\n    ELSE status\n  END AS __text,\n  status AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;",
+        "hide": 0,
+        "includeAll": true,
+        "label": "상태",
+        "multi": true,
+        "name": "status",
+        "options": [],
+        "query": "SELECT DISTINCT\n  CASE status\n    WHEN 'done' THEN '완료'\n    WHEN 'archived' THEN '보관'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'running' THEN '실행 중'\n    WHEN 'triage' THEN '검토'\n    ELSE status\n  END AS __text,\n  status AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "ffskrzljzwr28b"
+        },
+        "definition": "SELECT DISTINCT COALESCE(assignee, 'unassigned') AS __text, COALESCE(assignee, 'unassigned') AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;",
+        "hide": 0,
+        "includeAll": true,
+        "label": "담당자",
+        "multi": true,
+        "name": "assignee",
+        "options": [],
+        "query": "SELECT DISTINCT COALESCE(assignee, 'unassigned') AS __text, COALESCE(assignee, 'unassigned') AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "Asia/Seoul",
+  "title": "Hermes 칸반 운영 현황",
+  "uid": "hermes-kanban-ops",
+  "version": 1,
+  "weekStart": ""
+}
