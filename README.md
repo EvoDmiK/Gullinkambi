@@ -10,6 +10,7 @@ Birds-Nest의 황금 볏 파수꾼. Grafana 대시보드로 Agent·n8n·Orca의 
 | --- | --- | --- |
 | `git-sync/` | Grafana Git Sync | Aviary Control Room, Nest Control Room |
 | `provisioning/dashboards/` | Grafana file provisioning | Hermes Kanban, Mac mini, OpenViking |
+| `source/` | 편집 참고본 | Birds-Nest에서 관리하던 원본 대시보드 JSON과 UI spec |
 | `hermes-kanban-panels.sql` | 참고 자료 | Hermes Kanban 패널 쿼리 |
 
 ## 적용
@@ -20,3 +21,5 @@ Birds-Nest의 황금 볏 파수꾼. Grafana 대시보드로 Agent·n8n·Orca의 
 4. Git Sync 상태와 각 대시보드의 패널 데이터가 정상인지 확인합니다.
 
 Grafana Git Sync의 Dashboard API v2 JSON과 file provisioning JSON은 형식이 다릅니다. `git-sync/` 파일을 일반 Import로 가져오거나 `provisioning/dashboards/` 파일을 Git Sync 경로에 넣지 않습니다.
+
+`source/Aviary Control Room.json`은 Git Sync 사본보다 오래된 편집 참고본입니다. 운영 대시보드를 수정할 때는 Grafana와 `git-sync/`의 최신 내용을 먼저 확인합니다.
