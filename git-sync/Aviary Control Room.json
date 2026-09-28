@@ -4878,7 +4878,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "SELECT\n  agent AS \"에이전트\",\n  project_label AS \"프로젝트\",\n  COALESCE(NULLIF(max(thread_name), ''), thread_id) AS \"쓰레드\",\n  model AS \"모델\",\n  sum(request_count) AS \"모델 호출 수\",\n  sum(input_tokens) AS \"입력 토큰\",\n  sum(cache_read_tokens) AS \"캐시 읽기\",\n  sum(cache_write_tokens) AS \"캐시 쓰기\",\n  sum(output_tokens) AS \"출력 토큰\",\n  sum(reasoning_tokens) AS \"리즈닝 토큰\",\n  sum(total_tokens) AS \"총 토큰\"\nFROM observability.orca_thread_usage_daily\nWHERE $__timeFilter(usage_date::timestamptz)\nGROUP BY agent, project_label, thread_id, model\nORDER BY \"총 토큰\" DESC;",
+                        "rawSql": "WITH skill_summary AS (\n  SELECT\n    d.agent,\n    d.thread_id,\n    string_agg(DISTINCT skill.value, ', ' ORDER BY skill.value) AS skill_names\n  FROM observability.orca_thread_usage_daily d\n  CROSS JOIN LATERAL jsonb_array_elements_text(d.skill_names) AS skill(value)\n  WHERE $__timeFilter(d.usage_date::timestamptz)\n  GROUP BY d.agent, d.thread_id\n)\nSELECT\n  u.agent AS \"에이전트\",\n  u.project_label AS \"프로젝트\",\n  COALESCE(NULLIF(max(u.thread_name), ''), u.thread_id) AS \"쓰레드\",\n  COALESCE(max(skill_summary.skill_names), '—') AS \"참조 스킬\",\n  u.model AS \"모델\",\n  sum(u.request_count) AS \"모델 호출 수\",\n  sum(u.input_tokens) AS \"입력 토큰\",\n  sum(u.cache_read_tokens) AS \"캐시 읽기\",\n  sum(u.cache_write_tokens) AS \"캐시 쓰기\",\n  sum(u.output_tokens) AS \"출력 토큰\",\n  sum(u.reasoning_tokens) AS \"리즈닝 토큰\",\n  sum(u.total_tokens) AS \"총 토큰\"\nFROM observability.orca_thread_usage_daily u\nLEFT JOIN skill_summary\n  ON skill_summary.agent = u.agent AND skill_summary.thread_id = u.thread_id\nWHERE $__timeFilter(u.usage_date::timestamptz)\nGROUP BY u.agent, u.project_label, u.thread_id, u.model\nORDER BY \"총 토큰\" DESC;",
                         "sql": {
                           "columns": [
                             {
@@ -4907,7 +4907,7 @@
               "transformations": []
             }
           },
-          "description": "선택 기간의 Orca Codex/Claude 쓰레드 이름·모델별 토큰과 호출 수. 이름이 없으면 세션 ID를 표시합니다.",
+          "description": "선택 기간의 Orca Codex/Claude 쓰레드별 사용량과 참조 스킬. 스킬은 세션에서 SKILL.md 읽기 또는 명시적 Skill 호출이 확인된 경우만 표시합니다. 이름이 없으면 세션 ID를 표시합니다.",
           "id": 46,
           "links": [],
           "title": "Orca 쓰레드별 사용량",
