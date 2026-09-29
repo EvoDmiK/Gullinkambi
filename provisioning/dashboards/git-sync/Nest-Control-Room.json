@@ -7043,7 +7043,10 @@
         "spec": {
           "allValue": ".*",
           "allowCustomValue": true,
-          "current": {},
+          "current": {
+            "text": "node_exporter:9100",
+            "value": "node_exporter:9100"
+          },
           "definition": "label_values(node_uname_info{job=\"node_exporter\"}, instance)",
           "description": "Prometheus의 node_exporter job에서 수집되는 NAS node exporter 인스턴스입니다.",
           "hide": "dontHide",
@@ -7076,7 +7079,10 @@
         "spec": {
           "allValue": ".*",
           "allowCustomValue": true,
-          "current": {},
+          "current": {
+            "text": "macmini",
+            "value": "macmini"
+          },
           "definition": "label_values(node_uname_info{job=\"macmini_node\"}, instance)",
           "description": "Prometheus의 macmini_node job에서 수집되는 Mac mini node exporter 인스턴스입니다.",
           "hide": "dontHide",
