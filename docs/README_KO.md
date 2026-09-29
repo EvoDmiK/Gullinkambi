@@ -57,7 +57,7 @@ n8n과 Hermes 에이전트의 실행 상태, Hermes Kanban 작업, OpenViking, N
 ![Docker monitoring dashboard](../assets/macmini%20docker%20monitoring%20dashboard.png)
 
 - `NAS Docker`, `Mac mini Docker`, `NAS 시스템`, `Mac mini 시스템` 탭에서 컨테이너와 호스트 상태를 한 대시보드에서 확인할 수 있습니다.
-- 시스템 탭은 CPU·메모리·파일시스템·네트워크·디스크 I/O와 부하를 제공하며, Mac mini에서는 M4 CPU·GPU의 사용률, 온도, 전력 및 동작 주파수도 함께 보여 줍니다.
+- 시스템 탭은 CPU·메모리·파일시스템·네트워크·부하와 함께 디스크 장치 목록, IOPS, I/O 사용률을 제공하며, Mac mini에서는 M4 CPU·GPU의 사용률, 온도, 전력 및 동작 주파수도 함께 보여 줍니다.
 
 ### 3. MacMini 시스템 모니터링 대시보드
 
@@ -143,7 +143,9 @@ provider 설정은 각 하위 디렉터리만 읽으며 60초마다 변경을 �
 | Mac mini 시스템 | `macmini_node` | NAS와 동일한 node exporter 기본 메트릭 |
 | Mac mini M4 | `macmini_soc` | `macmon_cpu_*`, `macmon_gpu_*`, `macmon_ane_*`, `macmon_ram_*`, `macmon_sys_*` |
 
-인프라 대시보드는 `NAS 인스턴스`와 `Mac mini 인스턴스` 변수를 자동으로 생성합니다. Prometheus의 job 이름이 다르면 대시보드 JSON의 `node_exporter`, `macmini_node`, `macmini_soc`를 실제 scrape job 이름에 맞게 변경해야 합니다. NAS의 RAID·SMART 상태는 표준 node exporter 범위에 포함되지 않으므로 필요하면 전용 exporter를 별도로 연결합니다.
+인프라 대시보드는 `NAS 인스턴스`와 `Mac mini 인스턴스` 변수를 자동으로 생성합니다. Prometheus의 job 이름이 다르면 대시보드 JSON의 `node_exporter`, `macmini_node`, `macmini_soc`를 실제 scrape job 이름에 맞게 변경해야 합니다. NAS 시스템과 디스크 패널에 데이터가 들어오려면 NAS의 `node_exporter` 대상이 실행 중이어야 합니다.
+
+현재 `macmini_node` 대상은 OrbStack Linux VM 안에서 실행되므로 디스크 장치 목록, IOPS, 사용률은 Mac의 물리 SSD가 아니라 OrbStack 가상 블록 장치를 나타냅니다. macOS 물리 디스크와 SMART 상태를 확인하려면 macOS 네이티브 수집기 또는 smartctl exporter를 별도로 연결해야 합니다. NAS의 RAID·SMART 상태도 표준 node exporter 범위에 포함되지 않으므로 전용 exporter가 필요합니다.
 
 다른 Grafana 인스턴스에 적용할 때는 해당 인스턴스의 데이터 소스 이름과 UID에 맞게 JSON을 수정합니다. 대시보드가 열리더라도 데이터가 비어 있으면 먼저 데이터 소스 UID, Prometheus job·instance 레이블, PostgreSQL의 `observability` 스키마를 확인합니다.
 

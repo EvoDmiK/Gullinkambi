@@ -54,7 +54,7 @@ The project is named after Gullinkambi, the rooster from Norse mythology. In the
 ![Docker monitoring dashboard](assets/macmini%20docker%20monitoring%20dashboard.png)
 
 - Combines container and host health in the `NAS Docker`, `Mac mini Docker`, `NAS System`, and `Mac mini System` tabs.
-- The system tabs cover CPU, memory, filesystems, network, disk I/O, and load. The Mac mini tab also includes M4 CPU/GPU utilization, temperature, power, and frequency.
+- The system tabs cover CPU, memory, filesystems, network, load, and detailed disk views for device inventory, IOPS, and I/O utilization. The Mac mini tab also includes M4 CPU/GPU utilization, temperature, power, and frequency.
 
 ### 3. Mac mini system monitoring
 
@@ -140,7 +140,9 @@ The referenced data sources must already be registered in Grafana.
 | Mac mini system | `macmini_node` | The same standard node exporter metrics as the NAS |
 | Mac mini M4 | `macmini_soc` | `macmon_cpu_*`, `macmon_gpu_*`, `macmon_ane_*`, `macmon_ram_*`, `macmon_sys_*` |
 
-The infrastructure dashboard automatically populates `NAS Instance` and `Mac mini Instance` variables. If your Prometheus job names differ, update `node_exporter`, `macmini_node`, and `macmini_soc` in the dashboard JSON to match the actual scrape jobs. RAID and SMART health are outside the standard node exporter metric set and require a dedicated exporter.
+The infrastructure dashboard automatically populates `NAS Instance` and `Mac mini Instance` variables. If your Prometheus job names differ, update `node_exporter`, `macmini_node`, and `macmini_soc` in the dashboard JSON to match the actual scrape jobs. The NAS `node_exporter` target must be running for the NAS system and disk panels to receive data.
+
+The current `macmini_node` target runs inside the OrbStack Linux VM, so its disk inventory, IOPS, and utilization describe OrbStack virtual block devices rather than the Mac's physical SSD. Native macOS disk/SMART monitoring requires a separate macOS collector or smartctl exporter. NAS RAID and SMART health are also outside the standard node exporter metric set and require dedicated exporters.
 
 When installing these dashboards in another Grafana instance, update data source names and UIDs as needed. If a dashboard loads without data, check its data source UID, Prometheus job and instance labels, and the PostgreSQL `observability` schema first.
 
