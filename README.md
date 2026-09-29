@@ -2,9 +2,15 @@
 ![Gullinkambi](assets/Gullinkambi.png)
 
 
-`Gullinkambi`는 김둘기의 인프라 환경 Grafana 대시보드를 관리하는 저장소입니다. n8n과 Hermes 에이전트 실행, Hermes Kanban 작업, OpenViking, NAS 및 Mac mini의 상태를 한곳에서 관찰할 수 있도록 대시보드 JSON과 file provisioning 설정을 제공합니다.
+`Gullinkambi`는 김둘기의 인프라 환경을 관찰하기 위한 Grafana 대시보드 저장소입니다.  
+n8n과 Hermes 에이전트의 실행 상태, Hermes Kanban 작업, OpenViking, NAS와 Mac mini의 상태를 한곳에서 볼 수 있도록 대시보드 JSON과 file provisioning 설정을 제공합니다.
 
-Grafana 서버, Prometheus·PostgreSQL 같은 데이터 소스, 수집기, 자격 증명은 이 저장소에 포함하지 않습니다.
+이름은 북유럽 신화의 수탉 굴린캄비에서 따왔습니다.  
+《무녀의 예언》에서 굴린캄비는 울음으로 발할라의 전사들을 깨웁니다. 여러 시스템의 상태를 살피고 중요한 변화를 알아차리기 위한 이 저장소의 역할과 맞닿아 있습니다.
+
+
+
+※ Grafana 서버, Prometheus·PostgreSQL 같은 데이터 소스, 수집기, 자격 증명은 이 저장소에 포함하지 않습니다.
 
 ## 대시보드
 
