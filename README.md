@@ -1,153 +1,162 @@
 # Gullinkambi
+
 ![Gullinkambi](assets/Gullinkambi.png)
 
+[한국어 문서](docs/README_KO.md)
 
-`Gullinkambi`는 김둘기의 인프라 환경을 관찰하기 위한 Grafana 대시보드 저장소입니다.  
-n8n과 Hermes 에이전트의 실행 상태, Hermes Kanban 작업, OpenViking, NAS와 Mac mini의 상태를 한곳에서 볼 수 있도록 대시보드 JSON과 file provisioning 설정을 제공합니다.
+`Gullinkambi` is a collection of Grafana dashboards for observing Kimdove's infrastructure. It brings n8n and Hermes Agent runs, Hermes Kanban tasks, OpenViking, NAS, and Mac mini health into one place through dashboard JSON and file provisioning definitions.
 
-이름은 북유럽 신화의 수탉 굴린캄비에서 따왔습니다.  
-《무녀의 예언》에서 굴린캄비는 울음으로 발할라의 전사들을 깨웁니다. 여러 시스템의 상태를 살피고 중요한 변화를 알아차리기 위한 이 저장소의 역할과 맞닿아 있습니다.
+The project is named after Gullinkambi, the rooster from Norse mythology. In the *Völuspá*, Gullinkambi's crow awakens the warriors of Valhalla—a fitting image for a repository built to watch multiple systems and call attention to important changes.
 
+> Grafana, data sources such as Prometheus and PostgreSQL, collectors, and credentials are not included in this repository.
 
+## Dashboards
 
-※ Grafana 서버, Prometheus·PostgreSQL 같은 데이터 소스, 수집기, 자격 증명은 이 저장소에 포함하지 않습니다.
-
-## 대시보드
-
-| 대시보드 | 배포 방식 | 주요 내용 | 데이터 소스 |
+| Dashboard | Deployment | Coverage | Data sources |
 | --- | --- | --- | --- |
-| 통합 대시보드 | Grafana Git Sync | n8n 실행, Hermes Agent·Kanban, Orca 사용량, OpenViking | PostgreSQL/TimescaleDB, Prometheus |
-| Docker 모니터링 | Grafana Git Sync | NAS와 Mac mini의 컨테이너 CPU, 메모리, 네트워크 | Prometheus/cAdvisor |
-| Mac mini 시스템 모니터링 | File provisioning | CPU, 메모리, 디스크, 네트워크, 온도, M4 전력·주파수 | Prometheus/node exporter |
-| OpenViking Overview | File provisioning | exporter, 컨테이너 자원, 토큰·API 사용량, 큐와 로그 | Prometheus |
+| Unified dashboard | Grafana Git Sync | n8n runs, Hermes Agent and Kanban, Orca usage, OpenViking | PostgreSQL/TimescaleDB, Prometheus |
+| Infrastructure monitoring | Grafana Git Sync | NAS and Mac mini hosts, Docker containers, M4 hardware | Prometheus/cAdvisor, node exporter, macmon |
+| Mac mini system monitoring (standalone) | File provisioning | CPU, memory, disk, network, temperature, M4 power and frequency | Prometheus/node exporter |
+| OpenViking Overview | File provisioning | Exporter, container resources, token and API usage, queues, and logs | Prometheus |
 
+### 1. Unified dashboard
 
-### 1. 통합 대시보드
-
-#### 1-1. n8n 모니터링 대시보드
+#### 1-1. n8n monitoring
 
 ![n8n monitoring dashboard](assets/n8n%20monitoring%20dashboard.png)
 
-- 최근 실행 수와 성공률, 실행 중인 작업, 실패 추이와 처리 시간(P50·P95)을 한눈에 확인할 수 있습니다.
-- 워크플로우별 성공률과 최근 실패 내역, 데이터 수집 상태 및 외부 API 오류도 함께 제공하여 n8n 자동화의 전반적인 상태와 장애 원인을 추적할 수 있습니다.
+- Shows recent and active runs, success rate, failure trends, and P50/P95 execution times at a glance.
+- Includes workflow-level success rates, recent failures, collection health, and external API errors for investigating automation issues.
 
-#### 1-2. Hermes Agent 모니터링 대시보드
+#### 1-2. Hermes Agent monitoring
 
-![hermes agent monitoring dashboard](assets/hermes%20agent%20monitoring%20dashboard.png)
+![Hermes Agent monitoring dashboard](assets/hermes%20agent%20monitoring%20dashboard.png)
 
-- Hermes Agent의 실행 수와 성공률, 완료·실패 추세, 처리 시간 및 상태별 건수를 보여 줍니다.
-- 프로필과 모델별 실행·토큰 사용량, 도구 호출 횟수, 최근 실패 상세를 함께 확인할 수 있어 에이전트의 성능과 사용 패턴을 분석하기 좋습니다.
+- Shows run count, success rate, completed and failed trends, execution time, and status distribution.
+- Breaks down runs and token consumption by profile and model, alongside tool calls and recent failure details.
 
-#### 1-3. Orca 모니터링 대시보드
+#### 1-3. Orca monitoring
 
-![ORCA monitoring dashboard](assets/orca%20monitoring%20dashboard.png)
+![Orca monitoring dashboard](assets/orca%20monitoring%20dashboard.png)
 
-- Orca의 전체 토큰 사용량과 모델 호출 수, 일별 토큰 사용 추이 및 모델·스레드별 사용량을 보여 줍니다.
-- 최신 사용량 데이터의 집계 지연도 함께 표시하여 비용과 사용 패턴뿐 아니라 수집 데이터의 최신성까지 점검할 수 있습니다.
+- Shows total token usage, model call counts, daily token trends, and usage by model and thread.
+- Tracks aggregation delay so both usage patterns and data freshness can be monitored.
 
-#### 1-4. OpenViking 모니터링 대시보드
+#### 1-4. OpenViking monitoring
 
 ![OpenViking monitoring dashboard](assets/openviking%20monitoring%20dashboard.png)
 
-- Exporter 상태와 API 요청 수, 토큰 사용량, 평균 요청 시간 및 최근 오류를 확인할 수 있습니다. 
-- 컨테이너 CPU·메모리, 데이터 크기, 세션 파일, 큐 메시지와 로그 지표도 함께 제공하여 OpenViking 서비스와 실행 환경을 통합적으로 관찰할 수 있습니다.
+- Shows exporter health, API requests, token usage, average request duration, and recent errors.
+- Includes container CPU and memory, data size, session files, queue messages, and log metrics.
 
-### 2. Docker 모니터링 대시보드
+### 2. Infrastructure monitoring
 
 ![Docker monitoring dashboard](assets/macmini%20docker%20monitoring%20dashboard.png)
 
-- NAS와 Mac mini에서 실행되는 Docker 컨테이너의 CPU·메모리 사용량과 네트워크 송수신량을 비교해 보여 줍니다.
-- 호스트별 전체 자원 사용량과 개별 컨테이너 상태를 함께 확인하여 과도한 자원 소비나 비정상적인 트래픽을 빠르게 찾을 수 있습니다.
+- Combines container and host health in the `NAS Docker`, `Mac mini Docker`, `NAS System`, and `Mac mini System` tabs.
+- The system tabs cover CPU, memory, filesystems, network, disk I/O, and load. The Mac mini tab also includes M4 CPU/GPU utilization, temperature, power, and frequency.
 
-### 3. MacMini 시스템 모니터링 대시보드
+### 3. Mac mini system monitoring
 
-![MacMini system monitoring dashboard](assets/macmini%20system%20monitoring%20dashboard.png)
+![Mac mini system monitoring dashboard](assets/macmini%20system%20monitoring%20dashboard.png)
 
-- Mac mini의 CPU, 메모리, 디스크, 네트워크, 부하와 업타임 등 기본 시스템 상태를 모니터링합니다. 
-- M4 CPU·GPU의 사용률과 온도, 전력 소비 및 동작 주파수까지 제공하여 시스템 부하와 하드웨어 상태를 상세하게 확인할 수 있습니다.
+- Monitors core system health, including CPU, memory, disk, network, load, and uptime.
+- Includes M4 CPU/GPU utilization and temperature, power consumption, and operating frequency for detailed hardware-level visibility.
 
-## 저장소 구조
+## Repository layout
 
-```text
+~~~text
 .
 ├── provisioning/
 │   └── dashboards/
-│       ├── git-sync/              # Dashboard API v2 형식의 Git Sync 배포본
-│       ├── hermes-kanban/         # Hermes Kanban file provisioning JSON
-│       ├── macmini/               # Mac mini file provisioning JSON
-│       ├── openviking/            # OpenViking file provisioning JSON
-│       ├── hermes-kanban.yml      # Grafana provider 정의
+│       ├── git-sync/              # Dashboard API v2 resources deployed through Git Sync
+│       ├── hermes-kanban/         # Hermes Kanban file-provisioned dashboard JSON
+│       ├── macmini/               # Mac mini file-provisioned dashboard JSON
+│       ├── openviking/            # OpenViking file-provisioned dashboard JSON
+│       ├── hermes-kanban.yml      # Grafana provider definition
 │       ├── macmini.yml
 │       └── openviking.yml
-├── source/                         # 편집 이력 보존용 원본과 UI spec
-├── hermes-kanban-panels.sql        # Hermes Kanban 패널 쿼리 참고본
+├── docs/                           # Project documentation
+│   └── README_KO.md               # Korean README
+├── source/                         # Original files and UI specs retained for editing history
+├── hermes-kanban-panels.sql        # Reference queries for Hermes Kanban panels
 └── README.md
-```
+~~~
 
-`provisioning/dashboards/git-sync/`의 파일은 `dashboard.grafana.app/v2` 리소스입니다. 나머지 세 디렉터리의 파일은 Grafana의 일반 dashboard JSON 형식입니다. 두 형식은 서로 바꾸어 가져올 수 없습니다.
+Files under `provisioning/dashboards/git-sync/` use the `dashboard.grafana.app/v2` resource format. The other three directories use Grafana's standard dashboard JSON format. These formats are not interchangeable.
 
-`source/`는 배포 경로가 아닙니다. `source/Nest-Control-Room.json`은 현재 Git Sync 배포본과 같지만, `source/Aviary Control Room.json`은 이전 편집 참고본입니다. 운영 대시보드를 수정할 때는 `provisioning/dashboards/` 아래의 파일을 기준으로 사용합니다.
+`source/` is not a deployment path. `source/Nest-Control-Room.json` mirrors the current Git Sync resource, while `source/Aviary Control Room.json` is retained as an earlier editing reference. Make production dashboard changes under `provisioning/dashboards/`.
 
-## 적용 방법
+## Deployment
 
 ### Grafana Git Sync
 
-Grafana의 Git Sync 설정에서 다음 값을 지정합니다.
+Configure Grafana Git Sync with the following values:
 
-| 항목 | 값 |
+| Setting | Value |
 | --- | --- |
 | Repository | `EvoDmiK/Gullinkambi` |
 | Branch | `main` |
 | Path | `provisioning/dashboards/git-sync` |
 
-이 경로에는 `통합 대시보드`와 `Docker 모니터링`만 있습니다. `provisioning/dashboards/` 전체를 Git Sync 경로로 지정하면 일반 dashboard JSON과 provider YAML까지 섞이므로 사용하지 않습니다.
+This path contains only the unified and infrastructure monitoring dashboards. Do not point Git Sync at all of `provisioning/dashboards/` because it also contains standard dashboard JSON and provider YAML files.
 
 ### File provisioning
 
-저장소를 Grafana 호스트에 체크아웃한 뒤 `provisioning/dashboards` 전체를 컨테이너의 같은 경로에 읽기 전용으로 마운트합니다. Docker Compose에서는 다음과 같이 구성할 수 있습니다.
+Check out the repository on the Grafana host and mount the entire `provisioning/dashboards` directory read-only at the same path inside the container:
 
-```yaml
+~~~yaml
 services:
   grafana:
     volumes:
       - ./provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
-```
+~~~
 
-provider 설정은 각 하위 디렉터리만 읽으며 60초마다 변경을 확인합니다.
+Each provider reads only its assigned subdirectory and checks for changes every 60 seconds.
 
-| Provider | Grafana 폴더 | 읽는 경로 |
+| Provider | Grafana folder | Path |
 | --- | --- | --- |
 | Hermes Kanban | `Hermes` | `/etc/grafana/provisioning/dashboards/hermes-kanban` |
 | Mac mini | `Mac mini` | `/etc/grafana/provisioning/dashboards/macmini` |
 | OpenViking | `Agents` | `/etc/grafana/provisioning/dashboards/openviking` |
 
-기존 Birds-Nest의 dashboard provisioning 마운트와 동시에 같은 경로를 덮어쓰지 않도록 구성합니다. JSON을 변경한 뒤 Grafana가 갱신하지 않으면 컨테이너 로그에서 provisioning 오류를 확인하고 Grafana를 다시 시작합니다.
+Avoid mounting another Birds-Nest dashboard provisioning directory over the same path. If Grafana does not pick up a JSON change, inspect its container logs for provisioning errors and restart Grafana if necessary.
 
-## 데이터 소스
+## Data sources
 
-대시보드가 참조하는 데이터 소스는 Grafana에 미리 등록되어 있어야 합니다.
+The referenced data sources must already be registered in Grafana.
 
-- Git Sync 대시보드는 Prometheus UID `PBFA97CFB590B2093`과 PostgreSQL UID `ffskrzljzwr28b`, `cfrgthsaa3ev4b`를 참조합니다.
-- Hermes Kanban은 PostgreSQL/TimescaleDB UID `ffskrzljzwr28b`와 `observability` 스키마의 Kanban 테이블을 사용합니다.
-- Mac mini 대시보드는 `Prometheus` 데이터 소스 변수와 `macmini_node` job의 node exporter 메트릭을 사용합니다.
-- OpenViking 대시보드는 이름이 `Prometheus`인 데이터 소스와 OpenViking exporter·컨테이너 메트릭을 사용합니다.
-- Docker 모니터링은 NAS와 Mac mini에서 수집한 cAdvisor 메트릭을 사용합니다.
+- Git Sync dashboards reference Prometheus UID `PBFA97CFB590B2093` and PostgreSQL UIDs `ffskrzljzwr28b` and `cfrgthsaa3ev4b`.
+- Hermes Kanban uses PostgreSQL/TimescaleDB UID `ffskrzljzwr28b` and the Kanban tables in the `observability` schema.
+- The standalone Mac mini dashboard uses the `Prometheus` data source variable and node exporter metrics from the `macmini_node` job.
+- OpenViking uses the data source named `Prometheus` together with OpenViking exporter and container metrics.
+- Infrastructure monitoring uses cAdvisor metrics from both hosts, the `node_exporter` and `macmini_node` node exporter jobs, and the `macmini_soc` macmon job.
 
-다른 Grafana 인스턴스에 적용할 때는 해당 인스턴스의 데이터 소스 이름과 UID에 맞게 JSON을 수정합니다. 대시보드가 열리더라도 데이터가 비어 있으면 먼저 데이터 소스 UID, Prometheus job·instance 레이블, PostgreSQL의 `observability` 스키마를 확인합니다.
+### Infrastructure monitoring collection requirements
 
-## 수정 및 검증
+| Target | Prometheus job | Required metrics |
+| --- | --- | --- |
+| NAS system | `node_exporter` | `node_cpu_*`, `node_memory_*`, `node_filesystem_*`, `node_network_*`, `node_disk_*`, `node_load*`, `node_boot_time_seconds` |
+| Mac mini system | `macmini_node` | The same standard node exporter metrics as the NAS |
+| Mac mini M4 | `macmini_soc` | `macmon_cpu_*`, `macmon_gpu_*`, `macmon_ane_*`, `macmon_ram_*`, `macmon_sys_*` |
 
-File provisioning 대시보드는 저장소의 JSON을 원본으로 취급합니다. Grafana UI에서 변경한 내용은 다음 provisioning 갱신 때 파일 내용으로 돌아갈 수 있으므로, 유지할 변경은 JSON에 반영합니다.
+The infrastructure dashboard automatically populates `NAS Instance` and `Mac mini Instance` variables. If your Prometheus job names differ, update `node_exporter`, `macmini_node`, and `macmini_soc` in the dashboard JSON to match the actual scrape jobs. RAID and SMART health are outside the standard node exporter metric set and require a dedicated exporter.
 
-커밋하기 전에 JSON 문법을 확인할 수 있습니다.
+When installing these dashboards in another Grafana instance, update data source names and UIDs as needed. If a dashboard loads without data, check its data source UID, Prometheus job and instance labels, and the PostgreSQL `observability` schema first.
 
-```bash
+## Editing and validation
+
+File-provisioned dashboard JSON is the source of truth. Changes made in the Grafana UI can be overwritten during the next provisioning refresh, so persist long-lived changes in the JSON files.
+
+Validate JSON syntax before committing:
+
+~~~bash
 find provisioning source -name '*.json' -exec jq empty {} +
-```
+~~~
 
-적용 후에는 다음 항목을 확인합니다.
+After deployment:
 
-1. Git Sync 상태에 오류가 없는지 확인합니다.
-2. `Hermes`, `Mac mini`, `Agents` 폴더에 file provisioning 대시보드가 생성되었는지 확인합니다.
-3. 각 대시보드의 변수 목록과 패널 쿼리가 정상적으로 데이터를 반환하는지 확인합니다.
-4. `Data source not found` 오류가 있으면 JSON의 이름 또는 UID를 Grafana 설정과 맞춥니다.
+1. Confirm that Git Sync reports no errors.
+2. Confirm that the `Hermes`, `Mac mini`, and `Agents` folders contain the file-provisioned dashboards.
+3. Verify that dashboard variables and panel queries return data.
+4. If Grafana reports `Data source not found`, align the JSON data source name or UID with the Grafana instance.
