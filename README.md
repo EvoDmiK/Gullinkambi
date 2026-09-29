@@ -1,6 +1,8 @@
 # Gullinkambi
+![Gullinkambi](assets/Gullinkambi.png)
 
-Gullinkambi는 Birds-Nest 환경의 Grafana 대시보드를 관리하는 저장소입니다. n8n과 Hermes 에이전트 실행, Hermes Kanban 작업, OpenViking, NAS 및 Mac mini의 상태를 한곳에서 관찰할 수 있도록 대시보드 JSON과 file provisioning 설정을 제공합니다.
+
+`Gullinkambi`는 김둘기의 인프라 환경 Grafana 대시보드를 관리하는 저장소입니다. n8n과 Hermes 에이전트 실행, Hermes Kanban 작업, OpenViking, NAS 및 Mac mini의 상태를 한곳에서 관찰할 수 있도록 대시보드 JSON과 file provisioning 설정을 제공합니다.
 
 Grafana 서버, Prometheus·PostgreSQL 같은 데이터 소스, 수집기, 자격 증명은 이 저장소에 포함하지 않습니다.
 
@@ -10,9 +12,53 @@ Grafana 서버, Prometheus·PostgreSQL 같은 데이터 소스, 수집기, 자�
 | --- | --- | --- | --- |
 | 통합 대시보드 | Grafana Git Sync | n8n 실행, Hermes Agent·Kanban, Orca 사용량, OpenViking | PostgreSQL/TimescaleDB, Prometheus |
 | Docker 모니터링 | Grafana Git Sync | NAS와 Mac mini의 컨테이너 CPU, 메모리, 네트워크 | Prometheus/cAdvisor |
-| Hermes 칸반 운영 현황 | File provisioning | 작업 상태, 처리량, 실패, 응답 없는 실행, 작업 종속성 | PostgreSQL/TimescaleDB |
 | Mac mini 시스템 모니터링 | File provisioning | CPU, 메모리, 디스크, 네트워크, 온도, M4 전력·주파수 | Prometheus/node exporter |
 | OpenViking Overview | File provisioning | exporter, 컨테이너 자원, 토큰·API 사용량, 큐와 로그 | Prometheus |
+
+
+### 1. 통합 대시보드
+
+#### 1-1. n8n 모니터링 대시보드
+
+![n8n monitoring dashboard](assets/n8n%20monitoring%20dashboard.png)
+
+- 최근 실행 수와 성공률, 실행 중인 작업, 실패 추이와 처리 시간(P50·P95)을 한눈에 확인할 수 있습니다.
+- 워크플로우별 성공률과 최근 실패 내역, 데이터 수집 상태 및 외부 API 오류도 함께 제공하여 n8n 자동화의 전반적인 상태와 장애 원인을 추적할 수 있습니다.
+
+#### 1-2. Hermes Agent 모니터링 대시보드
+
+![hermes agent monitoring dashboard](assets/hermes%20agent%20monitoring%20dashboard.png)
+
+- Hermes Agent의 실행 수와 성공률, 완료·실패 추세, 처리 시간 및 상태별 건수를 보여 줍니다.
+- 프로필과 모델별 실행·토큰 사용량, 도구 호출 횟수, 최근 실패 상세를 함께 확인할 수 있어 에이전트의 성능과 사용 패턴을 분석하기 좋습니다.
+
+#### 1-3. Orca 모니터링 대시보드
+
+![ORCA monitoring dashboard](assets/orca%20monitoring%20dashboard.png)
+
+- Orca의 전체 토큰 사용량과 모델 호출 수, 일별 토큰 사용 추이 및 모델·스레드별 사용량을 보여 줍니다.
+- 최신 사용량 데이터의 집계 지연도 함께 표시하여 비용과 사용 패턴뿐 아니라 수집 데이터의 최신성까지 점검할 수 있습니다.
+
+#### 1-4. OpenViking 모니터링 대시보드
+
+![OpenViking monitoring dashboard](assets/openviking%20monitoring%20dashboard.png)
+
+- Exporter 상태와 API 요청 수, 토큰 사용량, 평균 요청 시간 및 최근 오류를 확인할 수 있습니다. 
+- 컨테이너 CPU·메모리, 데이터 크기, 세션 파일, 큐 메시지와 로그 지표도 함께 제공하여 OpenViking 서비스와 실행 환경을 통합적으로 관찰할 수 있습니다.
+
+### 2. Docker 모니터링 대시보드
+
+![Docker monitoring dashboard](assets/macmini%20docker%20monitoring%20dashboard.png)
+
+- NAS와 Mac mini에서 실행되는 Docker 컨테이너의 CPU·메모리 사용량과 네트워크 송수신량을 비교해 보여 줍니다.
+- 호스트별 전체 자원 사용량과 개별 컨테이너 상태를 함께 확인하여 과도한 자원 소비나 비정상적인 트래픽을 빠르게 찾을 수 있습니다.
+
+### 3. MacMini 시스템 모니터링 대시보드
+
+![MacMini system monitoring dashboard](assets/macmini%20system%20monitoring%20dashboard.png)
+
+- Mac mini의 CPU, 메모리, 디스크, 네트워크, 부하와 업타임 등 기본 시스템 상태를 모니터링합니다. 
+- M4 CPU·GPU의 사용률과 온도, 전력 소비 및 동작 주파수까지 제공하여 시스템 부하와 하드웨어 상태를 상세하게 확인할 수 있습니다.
 
 ## 저장소 구조
 
