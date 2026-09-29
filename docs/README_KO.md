@@ -57,7 +57,7 @@ n8n과 Hermes 에이전트의 실행 상태, Hermes Kanban 작업, OpenViking, N
 ![Docker monitoring dashboard](../assets/macmini%20docker%20monitoring%20dashboard.png)
 
 - `NAS Docker`, `Mac mini Docker`, `NAS 시스템`, `Mac mini 시스템` 탭에서 컨테이너와 호스트 상태를 한 대시보드에서 확인할 수 있습니다.
-- 시스템 탭은 CPU·메모리·파일시스템·네트워크·부하와 함께 디스크 장치 목록, IOPS, I/O 사용률을 제공하며, Mac mini에서는 M4 CPU·GPU의 사용률, 온도, 전력 및 동작 주파수도 함께 보여 줍니다.
+- 시스템 탭은 CPU·메모리·파일시스템·네트워크·부하와 함께 마운트 볼륨의 사용량/전체 용량, IOPS, I/O 사용률을 제공하며, Mac mini에서는 M4 CPU·GPU의 사용률, 온도, 전력 및 동작 주파수도 함께 보여 줍니다.
 
 ### 3. MacMini 시스템 모니터링 대시보드
 

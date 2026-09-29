@@ -54,7 +54,7 @@ The project is named after Gullinkambi, the rooster from Norse mythology. In the
 ![Docker monitoring dashboard](assets/macmini%20docker%20monitoring%20dashboard.png)
 
 - Combines container and host health in the `NAS Docker`, `Mac mini Docker`, `NAS System`, and `Mac mini System` tabs.
-- The system tabs cover CPU, memory, filesystems, network, load, and detailed disk views for device inventory, IOPS, and I/O utilization. The Mac mini tab also includes M4 CPU/GPU utilization, temperature, power, and frequency.
+- The system tabs cover CPU, memory, filesystems, network, load, and detailed disk views for mounted-volume used and total capacity, IOPS, and I/O utilization. The Mac mini tab also includes M4 CPU/GPU utilization, temperature, power, and frequency.
 
 ### 3. Mac mini system monitoring
 

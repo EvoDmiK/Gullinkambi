@@ -6037,9 +6037,9 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "node_disk_info{job=\"node_exporter\",instance=\"$nas_instance\",device=~\"sd[a-z]+|nvme[0-9]+n[0-9]+|md[0-9]+|dm-[0-9]+\"}",
+                        "expr": "node_filesystem_size_bytes{job=\"node_exporter\",instance=\"$nas_instance\",mountpoint=~\"/volume[0-9]+\"} - node_filesystem_avail_bytes{job=\"node_exporter\",instance=\"$nas_instance\",mountpoint=~\"/volume[0-9]+\"}",
                         "interval": "",
-                        "legendFormat": "{{device}}",
+                        "legendFormat": "사용량",
                         "format": "table",
                         "instant": true,
                         "range": false
@@ -6048,24 +6048,65 @@
                     },
                     "refId": "A"
                   }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "node_filesystem_size_bytes{job=\"node_exporter\",instance=\"$nas_instance\",mountpoint=~\"/volume[0-9]+\"}",
+                        "interval": "",
+                        "legendFormat": "전체",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"node_exporter\",instance=\"$nas_instance\",mountpoint=~\"/volume[0-9]+\"} / node_filesystem_size_bytes{job=\"node_exporter\",instance=\"$nas_instance\",mountpoint=~\"/volume[0-9]+\"})",
+                        "interval": "",
+                        "legendFormat": "사용률",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "C"
+                  }
                 }
               ],
               "queryOptions": {},
               "transformations": [
                 {
-                  "group": "filterFieldsByName",
+                  "group": "joinByField",
                   "kind": "Transformation",
                   "spec": {
                     "options": {
-                      "include": {
-                        "names": [
-                          "device",
-                          "major",
-                          "minor",
-                          "rotational",
-                          "Value"
-                        ]
-                      }
+                      "byField": "mountpoint",
+                      "mode": "outerTabular"
                     }
                   }
                 },
@@ -6074,20 +6115,36 @@
                   "kind": "Transformation",
                   "spec": {
                     "options": {
-                      "excludeByName": {},
+                      "excludeByName": {
+                        "Time": true,
+                        "Time 1": true,
+                        "Time 2": true,
+                        "instance": true,
+                        "instance 1": true,
+                        "instance 2": true,
+                        "job": true,
+                        "job 1": true,
+                        "job 2": true,
+                        "device 1": true,
+                        "device 2": true,
+                        "fstype 1": true,
+                        "fstype 2": true
+                      },
                       "indexByName": {
                         "device": 0,
-                        "major": 1,
-                        "minor": 2,
-                        "rotational": 3,
-                        "Value": 4
+                        "mountpoint": 1,
+                        "fstype": 2,
+                        "Value #A": 3,
+                        "Value #B": 4,
+                        "Value #C": 5
                       },
                       "renameByName": {
-                        "device": "Device",
-                        "major": "Major",
-                        "minor": "Minor",
-                        "rotational": "Rotational",
-                        "Value": "Present"
+                        "device": "장치",
+                        "mountpoint": "마운트",
+                        "fstype": "파일시스템",
+                        "Value #A": "사용량",
+                        "Value #B": "전체",
+                        "Value #C": "사용률"
                       }
                     }
                   }
@@ -6095,7 +6152,7 @@
               ]
             }
           },
-          "description": "node exporter가 인식한 물리 디스크, NVMe, RAID 및 device-mapper 장치입니다. Rotational은 1이면 회전식 디스크, 0이면 비회전식 장치입니다.",
+          "description": "NAS 데이터 볼륨별 장치, 마운트 위치, 파일시스템과 사용량 / 전체 용량을 표시합니다.",
           "id": 59,
           "links": [],
           "title": "NAS · 디스크 장치 정보",
@@ -6132,7 +6189,40 @@
                     ]
                   }
                 },
-                "overrides": []
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": "/^(사용량|전체|Value #A|Value #B)$/"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "bytes"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": "/^(사용률|Value #C)$/"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      }
+                    ]
+                  }
+                ]
               },
               "options": {
                 "cellHeight": "sm",
@@ -6432,9 +6522,9 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "node_disk_info{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"vd[a-z]+|nbd[0-9]+\"}",
+                        "expr": "node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",mountpoint=~\"/opt/orbstack-guest/data|/mnt/mac\"} - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",mountpoint=~\"/opt/orbstack-guest/data|/mnt/mac\"}",
                         "interval": "",
-                        "legendFormat": "{{device}}",
+                        "legendFormat": "사용량",
                         "format": "table",
                         "instant": true,
                         "range": false
@@ -6443,24 +6533,65 @@
                     },
                     "refId": "A"
                   }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",mountpoint=~\"/opt/orbstack-guest/data|/mnt/mac\"}",
+                        "interval": "",
+                        "legendFormat": "전체",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",mountpoint=~\"/opt/orbstack-guest/data|/mnt/mac\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",mountpoint=~\"/opt/orbstack-guest/data|/mnt/mac\"})",
+                        "interval": "",
+                        "legendFormat": "사용률",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "C"
+                  }
                 }
               ],
               "queryOptions": {},
               "transformations": [
                 {
-                  "group": "filterFieldsByName",
+                  "group": "joinByField",
                   "kind": "Transformation",
                   "spec": {
                     "options": {
-                      "include": {
-                        "names": [
-                          "device",
-                          "major",
-                          "minor",
-                          "rotational",
-                          "Value"
-                        ]
-                      }
+                      "byField": "mountpoint",
+                      "mode": "outerTabular"
                     }
                   }
                 },
@@ -6469,20 +6600,36 @@
                   "kind": "Transformation",
                   "spec": {
                     "options": {
-                      "excludeByName": {},
+                      "excludeByName": {
+                        "Time": true,
+                        "Time 1": true,
+                        "Time 2": true,
+                        "instance": true,
+                        "instance 1": true,
+                        "instance 2": true,
+                        "job": true,
+                        "job 1": true,
+                        "job 2": true,
+                        "device 1": true,
+                        "device 2": true,
+                        "fstype 1": true,
+                        "fstype 2": true
+                      },
                       "indexByName": {
                         "device": 0,
-                        "major": 1,
-                        "minor": 2,
-                        "rotational": 3,
-                        "Value": 4
+                        "mountpoint": 1,
+                        "fstype": 2,
+                        "Value #A": 3,
+                        "Value #B": 4,
+                        "Value #C": 5
                       },
                       "renameByName": {
-                        "device": "Device",
-                        "major": "Major",
-                        "minor": "Minor",
-                        "rotational": "Rotational",
-                        "Value": "Present"
+                        "device": "장치",
+                        "mountpoint": "마운트",
+                        "fstype": "파일시스템",
+                        "Value #A": "사용량",
+                        "Value #B": "전체",
+                        "Value #C": "사용률"
                       }
                     }
                   }
@@ -6490,7 +6637,7 @@
               ]
             }
           },
-          "description": "현재 macmini_node가 인식한 OrbStack 가상 블록 장치입니다. Mac 내부 SSD의 SMART 정보는 포함하지 않습니다.",
+          "description": "OrbStack 데이터 영역과 macOS 공유 마운트별 장치, 파일시스템과 사용량 / 전체 용량을 표시합니다. Mac 내부 SSD의 SMART 정보는 포함하지 않습니다.",
           "id": 62,
           "links": [],
           "title": "Mac mini · 디스크 장치 정보",
@@ -6527,7 +6674,40 @@
                     ]
                   }
                 },
-                "overrides": []
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": "/^(사용량|전체|Value #A|Value #B)$/"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "bytes"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": "/^(사용률|Value #C)$/"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      }
+                    ]
+                  }
+                ]
               },
               "options": {
                 "cellHeight": "sm",
