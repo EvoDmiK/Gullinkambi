@@ -6128,18 +6128,20 @@
                         "device 1": true,
                         "device 2": true,
                         "fstype 1": true,
-                        "fstype 2": true
+                        "fstype 2": true,
+                        "__name__": true,
+                        "__name__ 1": true,
+                        "__name__ 2": true,
+                        "device": true
                       },
                       "indexByName": {
-                        "device": 0,
-                        "mountpoint": 1,
-                        "fstype": 2,
-                        "Value #A": 3,
-                        "Value #B": 4,
-                        "Value #C": 5
+                        "mountpoint": 0,
+                        "fstype": 1,
+                        "Value #A": 2,
+                        "Value #B": 3,
+                        "Value #C": 4
                       },
                       "renameByName": {
-                        "device": "장치",
                         "mountpoint": "마운트",
                         "fstype": "파일시스템",
                         "Value #A": "사용량",
@@ -6152,7 +6154,7 @@
               ]
             }
           },
-          "description": "NAS 데이터 볼륨별 장치, 마운트 위치, 파일시스템과 사용량 / 전체 용량을 표시합니다.",
+          "description": "NAS 데이터 볼륨별 마운트 위치, 파일시스템과 사용량 / 전체 용량을 표시합니다.",
           "id": 59,
           "links": [],
           "title": "NAS · 디스크 장치 정보",
@@ -6613,18 +6615,20 @@
                         "device 1": true,
                         "device 2": true,
                         "fstype 1": true,
-                        "fstype 2": true
+                        "fstype 2": true,
+                        "__name__": true,
+                        "__name__ 1": true,
+                        "__name__ 2": true,
+                        "device": true
                       },
                       "indexByName": {
-                        "device": 0,
-                        "mountpoint": 1,
-                        "fstype": 2,
-                        "Value #A": 3,
-                        "Value #B": 4,
-                        "Value #C": 5
+                        "mountpoint": 0,
+                        "fstype": 1,
+                        "Value #A": 2,
+                        "Value #B": 3,
+                        "Value #C": 4
                       },
                       "renameByName": {
-                        "device": "장치",
                         "mountpoint": "마운트",
                         "fstype": "파일시스템",
                         "Value #A": "사용량",
@@ -6637,7 +6641,7 @@
               ]
             }
           },
-          "description": "OrbStack 데이터 영역과 macOS 공유 마운트별 장치, 파일시스템과 사용량 / 전체 용량을 표시합니다. Mac 내부 SSD의 SMART 정보는 포함하지 않습니다.",
+          "description": "OrbStack 데이터 영역과 macOS 공유 마운트별 파일시스템과 사용량 / 전체 용량을 표시합니다. Mac 내부 SSD의 SMART 정보는 포함하지 않습니다.",
           "id": 62,
           "links": [],
           "title": "Mac mini · 디스크 장치 정보",
