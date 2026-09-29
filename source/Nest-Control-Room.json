@@ -2744,7 +2744,8 @@
                         "expr": "clamp_max(clamp_min(100 * (1 - avg(rate(node_cpu_seconds_total{job=\"node_exporter\",instance=\"$nas_instance\",mode=\"idle\"}[5m]))), 0), 100)",
                         "interval": "",
                         "legendFormat": "CPU",
-                        "range": true
+                        "range": false,
+                        "instant": true
                       },
                       "version": "v0"
                     },
@@ -2832,7 +2833,8 @@
                         "expr": "100 * (1 - node_memory_MemAvailable_bytes{job=\"node_exporter\",instance=\"$nas_instance\"} / node_memory_MemTotal_bytes{job=\"node_exporter\",instance=\"$nas_instance\"})",
                         "interval": "",
                         "legendFormat": "RAM",
-                        "range": true
+                        "range": false,
+                        "instant": true
                       },
                       "version": "v0"
                     },
@@ -2920,7 +2922,8 @@
                         "expr": "max(100 * (1 - node_filesystem_avail_bytes{job=\"node_exporter\",instance=\"$nas_instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/(dev|proc|sys|run)($|/.*)|/var/lib/docker/.*|/volume.*/@docker/.*\"} / node_filesystem_size_bytes{job=\"node_exporter\",instance=\"$nas_instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/(dev|proc|sys|run)($|/.*)|/var/lib/docker/.*|/volume.*/@docker/.*\"}))",
                         "interval": "",
                         "legendFormat": "Disk",
-                        "range": true
+                        "range": false,
+                        "instant": true
                       },
                       "version": "v0"
                     },
@@ -3008,7 +3011,8 @@
                         "expr": "time() - node_boot_time_seconds{job=\"node_exporter\",instance=\"$nas_instance\"}",
                         "interval": "",
                         "legendFormat": "Uptime",
-                        "range": true
+                        "range": false,
+                        "instant": true
                       },
                       "version": "v0"
                     },
@@ -3942,7 +3946,8 @@
                         "expr": "clamp_max(clamp_min(100 * (1 - avg(rate(node_cpu_seconds_total{job=\"macmini_node\",instance=\"$macmini_instance\",mode=\"idle\"}[5m]))), 0), 100)",
                         "interval": "",
                         "legendFormat": "CPU",
-                        "range": true
+                        "range": false,
+                        "instant": true
                       },
                       "version": "v0"
                     },
@@ -4030,7 +4035,8 @@
                         "expr": "100 * (1 - node_memory_MemAvailable_bytes{job=\"macmini_node\",instance=\"$macmini_instance\"} / node_memory_MemTotal_bytes{job=\"macmini_node\",instance=\"$macmini_instance\"})",
                         "interval": "",
                         "legendFormat": "RAM",
-                        "range": true
+                        "range": false,
+                        "instant": true
                       },
                       "version": "v0"
                     },
@@ -4118,7 +4124,8 @@
                         "expr": "max(100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/host/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/host/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)\"}))",
                         "interval": "",
                         "legendFormat": "Disk",
-                        "range": true
+                        "range": false,
+                        "instant": true
                       },
                       "version": "v0"
                     },
@@ -4206,7 +4213,8 @@
                         "expr": "time() - node_boot_time_seconds{job=\"macmini_node\",instance=\"$macmini_instance\"}",
                         "interval": "",
                         "legendFormat": "Uptime",
-                        "range": true
+                        "range": false,
+                        "instant": true
                       },
                       "version": "v0"
                     },
@@ -6033,7 +6041,8 @@
                         "interval": "",
                         "legendFormat": "{{device}}",
                         "format": "table",
-                        "instant": true
+                        "instant": true,
+                        "range": false
                       },
                       "version": "v0"
                     },
@@ -6427,7 +6436,8 @@
                         "interval": "",
                         "legendFormat": "{{device}}",
                         "format": "table",
-                        "instant": true
+                        "instant": true,
+                        "range": false
                       },
                       "version": "v0"
                     },
@@ -7889,7 +7899,7 @@
         "1d"
       ],
       "fiscalYearStartMonth": 0,
-      "from": "now/y",
+      "from": "now-6h",
       "hideTimepicker": false,
       "timezone": "Asia/Seoul",
       "to": "now"
