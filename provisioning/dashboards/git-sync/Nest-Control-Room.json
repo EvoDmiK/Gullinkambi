@@ -187,7 +187,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -348,7 +348,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -535,7 +535,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -698,7 +698,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -865,7 +865,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -1060,7 +1060,7 @@
                 "showHeader": true
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -2172,7 +2172,7 @@
                 "wideLayout": true
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -2250,7 +2250,7 @@
                 "wideLayout": true
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -2328,7 +2328,7 @@
                 "wideLayout": true
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -2406,7 +2406,7 @@
                 "wideLayout": true
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -2742,10 +2742,10 @@
                       "spec": {
                         "editorMode": "code",
                         "expr": "clamp_max(clamp_min(100 * (1 - avg(rate(node_cpu_seconds_total{job=\"node_exporter\",instance=\"$nas_instance\",mode=\"idle\"}[5m]))), 0), 100)",
+                        "instant": true,
                         "interval": "",
                         "legendFormat": "CPU",
-                        "range": false,
-                        "instant": true
+                        "range": false
                       },
                       "version": "v0"
                     },
@@ -2807,7 +2807,7 @@
                 "wideLayout": true
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -2831,10 +2831,10 @@
                       "spec": {
                         "editorMode": "code",
                         "expr": "100 * (1 - node_memory_MemAvailable_bytes{job=\"node_exporter\",instance=\"$nas_instance\"} / node_memory_MemTotal_bytes{job=\"node_exporter\",instance=\"$nas_instance\"})",
+                        "instant": true,
                         "interval": "",
                         "legendFormat": "RAM",
-                        "range": false,
-                        "instant": true
+                        "range": false
                       },
                       "version": "v0"
                     },
@@ -2896,7 +2896,7 @@
                 "wideLayout": true
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -2920,10 +2920,10 @@
                       "spec": {
                         "editorMode": "code",
                         "expr": "max(100 * (1 - node_filesystem_avail_bytes{job=\"node_exporter\",instance=\"$nas_instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/(dev|proc|sys|run)($|/.*)|/var/lib/docker/.*|/volume.*/@docker/.*\"} / node_filesystem_size_bytes{job=\"node_exporter\",instance=\"$nas_instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/(dev|proc|sys|run)($|/.*)|/var/lib/docker/.*|/volume.*/@docker/.*\"}))",
+                        "instant": true,
                         "interval": "",
                         "legendFormat": "Disk",
-                        "range": false,
-                        "instant": true
+                        "range": false
                       },
                       "version": "v0"
                     },
@@ -2985,7 +2985,7 @@
                 "wideLayout": true
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -3009,10 +3009,10 @@
                       "spec": {
                         "editorMode": "code",
                         "expr": "time() - node_boot_time_seconds{job=\"node_exporter\",instance=\"$nas_instance\"}",
+                        "instant": true,
                         "interval": "",
                         "legendFormat": "Uptime",
-                        "range": false,
-                        "instant": true
+                        "range": false
                       },
                       "version": "v0"
                     },
@@ -3066,7 +3066,7 @@
                 "wideLayout": true
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -3190,7 +3190,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -3336,7 +3336,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -3460,7 +3460,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -3606,7 +3606,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -3752,7 +3752,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -3920,7 +3920,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -3944,10 +3944,10 @@
                       "spec": {
                         "editorMode": "code",
                         "expr": "clamp_max(clamp_min(100 * (1 - avg(rate(node_cpu_seconds_total{job=\"macmini_node\",instance=\"$macmini_instance\",mode=\"idle\"}[5m]))), 0), 100)",
+                        "instant": true,
                         "interval": "",
                         "legendFormat": "CPU",
-                        "range": false,
-                        "instant": true
+                        "range": false
                       },
                       "version": "v0"
                     },
@@ -4009,7 +4009,7 @@
                 "wideLayout": true
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -4033,10 +4033,10 @@
                       "spec": {
                         "editorMode": "code",
                         "expr": "100 * (1 - node_memory_MemAvailable_bytes{job=\"macmini_node\",instance=\"$macmini_instance\"} / node_memory_MemTotal_bytes{job=\"macmini_node\",instance=\"$macmini_instance\"})",
+                        "instant": true,
                         "interval": "",
                         "legendFormat": "RAM",
-                        "range": false,
-                        "instant": true
+                        "range": false
                       },
                       "version": "v0"
                     },
@@ -4098,7 +4098,7 @@
                 "wideLayout": true
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -4122,10 +4122,10 @@
                       "spec": {
                         "editorMode": "code",
                         "expr": "max(100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/host/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/host/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)\"}))",
+                        "instant": true,
                         "interval": "",
                         "legendFormat": "Disk",
-                        "range": false,
-                        "instant": true
+                        "range": false
                       },
                       "version": "v0"
                     },
@@ -4187,7 +4187,7 @@
                 "wideLayout": true
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -4211,10 +4211,10 @@
                       "spec": {
                         "editorMode": "code",
                         "expr": "time() - node_boot_time_seconds{job=\"macmini_node\",instance=\"$macmini_instance\"}",
+                        "instant": true,
                         "interval": "",
                         "legendFormat": "Uptime",
-                        "range": false,
-                        "instant": true
+                        "range": false
                       },
                       "version": "v0"
                     },
@@ -4268,7 +4268,7 @@
                 "wideLayout": true
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -4356,7 +4356,7 @@
                 "wideLayout": true
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -4444,7 +4444,7 @@
                 "wideLayout": true
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -4568,7 +4568,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -4714,7 +4714,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -4838,7 +4838,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -4984,7 +4984,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -5130,7 +5130,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -5298,7 +5298,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -5510,7 +5510,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -5678,7 +5678,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -5868,7 +5868,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -6014,7 +6014,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -6038,10 +6038,10 @@
                       "spec": {
                         "editorMode": "code",
                         "expr": "node_filesystem_size_bytes{job=\"node_exporter\",instance=\"$nas_instance\",mountpoint=~\"/volume[0-9]+\"} - node_filesystem_avail_bytes{job=\"node_exporter\",instance=\"$nas_instance\",mountpoint=~\"/volume[0-9]+\"}",
-                        "interval": "",
-                        "legendFormat": "사용량",
                         "format": "table",
                         "instant": true,
+                        "interval": "",
+                        "legendFormat": "사용량",
                         "range": false
                       },
                       "version": "v0"
@@ -6062,10 +6062,10 @@
                       "spec": {
                         "editorMode": "code",
                         "expr": "node_filesystem_size_bytes{job=\"node_exporter\",instance=\"$nas_instance\",mountpoint=~\"/volume[0-9]+\"}",
-                        "interval": "",
-                        "legendFormat": "전체",
                         "format": "table",
                         "instant": true,
+                        "interval": "",
+                        "legendFormat": "전체",
                         "range": false
                       },
                       "version": "v0"
@@ -6086,10 +6086,10 @@
                       "spec": {
                         "editorMode": "code",
                         "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"node_exporter\",instance=\"$nas_instance\",mountpoint=~\"/volume[0-9]+\"} / node_filesystem_size_bytes{job=\"node_exporter\",instance=\"$nas_instance\",mountpoint=~\"/volume[0-9]+\"})",
-                        "interval": "",
-                        "legendFormat": "사용률",
                         "format": "table",
                         "instant": true,
+                        "interval": "",
+                        "legendFormat": "사용률",
                         "range": false
                       },
                       "version": "v0"
@@ -6119,37 +6119,37 @@
                         "Time": true,
                         "Time 1": true,
                         "Time 2": true,
+                        "__name__": true,
+                        "__name__ 1": true,
+                        "__name__ 2": true,
+                        "device": true,
+                        "device 1": true,
+                        "device 2": true,
+                        "fstype 1": true,
+                        "fstype 2": true,
+                        "host": true,
+                        "host 1": true,
+                        "host 2": true,
                         "instance": true,
                         "instance 1": true,
                         "instance 2": true,
                         "job": true,
                         "job 1": true,
-                        "job 2": true,
-                        "device 1": true,
-                        "device 2": true,
-                        "fstype 1": true,
-                        "fstype 2": true,
-                        "__name__": true,
-                        "__name__ 1": true,
-                        "__name__ 2": true,
-                        "device": true,
-                        "host": true,
-                        "host 1": true,
-                        "host 2": true
+                        "job 2": true
                       },
                       "indexByName": {
-                        "mountpoint": 0,
-                        "fstype": 1,
                         "Value #A": 2,
                         "Value #B": 3,
-                        "Value #C": 4
+                        "Value #C": 4,
+                        "fstype": 1,
+                        "mountpoint": 0
                       },
                       "renameByName": {
-                        "mountpoint": "마운트",
-                        "fstype": "파일시스템",
                         "Value #A": "사용량",
                         "Value #B": "전체",
-                        "Value #C": "사용률"
+                        "Value #C": "사용률",
+                        "fstype": "파일시스템",
+                        "mountpoint": "마운트"
                       }
                     }
                   }
@@ -6226,15 +6226,86 @@
                         "value": 1
                       }
                     ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "마운트",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 75
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "사용량",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 79
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "전체",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 79
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "사용률",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 70
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "fstype",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 55
+                      }
+                    ]
                   }
                 ]
               },
               "options": {
                 "cellHeight": "sm",
-                "showHeader": true
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "desc": true,
+                    "displayName": "사용률"
+                  }
+                ]
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -6380,7 +6451,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -6504,7 +6575,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -6528,10 +6599,10 @@
                       "spec": {
                         "editorMode": "code",
                         "expr": "node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",mountpoint=~\"/opt/orbstack-guest/data|/mnt/mac\"} - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",mountpoint=~\"/opt/orbstack-guest/data|/mnt/mac\"}",
-                        "interval": "",
-                        "legendFormat": "사용량",
                         "format": "table",
                         "instant": true,
+                        "interval": "",
+                        "legendFormat": "사용량",
                         "range": false
                       },
                       "version": "v0"
@@ -6552,10 +6623,10 @@
                       "spec": {
                         "editorMode": "code",
                         "expr": "node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",mountpoint=~\"/opt/orbstack-guest/data|/mnt/mac\"}",
-                        "interval": "",
-                        "legendFormat": "전체",
                         "format": "table",
                         "instant": true,
+                        "interval": "",
+                        "legendFormat": "전체",
                         "range": false
                       },
                       "version": "v0"
@@ -6576,10 +6647,10 @@
                       "spec": {
                         "editorMode": "code",
                         "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",mountpoint=~\"/opt/orbstack-guest/data|/mnt/mac\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",mountpoint=~\"/opt/orbstack-guest/data|/mnt/mac\"})",
-                        "interval": "",
-                        "legendFormat": "사용률",
                         "format": "table",
                         "instant": true,
+                        "interval": "",
+                        "legendFormat": "사용률",
                         "range": false
                       },
                       "version": "v0"
@@ -6609,37 +6680,37 @@
                         "Time": true,
                         "Time 1": true,
                         "Time 2": true,
+                        "__name__": true,
+                        "__name__ 1": true,
+                        "__name__ 2": true,
+                        "device": true,
+                        "device 1": true,
+                        "device 2": true,
+                        "fstype 1": true,
+                        "fstype 2": true,
+                        "host": true,
+                        "host 1": true,
+                        "host 2": true,
                         "instance": true,
                         "instance 1": true,
                         "instance 2": true,
                         "job": true,
                         "job 1": true,
-                        "job 2": true,
-                        "device 1": true,
-                        "device 2": true,
-                        "fstype 1": true,
-                        "fstype 2": true,
-                        "__name__": true,
-                        "__name__ 1": true,
-                        "__name__ 2": true,
-                        "device": true,
-                        "host": true,
-                        "host 1": true,
-                        "host 2": true
+                        "job 2": true
                       },
                       "indexByName": {
-                        "mountpoint": 0,
-                        "fstype": 1,
                         "Value #A": 2,
                         "Value #B": 3,
-                        "Value #C": 4
+                        "Value #C": 4,
+                        "fstype": 1,
+                        "mountpoint": 0
                       },
                       "renameByName": {
-                        "mountpoint": "마운트",
-                        "fstype": "파일시스템",
                         "Value #A": "사용량",
                         "Value #B": "전체",
-                        "Value #C": "사용률"
+                        "Value #C": "사용률",
+                        "fstype": "파일시스템",
+                        "mountpoint": "마운트"
                       }
                     }
                   }
@@ -6724,7 +6795,7 @@
                 "showHeader": true
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -6870,7 +6941,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       },
@@ -6994,7 +7065,7 @@
                 }
               }
             },
-            "version": "13.1.1"
+            "version": "13.2.1"
           }
         }
       }
@@ -8042,20 +8113,7 @@
         ]
       }
     },
-    "links": [
-      {
-        "asDropdown": false,
-        "icon": "external link",
-        "includeVars": false,
-        "keepTime": false,
-        "tags": [],
-        "targetBlank": true,
-        "title": "소스(GitHub)",
-        "tooltip": "리포지토리에서 소스 파일 보기",
-        "type": "link",
-        "url": "https://github.com/EvoDmiK/Birds-Nest/blob/dev/docker-data/monitoring/grafana/Nest-Control-Room.json"
-      }
-    ],
+    "links": [],
     "liveNow": false,
     "preferences": {
       "layout": {
