@@ -2804,7 +2804,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "SELECT\n  agent AS \"에이전트\",\n  project_label AS \"프로젝트\",\n  model AS \"모델\",\n  sum(request_count) AS \"모델 호출 수\",\n  sum(input_tokens) AS \"입력 토큰\",\n  sum(cache_read_tokens) AS \"캐시 읽기\",\n  sum(cache_write_tokens) AS \"캐시 쓰기\",\n  sum(output_tokens) AS \"출력 토큰\",\n  sum(reasoning_tokens) AS \"리즈닝 토큰\",\n  sum(total_tokens) AS \"총 토큰\"\nFROM observability.orca_usage_daily\nWHERE $__timeFilter(usage_date::timestamptz)\nGROUP BY agent, project_label, model\nORDER BY \"총 토큰\" DESC;",
+                        "rawSql": "SELECT\n  agent AS \"에이전트\",\n  model AS \"모델\",\n  sum(request_count) AS \"모델 호출 수\",\n  sum(input_tokens) AS \"입력 토큰\",\n  sum(cache_read_tokens) AS \"캐시 읽기\",\n  sum(cache_write_tokens) AS \"캐시 쓰기\",\n  sum(output_tokens) AS \"출력 토큰\",\n  sum(reasoning_tokens) AS \"리즈닝 토큰\",\n  sum(total_tokens) AS \"총 토큰\"\nFROM observability.orca_usage_daily\nWHERE $__timeFilter(usage_date::timestamptz)\nGROUP BY agent, model\nORDER BY \"총 토큰\" DESC;",
                         "sql": {
                           "columns": [
                             {
@@ -2907,7 +2907,7 @@
                     "properties": [
                       {
                         "id": "custom.width",
-                        "value": 76
+                        "value": 125
                       }
                     ]
                   },
