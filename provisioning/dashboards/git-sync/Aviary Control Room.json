@@ -7512,10 +7512,10 @@
         "1d"
       ],
       "fiscalYearStartMonth": 0,
-      "from": "now/d",
+      "from": "now-24h",
       "hideTimepicker": false,
       "timezone": "Asia/Seoul",
-      "to": "now/d"
+      "to": "now"
     },
     "title": "통합 대시보드",
     "variables": [
@@ -7585,7 +7585,9 @@
           "allValue": ".*",
           "allowCustomValue": true,
           "current": {
-            "text": "All",
+            "text": [
+              "All"
+            ],
             "value": [
               "$__all"
             ]
