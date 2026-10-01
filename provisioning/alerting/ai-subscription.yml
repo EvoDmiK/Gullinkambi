@@ -15,8 +15,8 @@ groups:
         execErrState: Alerting
         for: 5m
         annotations:
-          summary: '{{ $labels.provider }} 구독 사용량 수집에 실패했습니다.'
-          description: Mac mini exporter와 Codex·Claude 로그인 상태를 확인하세요.
+          summary: '{{ $labels.provider }}{{ if $labels.pool }} ({{ $labels.pool }}){{ end }} 구독 사용량 수집에 실패했습니다.'
+          description: Mac mini exporter와 Codex·Claude·Antigravity 로그인 및 CLI 상태를 확인하세요.
         labels: {severity: warning, service: ai-subscription, source: gullinkambi}
         data:
           - refId: A
@@ -25,10 +25,10 @@ groups:
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
               editorMode: code
-              expr: 'max by (provider) (ai_subscription_collector_up)'
+              expr: 'max by (provider, pool) (ai_subscription_collector_up)'
               instant: true
               intervalMs: 1000
-              legendFormat: '{{provider}}'
+              legendFormat: '{{provider}} {{pool}}'
               maxDataPoints: 43200
               range: false
               refId: A
@@ -109,7 +109,7 @@ groups:
         execErrState: Alerting
         for: 10m
         annotations:
-          summary: '{{ $labels.provider }} 주간 구독 사용률이 85%를 초과했습니다.'
+          summary: '{{ $labels.provider }}{{ if $labels.pool }} ({{ $labels.pool }}){{ end }} 주간 구독 사용률이 85%를 초과했습니다.'
           description: 다음 초기화 시각과 남은 작업량을 확인하세요.
         labels: {severity: warning, service: ai-subscription, source: gullinkambi}
         data:
@@ -119,10 +119,10 @@ groups:
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
               editorMode: code
-              expr: 'max by (provider) (ai_subscription_quota_used_percent{window="weekly"})'
+              expr: 'max by (provider, pool) (ai_subscription_quota_used_percent{window="weekly"})'
               instant: true
               intervalMs: 1000
-              legendFormat: '{{provider}}'
+              legendFormat: '{{provider}} {{pool}}'
               maxDataPoints: 43200
               range: false
               refId: A

@@ -13,7 +13,7 @@
           "enable": true,
           "hide": true,
           "iconColor": "rgba(0, 211, 255, 1)",
-          "name": "Annotations \u0026 Alerts",
+          "name": "Annotations & Alerts",
           "query": {
             "datasource": {
               "name": "-- Grafana --"
@@ -27,7 +27,7 @@
       }
     ],
     "cursorSync": "Off",
-    "description": "n8n, Hermes Agent, Hermes Kanban, OpenViking 및 Codex·Claude 구독 사용량 통합 모니터링 대시보드.",
+    "description": "n8n, Hermes Agent, Hermes Kanban, OpenViking 및 Codex·Claude·Antigravity 구독 사용량 통합 모니터링 대시보드.",
     "editable": true,
     "elements": {
       "panel-10": {
@@ -1133,7 +1133,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "format": "table",
-                        "rawSql": "SELECT COUNT(*) FILTER (WHERE \"stoppedAt\" \u003e NOW() - INTERVAL '1 hour') AS \"last_1h\", COUNT(*) FILTER (WHERE \"stoppedAt\" \u003e NOW() - INTERVAL '24 hours') AS \"last_24h\" FROM execution_entity WHERE \"stoppedAt\" IS NOT NULL"
+                        "rawSql": "SELECT COUNT(*) FILTER (WHERE \"stoppedAt\" > NOW() - INTERVAL '1 hour') AS \"last_1h\", COUNT(*) FILTER (WHERE \"stoppedAt\" > NOW() - INTERVAL '24 hours') AS \"last_24h\" FROM execution_entity WHERE \"stoppedAt\" IS NOT NULL"
                       },
                       "version": "v0"
                     },
@@ -1307,7 +1307,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "format": "table",
-                        "rawSql": "SELECT ROUND(100.0 * COUNT(*) FILTER (WHERE status = 'success') / NULLIF(COUNT(*), 0), 1) AS success_rate FROM execution_entity WHERE \"stoppedAt\" \u003e NOW() - INTERVAL '24 hours'"
+                        "rawSql": "SELECT ROUND(100.0 * COUNT(*) FILTER (WHERE status = 'success') / NULLIF(COUNT(*), 0), 1) AS success_rate FROM execution_entity WHERE \"stoppedAt\" > NOW() - INTERVAL '24 hours'"
                       },
                       "version": "v0"
                     },
@@ -1479,7 +1479,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "format": "table",
-                        "rawSql": "SELECT COUNT(*) AS failures FROM execution_entity WHERE status IN ('error','failed') AND \"stoppedAt\" \u003e NOW() - INTERVAL '24 hours'"
+                        "rawSql": "SELECT COUNT(*) AS failures FROM execution_entity WHERE status IN ('error','failed') AND \"stoppedAt\" > NOW() - INTERVAL '24 hours'"
                       },
                       "version": "v0"
                     },
@@ -1564,7 +1564,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "format": "time_series",
-                        "rawSql": "SELECT date_trunc('hour', \"stoppedAt\") AS time, COUNT(*) FILTER (WHERE status = 'success') AS success, COUNT(*) FILTER (WHERE status IN ('error','failed')) AS failure, COUNT(*) FILTER (WHERE status = 'running') AS running FROM execution_entity WHERE \"stoppedAt\" \u003e NOW() - INTERVAL '24 hours' GROUP BY 1 ORDER BY 1"
+                        "rawSql": "SELECT date_trunc('hour', \"stoppedAt\") AS time, COUNT(*) FILTER (WHERE status = 'success') AS success, COUNT(*) FILTER (WHERE status IN ('error','failed')) AS failure, COUNT(*) FILTER (WHERE status = 'running') AS running FROM execution_entity WHERE \"stoppedAt\" > NOW() - INTERVAL '24 hours' GROUP BY 1 ORDER BY 1"
                       },
                       "version": "v0"
                     },
@@ -1686,7 +1686,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "format": "time_series",
-                        "rawSql": "SELECT date_trunc('hour', \"stoppedAt\") AS time, EXTRACT(EPOCH FROM percentile_cont(0.50) WITHIN GROUP (ORDER BY \"stoppedAt\" - \"startedAt\")) AS p50_seconds, EXTRACT(EPOCH FROM percentile_cont(0.95) WITHIN GROUP (ORDER BY \"stoppedAt\" - \"startedAt\")) AS p95_seconds FROM execution_entity WHERE \"startedAt\" IS NOT NULL AND \"stoppedAt\" IS NOT NULL AND \"stoppedAt\" \u003e NOW() - INTERVAL '24 hours' GROUP BY 1 ORDER BY 1"
+                        "rawSql": "SELECT date_trunc('hour', \"stoppedAt\") AS time, EXTRACT(EPOCH FROM percentile_cont(0.50) WITHIN GROUP (ORDER BY \"stoppedAt\" - \"startedAt\")) AS p50_seconds, EXTRACT(EPOCH FROM percentile_cont(0.95) WITHIN GROUP (ORDER BY \"stoppedAt\" - \"startedAt\")) AS p95_seconds FROM execution_entity WHERE \"startedAt\" IS NOT NULL AND \"stoppedAt\" IS NOT NULL AND \"stoppedAt\" > NOW() - INTERVAL '24 hours' GROUP BY 1 ORDER BY 1"
                       },
                       "version": "v0"
                     },
@@ -1809,7 +1809,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "format": "table",
-                        "rawSql": "SELECT status, COUNT(*) AS executions FROM execution_entity WHERE \"stoppedAt\" \u003e NOW() - INTERVAL '24 hours' GROUP BY status ORDER BY executions DESC"
+                        "rawSql": "SELECT status, COUNT(*) AS executions FROM execution_entity WHERE \"stoppedAt\" > NOW() - INTERVAL '24 hours' GROUP BY status ORDER BY executions DESC"
                       },
                       "version": "v0"
                     },
@@ -1920,7 +1920,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "format": "table",
-                        "rawSql": "SELECT COALESCE(w.name, e.\"workflowId\") AS workflow, COUNT(*) AS total, COUNT(*) FILTER (WHERE e.status = 'success') AS success, ROUND(100.0 * COUNT(*) FILTER (WHERE e.status = 'success') / NULLIF(COUNT(*), 0), 1) AS success_rate FROM execution_entity e LEFT JOIN workflow_entity w ON w.id = e.\"workflowId\" WHERE e.\"stoppedAt\" \u003e NOW() - INTERVAL '24 hours' GROUP BY w.name, e.\"workflowId\" ORDER BY total DESC LIMIT 20"
+                        "rawSql": "SELECT COALESCE(w.name, e.\"workflowId\") AS workflow, COUNT(*) AS total, COUNT(*) FILTER (WHERE e.status = 'success') AS success, ROUND(100.0 * COUNT(*) FILTER (WHERE e.status = 'success') / NULLIF(COUNT(*), 0), 1) AS success_rate FROM execution_entity e LEFT JOIN workflow_entity w ON w.id = e.\"workflowId\" WHERE e.\"stoppedAt\" > NOW() - INTERVAL '24 hours' GROUP BY w.name, e.\"workflowId\" ORDER BY total DESC LIMIT 20"
                       },
                       "version": "v0"
                     },
@@ -2082,7 +2082,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "format": "table",
-                        "rawSql": "SELECT \"stoppedAt\" AS time, COALESCE(w.name, e.\"workflowId\") AS workflow, e.status, e.id AS execution_id FROM execution_entity e LEFT JOIN workflow_entity w ON w.id = e.\"workflowId\" WHERE e.status IN ('error','failed') AND e.\"stoppedAt\" \u003e NOW() - INTERVAL '24 hours' ORDER BY e.\"stoppedAt\" DESC NULLS LAST LIMIT 10"
+                        "rawSql": "SELECT \"stoppedAt\" AS time, COALESCE(w.name, e.\"workflowId\") AS workflow, e.status, e.id AS execution_id FROM execution_entity e LEFT JOIN workflow_entity w ON w.id = e.\"workflowId\" WHERE e.status IN ('error','failed') AND e.\"stoppedAt\" > NOW() - INTERVAL '24 hours' ORDER BY e.\"stoppedAt\" DESC NULLS LAST LIMIT 10"
                       },
                       "version": "v0"
                     },
@@ -2245,7 +2245,7 @@
                   "showLineNumbers": false,
                   "showMiniMap": false
                 },
-                "content": "### 데이터 수집 지표\n\n워크플로우 이름/ID 매핑과 item 수 telemetry가 아직 확정되지 않아 이 영역은 비워 둡니다.\n\n\u003e `workflow_entity` 매핑 후 별도 패널로 추가하세요. 추정값이나 mock 데이터는 표시하지 않습니다.",
+                "content": "### 데이터 수집 지표\n\n워크플로우 이름/ID 매핑과 item 수 telemetry가 아직 확정되지 않아 이 영역은 비워 둡니다.\n\n> `workflow_entity` 매핑 후 별도 패널로 추가하세요. 추정값이나 mock 데이터는 표시하지 않습니다.",
                 "mode": "markdown"
               }
             },
@@ -2282,7 +2282,7 @@
                   "showLineNumbers": false,
                   "showMiniMap": false
                 },
-                "content": "### 외부 API 오류\n\n현재 `execution_entity`만으로는 HTTP status·retry를 신뢰성 있게 구분할 수 없습니다.\n\n\u003e `execution_data` 또는 별도 telemetry(event_type, status_code, retry_count)가 연결되면 이 영역을 쿼리 패널로 교체하세요.",
+                "content": "### 외부 API 오류\n\n현재 `execution_entity`만으로는 HTTP status·retry를 신뢰성 있게 구분할 수 없습니다.\n\n> `execution_data` 또는 별도 telemetry(event_type, status_code, retry_count)가 연결되면 이 영역을 쿼리 패널로 교체하세요.",
                 "mode": "markdown"
               }
             },
@@ -4347,8 +4347,8 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "time() - max by (provider) (ai_subscription_last_success_timestamp_seconds)",
-                        "legendFormat": "{{provider}}"
+                        "expr": "time() - max by (provider, pool) (ai_subscription_last_success_timestamp_seconds)",
+                        "legendFormat": "{{provider}} {{pool}}"
                       },
                       "version": "v0"
                     },
@@ -4878,8 +4878,8 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max by (provider) (ai_subscription_collector_up)",
-                        "legendFormat": "{{provider}}"
+                        "expr": "max by (provider, pool) (ai_subscription_collector_up)",
+                        "legendFormat": "{{provider}} {{pool}}"
                       },
                       "version": "v0"
                     },
@@ -4891,7 +4891,7 @@
               "transformations": []
             }
           },
-          "description": "공급자별 구독 사용량 exporter의 최근 수집 성공 여부입니다. 1은 정상, 0은 실패입니다.",
+          "description": "공급자와 Antigravity 모델 풀별 최근 구독 사용량 수집 성공 여부입니다. 1은 정상, 0은 실패입니다.",
           "id": 2007,
           "links": [],
           "title": "구독 수집 상태",
@@ -4973,8 +4973,8 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max by (provider, window) (ai_subscription_quota_used_percent)",
-                        "legendFormat": "{{provider}} · {{window}}"
+                        "expr": "max by (provider, pool, window) (ai_subscription_quota_used_percent)",
+                        "legendFormat": "{{provider}} · {{pool}} · {{window}}"
                       },
                       "version": "v0"
                     },
@@ -4986,7 +4986,7 @@
               "transformations": []
             }
           },
-          "description": "Codex와 Claude의 단기·주간 구독 사용률 변화를 비교합니다.",
+          "description": "Codex, Claude, Antigravity 모델 풀의 단기·주간 구독 사용률 변화를 비교합니다.",
           "id": 2008,
           "links": [],
           "title": "구독 사용률 추이",
@@ -6475,6 +6475,481 @@
             "version": "13.2.1"
           }
         }
+      },
+      "panel-ai-subscription-13": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "max(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"gemini\",window=\"session\"})",
+                        "legendFormat": ""
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "Antigravity Gemini 모델 풀의 5시간 사용 구간 소진율입니다. agy /usage의 remaining_fraction을 사용률로 변환합니다.",
+          "id": 2013,
+          "links": [],
+          "title": "Antigravity Gemini · 5시간",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "decimals": 1,
+                  "max": 100,
+                  "min": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "light-yellow",
+                        "value": 60
+                      },
+                      {
+                        "color": "red",
+                        "value": 85
+                      },
+                      {
+                        "color": "dark-red",
+                        "value": 90
+                      }
+                    ]
+                  },
+                  "unit": "percent"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-ai-subscription-14": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "max(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"gemini\",window=\"weekly\"})",
+                        "legendFormat": ""
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "Antigravity Gemini 모델 풀의 주간 사용 구간 소진율입니다. agy /usage의 remaining_fraction을 사용률로 변환합니다.",
+          "id": 2014,
+          "links": [],
+          "title": "Antigravity Gemini · 주간",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "decimals": 1,
+                  "max": 100,
+                  "min": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "light-yellow",
+                        "value": 60
+                      },
+                      {
+                        "color": "red",
+                        "value": 85
+                      },
+                      {
+                        "color": "dark-red",
+                        "value": 90
+                      }
+                    ]
+                  },
+                  "unit": "percent"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-ai-subscription-15": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "max(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"third_party\",window=\"session\"})",
+                        "legendFormat": ""
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "Antigravity Claude·GPT 모델 풀의 5시간 사용 구간 소진율입니다. agy /usage의 remaining_fraction을 사용률로 변환합니다.",
+          "id": 2015,
+          "links": [],
+          "title": "Antigravity Claude·GPT · 5시간",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "decimals": 1,
+                  "max": 100,
+                  "min": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "light-yellow",
+                        "value": 60
+                      },
+                      {
+                        "color": "red",
+                        "value": 85
+                      },
+                      {
+                        "color": "dark-red",
+                        "value": 90
+                      }
+                    ]
+                  },
+                  "unit": "percent"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-ai-subscription-16": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "max(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"third_party\",window=\"weekly\"})",
+                        "legendFormat": ""
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "Antigravity Claude·GPT 모델 풀의 주간 사용 구간 소진율입니다. agy /usage의 remaining_fraction을 사용률로 변환합니다.",
+          "id": 2016,
+          "links": [],
+          "title": "Antigravity Claude·GPT · 주간",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "decimals": 1,
+                  "max": 100,
+                  "min": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "light-yellow",
+                        "value": 60
+                      },
+                      {
+                        "color": "red",
+                        "value": 85
+                      },
+                      {
+                        "color": "dark-red",
+                        "value": 90
+                      }
+                    ]
+                  },
+                  "unit": "percent"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-ai-subscription-17": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"antigravity\",pool=\"gemini\",window=\"session\"}) * 1000",
+                        "legendFormat": "Gemini"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"antigravity\",pool=\"third_party\",window=\"session\"}) * 1000",
+                        "legendFormat": "Claude·GPT"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "Antigravity Gemini와 Claude·GPT 모델 풀의 5시간 사용 구간 초기화 시각입니다.",
+          "id": 2017,
+          "links": [],
+          "title": "Antigravity · 다음 초기화",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "blue",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "dateTimeAsLocal"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
       }
     },
     "layout": {
@@ -6644,7 +7119,7 @@
                             ]
                           }
                         },
-                        "title": "Failures \u0026 workflows · 원인 파악"
+                        "title": "Failures & workflows · 원인 파악"
                       }
                     },
                     {
@@ -6716,7 +7191,7 @@
                                     "name": "panel-ai-subscription-2"
                                   },
                                   "height": 6,
-                                  "width": 8,
+                                  "width": 6,
                                   "x": 0,
                                   "y": 0
                                 }
@@ -6729,8 +7204,8 @@
                                     "name": "panel-ai-subscription-3"
                                   },
                                   "height": 6,
-                                  "width": 8,
-                                  "x": 8,
+                                  "width": 6,
+                                  "x": 6,
                                   "y": 0
                                 }
                               },
@@ -6742,9 +7217,61 @@
                                     "name": "panel-ai-subscription-4"
                                   },
                                   "height": 6,
+                                  "width": 6,
+                                  "x": 12,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-ai-subscription-13"
+                                  },
+                                  "height": 6,
+                                  "width": 6,
+                                  "x": 18,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-ai-subscription-14"
+                                  },
+                                  "height": 6,
+                                  "width": 8,
+                                  "x": 0,
+                                  "y": 6
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-ai-subscription-15"
+                                  },
+                                  "height": 6,
+                                  "width": 8,
+                                  "x": 8,
+                                  "y": 6
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-ai-subscription-16"
+                                  },
+                                  "height": 6,
                                   "width": 8,
                                   "x": 16,
-                                  "y": 0
+                                  "y": 6
                                 }
                               }
                             ]
@@ -6769,7 +7296,7 @@
                                     "name": "panel-ai-subscription-5"
                                   },
                                   "height": 5,
-                                  "width": 8,
+                                  "width": 6,
                                   "x": 0,
                                   "y": 0
                                 }
@@ -6782,8 +7309,21 @@
                                     "name": "panel-ai-subscription-6"
                                   },
                                   "height": 5,
-                                  "width": 8,
-                                  "x": 8,
+                                  "width": 6,
+                                  "x": 6,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-ai-subscription-17"
+                                  },
+                                  "height": 5,
+                                  "width": 6,
+                                  "x": 12,
                                   "y": 0
                                 }
                               },
@@ -6795,8 +7335,8 @@
                                     "name": "panel-ai-subscription-7"
                                   },
                                   "height": 5,
-                                  "width": 8,
-                                  "x": 16,
+                                  "width": 6,
+                                  "x": 18,
                                   "y": 0
                                 }
                               }
@@ -6916,7 +7456,7 @@
                   ]
                 }
               },
-              "title": "Codex · Claude 구독"
+              "title": "AI 구독"
             }
           },
           {
@@ -7363,6 +7903,7 @@
     },
     "preload": false,
     "tags": [
+      "antigravity",
       "claude",
       "codex",
       "hermes",

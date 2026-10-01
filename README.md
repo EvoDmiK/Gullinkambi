@@ -14,7 +14,7 @@ The project is named after Gullinkambi, the rooster from Norse mythology. In the
 
 | Dashboard | Deployment | Coverage | Data sources |
 | --- | --- | --- | --- |
-| Unified dashboard | Grafana Git Sync | n8n runs, Hermes Agent and Kanban, Orca usage, OpenViking, Codex and Claude subscription usage | PostgreSQL/TimescaleDB, Prometheus |
+| Unified dashboard | Grafana Git Sync | n8n runs, Hermes Agent and Kanban, Orca usage, OpenViking, Codex, Claude, and Antigravity subscription usage | PostgreSQL/TimescaleDB, Prometheus |
 | Infrastructure monitoring | Grafana Git Sync | NAS and Mac mini hosts, Docker containers, M4 hardware | Prometheus/cAdvisor, node exporter, macmon |
 | Mac mini system monitoring (standalone) | File provisioning | CPU, memory, disk, network, temperature, M4 power and frequency | Prometheus/node exporter |
 | OpenViking Overview | File provisioning | Exporter, container resources, token and API usage, queues, and logs | Prometheus |
@@ -49,9 +49,9 @@ The project is named after Gullinkambi, the rooster from Norse mythology. In the
 - Shows exporter health, API requests, token usage, average request duration, and recent errors.
 - Includes container CPU and memory, data size, session files, queue messages, and log metrics.
 
-#### 1-5. Codex and Claude subscription monitoring
+#### 1-5. AI subscription monitoring
 
-- Shows the current short-window and weekly subscription usage, next reset time, and collector status for Codex and Claude.
+- Shows the current short-window and weekly subscription usage, next reset time, and collector status for Codex, Claude, and Antigravity.
 - Compares quota, token, session, and model trends, and surfaces stale collection data separately from real usage changes.
 
 ### 2. Infrastructure monitoring
@@ -139,22 +139,22 @@ The referenced data sources must already be registered in Grafana.
 
 ### AI subscription monitoring collection requirements
 
-The `Codex · Claude subscription` tab in the unified dashboard expects normalized Prometheus metrics. Exporters and credentials are intentionally outside this repository.
+The `AI subscription` tab in the unified dashboard expects normalized Prometheus metrics. Exporters and credentials are intentionally outside this repository.
 
 | Metric | Required labels | Meaning |
 | --- | --- | --- |
-| `ai_subscription_quota_used_percent` | `provider`, `window` | Current quota consumption from 0 to 100 |
-| `ai_subscription_quota_reset_timestamp_seconds` | `provider`, `window` | Next reset as a Unix timestamp in seconds |
+| `ai_subscription_quota_used_percent` | `provider`, `window`, optional `pool` | Current quota consumption from 0 to 100 |
+| `ai_subscription_quota_reset_timestamp_seconds` | `provider`, `window`, optional `pool` | Next reset as a Unix timestamp in seconds |
 | `ai_subscription_tokens_total` | `provider`, `type`, `model` | Monotonic token counter |
 | `ai_subscription_sessions_total` | `provider` | Monotonic session counter |
-| `ai_subscription_collector_up` | `provider` | Last collection result: `1` for success, `0` for failure |
-| `ai_subscription_last_success_timestamp_seconds` | `provider` | Unix timestamp of the last successful collection |
+| `ai_subscription_collector_up` | `provider`, optional `pool` | Last collection result: `1` for success, `0` for failure |
+| `ai_subscription_last_success_timestamp_seconds` | `provider`, optional `pool` | Unix timestamp of the last successful collection |
 
-Use `codex` and `claude` for `provider`, and `session` and `weekly` for `window`. The deployed collector maps the Codex short and long windows returned by `account/rateLimits/read` to those labels and reads Claude Code's authenticated status-line `rate_limits.five_hour` and `rate_limits.seven_day` fields. Its source and macOS LaunchAgent installer live in `Birds-Nest/docker-compose/monitoring/ai-subscription-exporter`; Mac mini Prometheus scrapes it through `host.docker.internal:9819`, and NAS Prometheus imports the normalized metrics through federation. Keep the collector on a trusted monitoring network and never expose stored login credentials to Grafana.
+Use `codex`, `claude`, and `antigravity` for `provider`, and `session` and `weekly` for `window`. Antigravity adds `pool="gemini"` or `pool="third_party"`. The deployed collector maps Codex rate limits, Claude Code status-line limits, and the Antigravity CLI `/usage` JSON into this schema. Its source and macOS LaunchAgent installer live in `Birds-Nest/docker-compose/monitoring/ai-subscription-exporter`; Mac mini Prometheus scrapes it through `host.docker.internal:9819`, and NAS Prometheus imports the normalized metrics through federation. Keep the collector on a trusted monitoring network and never expose stored login credentials to Grafana.
 
 Claude does not include `rate_limits` in every status-line payload. The collector therefore replaces its Claude cache only when a payload contains valid limits; payloads without limits preserve the last valid snapshot. `ai_subscription_collector_up{provider="claude"}` becomes `0` only when no valid cache exists or the snapshot is older than `CLAUDE_MAX_AGE_SECONDS` (24 hours by default), avoiding transient false alerts without hiding genuinely stale data.
 
-References: [Codex app-server account endpoints](https://learn.chatgpt.com/docs/app-server), [Claude Code status-line rate limits](https://code.claude.com/docs/en/statusline#rate-limit-usage).
+References: [Codex app-server account endpoints](https://learn.chatgpt.com/docs/app-server), [Claude Code status-line rate limits](https://code.claude.com/docs/en/statusline#rate-limit-usage), [Antigravity model quotas](https://antigravity.google/docs/cli/commands/usage/), [Antigravity headless JSON](https://antigravity.google/docs/cli/headless/).
 
 ### Grafana alerting and Discord notifications
 
@@ -164,9 +164,9 @@ The AI subscription rules are:
 
 | Rule | Condition | For |
 | --- | --- | --- |
-| AI subscription collector down | Codex or Claude `ai_subscription_collector_up < 1` | 5 minutes |
+| AI subscription collector down | Codex, Claude, or an Antigravity pool has `ai_subscription_collector_up < 1` | 5 minutes |
 | Codex subscription data stale | Last successful Codex collection is more than 15 minutes old | 5 minutes |
-| AI weekly quota high | Codex or Claude weekly usage exceeds 85% | 10 minutes |
+| AI weekly quota high | Codex, Claude, or an Antigravity pool exceeds 85% weekly usage | 10 minutes |
 
 Claude intentionally has no 15-minute stale rule because its status line refreshes when Claude Code handles a message. Its collector state instead uses the last valid snapshot and the 24-hour cache limit. Discord groups alerts by `alertname`, `service`, and `severity`, waits 30 seconds before the first notification, groups updates every 5 minutes, repeats unresolved alerts every 4 hours, and sends resolved notifications.
 

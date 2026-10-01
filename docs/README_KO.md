@@ -16,7 +16,7 @@ n8n과 Hermes 에이전트의 실행 상태, Hermes Kanban 작업, OpenViking, N
 
 | 대시보드 | 배포 방식 | 주요 내용 | 데이터 소스 |
 | --- | --- | --- | --- |
-| 통합 대시보드 | Grafana Git Sync | n8n 실행, Hermes Agent·Kanban, Orca 사용량, OpenViking, Codex·Claude 구독 사용량 | PostgreSQL/TimescaleDB, Prometheus |
+| 통합 대시보드 | Grafana Git Sync | n8n 실행, Hermes Agent·Kanban, Orca 사용량, OpenViking, Codex·Claude·Antigravity 구독 사용량 | PostgreSQL/TimescaleDB, Prometheus |
 | 인프라 모니터링 | Grafana Git Sync | NAS·Mac mini 시스템과 Docker 컨테이너, M4 하드웨어 | Prometheus/cAdvisor, node exporter, macmon |
 | Mac mini 시스템 모니터링 (독립 뷰) | File provisioning | CPU, 메모리, 디스크, 네트워크, 온도, M4 전력·주파수 | Prometheus/node exporter |
 | OpenViking Overview | File provisioning | exporter, 컨테이너 자원, 토큰·API 사용량, 큐와 로그 | Prometheus |
@@ -52,9 +52,9 @@ n8n과 Hermes 에이전트의 실행 상태, Hermes Kanban 작업, OpenViking, N
 - Exporter 상태와 API 요청 수, 토큰 사용량, 평균 요청 시간 및 최근 오류를 확인할 수 있습니다. 
 - 컨테이너 CPU·메모리, 데이터 크기, 세션 파일, 큐 메시지와 로그 지표도 함께 제공하여 OpenViking 서비스와 실행 환경을 통합적으로 관찰할 수 있습니다.
 
-#### 1-5. Codex·Claude 구독 모니터링 대시보드
+#### 1-5. AI 구독 모니터링 대시보드
 
-- Codex와 Claude 구독의 현재 단기·주간 사용률, 다음 초기화 시각, 수집기 상태를 한눈에 보여 줍니다.
+- Codex, Claude, Antigravity 구독의 현재 단기·주간 사용률, 다음 초기화 시각, 수집기 상태를 한눈에 보여 줍니다.
 - 구독 사용률, 토큰, 세션, 모델별 추이를 비교하고 실제 사용량 변화와 수집 지연을 분리해서 확인할 수 있습니다.
 
 ### 2. 인프라 모니터링 대시보드
@@ -142,22 +142,22 @@ provider 설정은 각 하위 디렉터리만 읽으며 60초마다 변경을 �
 
 ### AI 구독 모니터링 수집 조건
 
-통합 대시보드의 `Codex · Claude 구독` 탭은 아래와 같이 정규화된 Prometheus 메트릭을 사용합니다. exporter와 자격 증명은 이 저장소에 포함하지 않습니다.
+통합 대시보드의 `AI 구독` 탭은 아래와 같이 정규화된 Prometheus 메트릭을 사용합니다. exporter와 자격 증명은 이 저장소에 포함하지 않습니다.
 
 | 메트릭 | 필수 레이블 | 의미 |
 | --- | --- | --- |
-| `ai_subscription_quota_used_percent` | `provider`, `window` | 0~100 범위의 현재 구독 사용률 |
-| `ai_subscription_quota_reset_timestamp_seconds` | `provider`, `window` | 다음 초기화 시각의 Unix timestamp(초) |
+| `ai_subscription_quota_used_percent` | `provider`, `window`, 선택 `pool` | 0~100 범위의 현재 구독 사용률 |
+| `ai_subscription_quota_reset_timestamp_seconds` | `provider`, `window`, 선택 `pool` | 다음 초기화 시각의 Unix timestamp(초) |
 | `ai_subscription_tokens_total` | `provider`, `type`, `model` | 단조 증가하는 토큰 누적값 |
 | `ai_subscription_sessions_total` | `provider` | 단조 증가하는 세션 누적값 |
-| `ai_subscription_collector_up` | `provider` | 최근 수집 성공은 `1`, 실패는 `0` |
-| `ai_subscription_last_success_timestamp_seconds` | `provider` | 마지막 성공 수집 시각의 Unix timestamp(초) |
+| `ai_subscription_collector_up` | `provider`, 선택 `pool` | 최근 수집 성공은 `1`, 실패는 `0` |
+| `ai_subscription_last_success_timestamp_seconds` | `provider`, 선택 `pool` | 마지막 성공 수집 시각의 Unix timestamp(초) |
 
-`provider`는 `codex`와 `claude`, `window`는 `session`과 `weekly`를 사용합니다. 배포 수집기는 Codex의 `account/rateLimits/read`가 반환하는 단기·장기 구간을 이 레이블로 변환하고, Claude Code의 인증된 status line 입력에 포함되는 `rate_limits.five_hour`·`rate_limits.seven_day`를 읽습니다. 수집기와 macOS LaunchAgent installer는 `Birds-Nest/docker-compose/monitoring/ai-subscription-exporter`에 있으며, Mac mini Prometheus가 `host.docker.internal:9819`를 scrape하고 NAS Prometheus가 federation으로 정규화 지표를 가져옵니다. 수집기는 신뢰할 수 있는 모니터링 네트워크에서만 사용하고 저장된 로그인 자격 증명을 Grafana에 노출하지 마세요.
+`provider`는 `codex`, `claude`, `antigravity`, `window`는 `session`과 `weekly`를 사용합니다. Antigravity는 `pool="gemini"` 또는 `pool="third_party"`를 추가합니다. 배포 수집기는 Codex rate limit, Claude Code status line 제한, Antigravity CLI `/usage` JSON을 이 스키마로 정규화합니다. 수집기와 macOS LaunchAgent installer는 `Birds-Nest/docker-compose/monitoring/ai-subscription-exporter`에 있으며, Mac mini Prometheus가 `host.docker.internal:9819`를 scrape하고 NAS Prometheus가 federation으로 정규화 지표를 가져옵니다. 수집기는 신뢰할 수 있는 모니터링 네트워크에서만 사용하고 저장된 로그인 자격 증명을 Grafana에 노출하지 마세요.
 
 Claude는 모든 status line 입력에 `rate_limits`를 포함하지 않습니다. 따라서 수집기는 유효한 제한 정보가 있을 때만 Claude 캐시를 교체하고, 제한 정보가 없는 입력에서는 마지막 정상 스냅샷을 보존합니다. 유효한 캐시가 없거나 `CLAUDE_MAX_AGE_SECONDS`의 기본값인 24시간을 초과했을 때만 `ai_subscription_collector_up{provider="claude"}`가 `0`이 되므로, 일시적인 빈 입력으로 인한 오탐을 막으면서 실제 데이터 노후화는 계속 감지합니다.
 
-참고: [Codex app-server 계정 endpoint](https://learn.chatgpt.com/docs/app-server), [Claude Code status line rate limit](https://code.claude.com/docs/en/statusline#rate-limit-usage).
+참고: [Codex app-server 계정 endpoint](https://learn.chatgpt.com/docs/app-server), [Claude Code status line rate limit](https://code.claude.com/docs/en/statusline#rate-limit-usage), [Antigravity 모델 quota](https://antigravity.google/docs/cli/commands/usage/), [Antigravity headless JSON](https://antigravity.google/docs/cli/headless/).
 
 ### Grafana 알람과 Discord 알림
 
@@ -167,9 +167,9 @@ AI 구독 관련 규칙은 다음과 같습니다.
 
 | 규칙 | 조건 | 지속 시간 |
 | --- | --- | --- |
-| AI subscription collector down | Codex 또는 Claude의 `ai_subscription_collector_up < 1` | 5분 |
+| AI subscription collector down | Codex, Claude 또는 Antigravity pool의 `ai_subscription_collector_up < 1` | 5분 |
 | Codex subscription data stale | Codex 마지막 성공 수집이 15분 이상 지연 | 5분 |
-| AI weekly quota high | Codex 또는 Claude 주간 사용률 85% 초과 | 10분 |
+| AI weekly quota high | Codex, Claude 또는 Antigravity pool의 주간 사용률 85% 초과 | 10분 |
 
 Claude status line은 Claude Code가 메시지를 처리할 때 갱신되므로 Claude에는 15분 stale 규칙을 적용하지 않습니다. 대신 마지막 유효 스냅샷과 24시간 캐시 만료로 collector 상태를 판단합니다. Discord는 `alertname`, `service`, `severity`로 알람을 묶고 최초 알림은 30초 대기하며, 그룹 갱신은 5분, 미복구 반복 알림은 4시간 간격으로 전송합니다. resolved 알림도 활성화되어 있습니다.
 
