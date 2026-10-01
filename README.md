@@ -152,6 +152,8 @@ The `Codex · Claude subscription` tab in the unified dashboard expects normaliz
 
 Use `codex` and `claude` for `provider`, and `session` and `weekly` for `window`. The deployed collector maps the Codex short and long windows returned by `account/rateLimits/read` to those labels and reads Claude Code's authenticated status-line `rate_limits.five_hour` and `rate_limits.seven_day` fields. Its source and macOS LaunchAgent installer live in `Birds-Nest/docker-compose/monitoring/ai-subscription-exporter`; Mac mini Prometheus scrapes it through `host.docker.internal:9819`, and NAS Prometheus imports the normalized metrics through federation. Keep the collector on a trusted monitoring network and never expose stored login credentials to Grafana.
 
+Claude does not include `rate_limits` in every status-line payload. The collector therefore replaces its Claude cache only when a payload contains valid limits; payloads without limits preserve the last valid snapshot. `ai_subscription_collector_up{provider="claude"}` becomes `0` only when no valid cache exists or the snapshot is older than `CLAUDE_MAX_AGE_SECONDS` (24 hours by default), avoiding transient false alerts without hiding genuinely stale data.
+
 References: [Codex app-server account endpoints](https://learn.chatgpt.com/docs/app-server), [Claude Code status-line rate limits](https://code.claude.com/docs/en/statusline#rate-limit-usage).
 
 ### Infrastructure monitoring collection requirements

@@ -155,6 +155,8 @@ provider 설정은 각 하위 디렉터리만 읽으며 60초마다 변경을 �
 
 `provider`는 `codex`와 `claude`, `window`는 `session`과 `weekly`를 사용합니다. 배포 수집기는 Codex의 `account/rateLimits/read`가 반환하는 단기·장기 구간을 이 레이블로 변환하고, Claude Code의 인증된 status line 입력에 포함되는 `rate_limits.five_hour`·`rate_limits.seven_day`를 읽습니다. 수집기와 macOS LaunchAgent installer는 `Birds-Nest/docker-compose/monitoring/ai-subscription-exporter`에 있으며, Mac mini Prometheus가 `host.docker.internal:9819`를 scrape하고 NAS Prometheus가 federation으로 정규화 지표를 가져옵니다. 수집기는 신뢰할 수 있는 모니터링 네트워크에서만 사용하고 저장된 로그인 자격 증명을 Grafana에 노출하지 마세요.
 
+Claude는 모든 status line 입력에 `rate_limits`를 포함하지 않습니다. 따라서 수집기는 유효한 제한 정보가 있을 때만 Claude 캐시를 교체하고, 제한 정보가 없는 입력에서는 마지막 정상 스냅샷을 보존합니다. 유효한 캐시가 없거나 `CLAUDE_MAX_AGE_SECONDS`의 기본값인 24시간을 초과했을 때만 `ai_subscription_collector_up{provider="claude"}`가 `0`이 되므로, 일시적인 빈 입력으로 인한 오탐을 막으면서 실제 데이터 노후화는 계속 감지합니다.
+
 참고: [Codex app-server 계정 endpoint](https://learn.chatgpt.com/docs/app-server), [Claude Code status line rate limit](https://code.claude.com/docs/en/statusline#rate-limit-usage).
 
 ### 인프라 모니터링 수집 조건
