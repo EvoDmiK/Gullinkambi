@@ -1,0 +1,141 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: Gullinkambi AI subscription
+    folder: Gullinkambi Alerts
+    interval: 1m
+    rules:
+      - uid: gk_ai_collector_down
+        title: AI subscription collector down
+        condition: C
+        dashboardUid: dafsnnz67rw6ioc
+        panelId: 2007
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          summary: '{{ $labels.provider }} 구독 사용량 수집에 실패했습니다.'
+          description: Mac mini exporter와 Codex·Claude 로그인 상태를 확인하세요.
+        labels: {severity: warning, service: ai-subscription, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 900, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: 'max by (provider) (ai_subscription_collector_up)'
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{provider}}'
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: &reduce_last
+              conditions: []
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model: &threshold_lt_one
+              conditions:
+                - evaluator: {params: [1], type: lt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+
+      - uid: gk_ai_collector_stale
+        title: Codex subscription data stale
+        condition: C
+        dashboardUid: dafsnnz67rw6ioc
+        panelId: 2012
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          summary: Codex 구독 데이터가 15분 이상 갱신되지 않았습니다.
+          description: Mac mini exporter, Prometheus scrape, NAS federation을 확인하세요.
+        labels: {severity: warning, service: ai-subscription, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 1800, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: 'time() - max(ai_subscription_last_success_timestamp_seconds{provider="codex"})'
+              instant: true
+              intervalMs: 1000
+              legendFormat: codex
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              <<: *threshold_lt_one
+              conditions:
+                - evaluator: {params: [900], type: gt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query
+
+      - uid: gk_ai_weekly_quota
+        title: AI weekly quota high
+        condition: C
+        dashboardUid: dafsnnz67rw6ioc
+        panelId: 2008
+        noDataState: OK
+        execErrState: Alerting
+        for: 10m
+        annotations:
+          summary: '{{ $labels.provider }} 주간 구독 사용률이 85%를 초과했습니다.'
+          description: 다음 초기화 시각과 남은 작업량을 확인하세요.
+        labels: {severity: warning, service: ai-subscription, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 1800, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: 'max by (provider) (ai_subscription_quota_used_percent{window="weekly"})'
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{provider}}'
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              <<: *threshold_lt_one
+              conditions:
+                - evaluator: {params: [85], type: gt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query

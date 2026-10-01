@@ -1,0 +1,287 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: Gullinkambi workflow services
+    folder: Gullinkambi Alerts
+    interval: 1m
+    rules:
+      - uid: gk_n8n_failures
+        title: n8n repeated failures
+        condition: C
+        dashboardUid: dafsnnz67rw6ioc
+        panelId: 32
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          summary: n8n에서 최근 15분 동안 실패가 3건 이상 발생했습니다.
+          description: 최근 실패 실행과 워크플로우별 성공률을 확인하세요.
+        labels: {severity: critical, service: n8n, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 900, to: 0}
+            datasourceUid: cfrgthsaa3ev4b
+            model:
+              datasource: {type: grafana-postgresql-datasource, uid: cfrgthsaa3ev4b}
+              editorMode: code
+              format: table
+              intervalMs: 1000
+              maxDataPoints: 43200
+              rawQuery: true
+              rawSql: >-
+                SELECT count(*)::double precision AS value
+                FROM execution_entity
+                WHERE status IN ('error', 'failed')
+                  AND "stoppedAt" > now() - interval '15 minutes';
+              refId: A
+              sql:
+                columns: [{parameters: [], type: function}]
+                groupBy: [{property: {type: string}, type: groupBy}]
+                limit: 50
+          - refId: B
+            datasourceUid: __expr__
+            model: &reduce_last
+              conditions: []
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model: &threshold_gt_zero
+              conditions:
+                - evaluator: {params: [2], type: gt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+
+      - uid: gk_n8n_stuck
+        title: n8n execution stuck
+        condition: C
+        dashboardUid: dafsnnz67rw6ioc
+        panelId: 31
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 1m
+        annotations:
+          summary: n8n 실행이 30분 이상 running 상태입니다.
+          description: 장기 실행 중인 execution과 해당 워크플로우를 확인하세요.
+        labels: {severity: critical, service: n8n, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 3600, to: 0}
+            datasourceUid: cfrgthsaa3ev4b
+            model:
+              datasource: {type: grafana-postgresql-datasource, uid: cfrgthsaa3ev4b}
+              editorMode: code
+              format: table
+              intervalMs: 1000
+              maxDataPoints: 43200
+              rawQuery: true
+              rawSql: >-
+                SELECT count(*)::double precision AS value
+                FROM execution_entity
+                WHERE status = 'running'
+                  AND "startedAt" < now() - interval '30 minutes';
+              refId: A
+              sql:
+                columns: [{parameters: [], type: function}]
+                groupBy: [{property: {type: string}, type: groupBy}]
+                limit: 50
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              <<: *threshold_gt_zero
+              conditions:
+                - evaluator: {params: [0], type: gt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query
+
+      - uid: gk_hermes_no_heartbeat
+        title: Hermes task heartbeat missing
+        condition: C
+        dashboardUid: hermes-kanban-ops
+        panelId: 3
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 2m
+        annotations:
+          summary: Hermes 실행 작업의 heartbeat가 10분 이상 없습니다.
+          description: 응답 없는 실행 작업과 최근 실행 결과를 확인하세요.
+        labels: {severity: critical, service: hermes, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 3600, to: 0}
+            datasourceUid: ffskrzljzwr28b
+            model:
+              datasource: {type: grafana-postgresql-datasource, uid: ffskrzljzwr28b}
+              editorMode: code
+              format: table
+              intervalMs: 1000
+              maxDataPoints: 43200
+              rawQuery: true
+              rawSql: >-
+                SELECT count(*)::double precision AS value
+                FROM observability.hermes_kanban_tasks
+                WHERE status = 'running'
+                  AND COALESCE(started_at, created_at) > now() - interval '24 hours'
+                  AND (last_heartbeat_at IS NULL
+                       OR last_heartbeat_at < now() - interval '10 minutes');
+              refId: A
+              sql:
+                columns: [{parameters: [], type: function}]
+                groupBy: [{property: {type: string}, type: groupBy}]
+                limit: 50
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              <<: *threshold_gt_zero
+              conditions:
+                - evaluator: {params: [0], type: gt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query
+
+      - uid: gk_orca_aggregation_lag
+        title: Orca aggregation delayed
+        condition: C
+        dashboardUid: dafsnnz67rw6ioc
+        panelId: 43
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 15m
+        annotations:
+          summary: Orca 일일 사용량 집계가 2일 이상 지연되었습니다.
+          description: Orca telemetry 수집과 일일 집계 작업을 확인하세요.
+        labels: {severity: warning, service: orca, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 3600, to: 0}
+            datasourceUid: ffskrzljzwr28b
+            model:
+              datasource: {type: grafana-postgresql-datasource, uid: ffskrzljzwr28b}
+              editorMode: code
+              format: table
+              intervalMs: 1000
+              maxDataPoints: 43200
+              rawQuery: true
+              rawSql: >-
+                SELECT COALESCE(current_date - max(usage_date), 999)::double precision AS value
+                FROM observability.orca_usage_daily;
+              refId: A
+              sql:
+                columns: [{parameters: [], type: function}]
+                groupBy: [{property: {type: string}, type: groupBy}]
+                limit: 50
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              <<: *threshold_gt_zero
+              conditions:
+                - evaluator: {params: [1], type: gt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query
+
+  - orgId: 1
+    name: Gullinkambi OpenViking
+    folder: Gullinkambi Alerts
+    interval: 1m
+    rules:
+      - uid: gk_openviking_down
+        title: OpenViking exporter down
+        condition: C
+        dashboardUid: dafsnnz67rw6ioc
+        panelId: 1001
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 3m
+        annotations:
+          summary: OpenViking exporter가 응답하지 않습니다.
+          description: OpenViking 서비스와 exporter 컨테이너를 확인하세요.
+        labels: {severity: critical, service: openviking, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: openviking_exporter_up
+              instant: true
+              intervalMs: 1000
+              legendFormat: exporter
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              <<: *threshold_gt_zero
+              conditions:
+                - evaluator: {params: [1], type: lt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query
+
+      - uid: gk_openviking_errors
+        title: OpenViking errors elevated
+        condition: C
+        dashboardUid: dafsnnz67rw6ioc
+        panelId: 1005
+        noDataState: OK
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          summary: OpenViking의 최근 1시간 오류가 3건 이상입니다.
+          description: 최근 오류 로그와 요청 지연을 확인하세요.
+        labels: {severity: warning, service: openviking, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 3600, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: openviking_request_errors_last_hour
+              instant: true
+              intervalMs: 1000
+              legendFormat: errors
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model: *threshold_gt_zero

@@ -1,0 +1,342 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: Gullinkambi infrastructure availability
+    folder: Gullinkambi Alerts
+    interval: 1m
+    rules:
+      - uid: gk_nas_node_down
+        title: NAS node exporter down
+        condition: C
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 3m
+        annotations:
+          summary: NAS 시스템 메트릭 수집이 중단되었습니다.
+          description: node_exporter가 3분 이상 응답하지 않습니다.
+        labels:
+          severity: critical
+          service: nas
+          source: gullinkambi
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: 'up{job="node_exporter"}'
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{instance}}'
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: &reduce_last
+              conditions: []
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model: &threshold_lt_one
+              conditions:
+                - evaluator: {params: [1], type: lt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+
+      - uid: gk_nas_cadvisor_down
+        title: NAS cAdvisor down
+        condition: C
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 3m
+        annotations:
+          summary: NAS 컨테이너 메트릭 수집이 중단되었습니다.
+          description: cAdvisor가 3분 이상 응답하지 않습니다.
+        labels: {severity: critical, service: nas-containers, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: 'up{job="cadvisor"}'
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{instance}}'
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model: *threshold_lt_one
+
+      - uid: gk_postgres_exporter_down
+        title: PostgreSQL exporter down
+        condition: C
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 3m
+        annotations:
+          summary: PostgreSQL 메트릭 수집이 중단되었습니다.
+          description: postgres_exporter가 3분 이상 응답하지 않습니다.
+        labels: {severity: critical, service: postgres, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: 'up{job="postgres_exporter"}'
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{instance}}'
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model: *threshold_lt_one
+
+      - uid: gk_mac_federation_down
+        title: Mac mini federation down
+        condition: C
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 3m
+        annotations:
+          summary: NAS에서 Mac mini Prometheus를 가져오지 못합니다.
+          description: macmini_container_federate가 3분 이상 응답하지 않습니다.
+        labels: {severity: critical, service: macmini-prometheus, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: 'up{job="macmini_container_federate"}'
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{instance}}'
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model: *threshold_lt_one
+
+      - uid: gk_mac_node_down
+        title: Mac mini node exporter down
+        condition: C
+        noDataState: OK
+        execErrState: Alerting
+        for: 3m
+        annotations:
+          summary: Mac mini 시스템 메트릭 수집이 중단되었습니다.
+          description: federation은 연결됐지만 macmini_node 대상이 3분 이상 응답하지 않습니다.
+        labels: {severity: critical, service: macmini, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: 'up{job="macmini_node"}'
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{instance}}'
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model: *threshold_lt_one
+
+      - uid: gk_mac_soc_down
+        title: Mac mini M4 exporter down
+        condition: C
+        noDataState: OK
+        execErrState: Alerting
+        for: 3m
+        annotations:
+          summary: Mac mini M4 하드웨어 메트릭 수집이 중단되었습니다.
+          description: federation은 연결됐지만 macmini_soc 대상이 3분 이상 응답하지 않습니다.
+        labels: {severity: warning, service: macmini-soc, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: 'up{job="macmini_soc"}'
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{instance}}'
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model: *threshold_lt_one
+
+  - orgId: 1
+    name: Gullinkambi infrastructure capacity
+    folder: Gullinkambi Alerts
+    interval: 1m
+    rules:
+      - uid: gk_nas_disk_critical
+        title: NAS disk usage critical
+        condition: C
+        dashboardUid: dbft4cr2a6z7r4b
+        panelId: 35
+        noDataState: OK
+        execErrState: Alerting
+        for: 10m
+        annotations:
+          summary: NAS 파일시스템 사용률이 92%를 초과했습니다.
+          description: '{{ $labels.mountpoint }} 파일시스템의 여유 공간을 확인하세요.'
+        labels: {severity: critical, service: nas-storage, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: '100 * (1 - node_filesystem_avail_bytes{job="node_exporter",mountpoint=~"/volume[0-9]+"} / node_filesystem_size_bytes{job="node_exporter",mountpoint=~"/volume[0-9]+"})'
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{mountpoint}}'
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              <<: *threshold_lt_one
+              conditions:
+                - evaluator: {params: [92], type: gt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query
+
+      - uid: gk_mac_disk_critical
+        title: Mac mini disk usage critical
+        condition: C
+        dashboardUid: dbft4cr2a6z7r4b
+        panelId: 45
+        noDataState: OK
+        execErrState: Alerting
+        for: 10m
+        annotations:
+          summary: Mac mini 파일시스템 사용률이 92%를 초과했습니다.
+          description: '{{ $labels.mountpoint }} 파일시스템의 여유 공간을 확인하세요.'
+        labels: {severity: critical, service: macmini-storage, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: '100 * (1 - node_filesystem_avail_bytes{job="macmini_node",mountpoint=~"/opt/orbstack-guest/data|/mnt/mac"} / node_filesystem_size_bytes{job="macmini_node",mountpoint=~"/opt/orbstack-guest/data|/mnt/mac"})'
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{mountpoint}}'
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              <<: *threshold_lt_one
+              conditions:
+                - evaluator: {params: [92], type: gt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query
+
+      - uid: gk_mac_temp_critical
+        title: Mac mini temperature critical
+        condition: C
+        dashboardUid: dbft4cr2a6z7r4b
+        panelId: 47
+        noDataState: OK
+        execErrState: Alerting
+        for: 3m
+        annotations:
+          summary: Mac mini CPU 또는 GPU 온도가 95°C를 초과했습니다.
+          description: 냉각 상태와 고부하 프로세스를 확인하세요.
+        labels: {severity: critical, service: macmini-thermal, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: 'max({__name__=~"macmon_(cpu|gpu)_temp_celsius",job="macmini_soc"})'
+              instant: true
+              intervalMs: 1000
+              legendFormat: temperature
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              <<: *threshold_lt_one
+              conditions:
+                - evaluator: {params: [95], type: gt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query
