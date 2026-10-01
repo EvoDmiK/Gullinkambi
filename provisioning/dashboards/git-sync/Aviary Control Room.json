@@ -4087,96 +4087,6 @@
           }
         }
       },
-      "panel-ai-subscription-1": {
-        "kind": "Panel",
-        "spec": {
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "PBFA97CFB590B2093"
-                      },
-                      "group": "prometheus",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "expr": "max(ai_subscription_quota_used_percent{provider=\"codex\",window=\"session\"})",
-                        "legendFormat": ""
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "A"
-                  }
-                }
-              ],
-              "queryOptions": {},
-              "transformations": []
-            }
-          },
-          "description": "Codex 구독의 단기 사용 구간 소진율입니다. codex app-server의 primary rate-limit 구간을 exporter가 session으로 정규화합니다.",
-          "id": 2001,
-          "links": [],
-          "title": "Codex · 단기 사용률",
-          "vizConfig": {
-            "group": "stat",
-            "kind": "VizConfig",
-            "spec": {
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "decimals": 1,
-                  "max": 100,
-                  "min": 0,
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green",
-                        "value": 0
-                      },
-                      {
-                        "color": "orange",
-                        "value": 70
-                      },
-                      {
-                        "color": "red",
-                        "value": 90
-                      }
-                    ]
-                  },
-                  "unit": "percent"
-                },
-                "overrides": []
-              },
-              "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "percentChangeColorMode": "standard",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "textMode": "auto",
-                "wideLayout": true
-              }
-            },
-            "version": "13.2.1"
-          }
-        }
-      },
       "panel-ai-subscription-10": {
         "kind": "Panel",
         "spec": {
@@ -6791,24 +6701,11 @@
                                 "spec": {
                                   "element": {
                                     "kind": "ElementReference",
-                                    "name": "panel-ai-subscription-1"
-                                  },
-                                  "height": 5,
-                                  "width": 6,
-                                  "x": 0,
-                                  "y": 0
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
                                     "name": "panel-ai-subscription-2"
                                   },
-                                  "height": 5,
-                                  "width": 6,
-                                  "x": 6,
+                                  "height": 6,
+                                  "width": 8,
+                                  "x": 0,
                                   "y": 0
                                 }
                               },
@@ -6819,9 +6716,9 @@
                                     "kind": "ElementReference",
                                     "name": "panel-ai-subscription-3"
                                   },
-                                  "height": 5,
-                                  "width": 6,
-                                  "x": 12,
+                                  "height": 6,
+                                  "width": 8,
+                                  "x": 8,
                                   "y": 0
                                 }
                               },
@@ -6832,9 +6729,9 @@
                                     "kind": "ElementReference",
                                     "name": "panel-ai-subscription-4"
                                   },
-                                  "height": 5,
-                                  "width": 6,
-                                  "x": 18,
+                                  "height": 6,
+                                  "width": 8,
+                                  "x": 16,
                                   "y": 0
                                 }
                               }
