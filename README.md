@@ -14,7 +14,7 @@ The project is named after Gullinkambi, the rooster from Norse mythology. In the
 
 | Dashboard | Deployment | Coverage | Data sources |
 | --- | --- | --- | --- |
-| Unified dashboard | Grafana Git Sync | n8n runs, Hermes Agent and Kanban, Orca usage, OpenViking | PostgreSQL/TimescaleDB, Prometheus |
+| Unified dashboard | Grafana Git Sync | n8n runs, Hermes Agent and Kanban, Orca usage, OpenViking, Codex and Claude subscription usage | PostgreSQL/TimescaleDB, Prometheus |
 | Infrastructure monitoring | Grafana Git Sync | NAS and Mac mini hosts, Docker containers, M4 hardware | Prometheus/cAdvisor, node exporter, macmon |
 | Mac mini system monitoring (standalone) | File provisioning | CPU, memory, disk, network, temperature, M4 power and frequency | Prometheus/node exporter |
 | OpenViking Overview | File provisioning | Exporter, container resources, token and API usage, queues, and logs | Prometheus |
@@ -48,6 +48,11 @@ The project is named after Gullinkambi, the rooster from Norse mythology. In the
 
 - Shows exporter health, API requests, token usage, average request duration, and recent errors.
 - Includes container CPU and memory, data size, session files, queue messages, and log metrics.
+
+#### 1-5. Codex and Claude subscription monitoring
+
+- Shows the current short-window and weekly subscription usage, next reset time, and collector status for Codex and Claude.
+- Compares quota, token, session, and model trends, and surfaces stale collection data separately from real usage changes.
 
 ### 2. Infrastructure monitoring
 
@@ -131,6 +136,23 @@ The referenced data sources must already be registered in Grafana.
 - The standalone Mac mini dashboard uses the `Prometheus` data source variable and node exporter metrics from the `macmini_node` job.
 - OpenViking uses the data source named `Prometheus` together with OpenViking exporter and container metrics.
 - Infrastructure monitoring uses cAdvisor metrics from both hosts, the `node_exporter` and `macmini_node` node exporter jobs, and the `macmini_soc` macmon job.
+
+### AI subscription monitoring collection requirements
+
+The `Codex · Claude subscription` tab in the unified dashboard expects normalized Prometheus metrics. Exporters and credentials are intentionally outside this repository.
+
+| Metric | Required labels | Meaning |
+| --- | --- | --- |
+| `ai_subscription_quota_used_percent` | `provider`, `window` | Current quota consumption from 0 to 100 |
+| `ai_subscription_quota_reset_timestamp_seconds` | `provider`, `window` | Next reset as a Unix timestamp in seconds |
+| `ai_subscription_tokens_total` | `provider`, `type`, `model` | Monotonic token counter |
+| `ai_subscription_sessions_total` | `provider` | Monotonic session counter |
+| `ai_subscription_collector_up` | `provider` | Last collection result: `1` for success, `0` for failure |
+| `ai_subscription_last_success_timestamp_seconds` | `provider` | Unix timestamp of the last successful collection |
+
+Use `codex` and `claude` for `provider`, and `session` and `weekly` for `window`. The deployed collector maps the Codex short and long windows returned by `account/rateLimits/read` to those labels and reads Claude Code's authenticated status-line `rate_limits.five_hour` and `rate_limits.seven_day` fields. Its source and macOS LaunchAgent installer live in `Birds-Nest/docker-compose/monitoring/ai-subscription-exporter`; Mac mini Prometheus scrapes it through `host.docker.internal:9819`, and NAS Prometheus imports the normalized metrics through federation. Keep the collector on a trusted monitoring network and never expose stored login credentials to Grafana.
+
+References: [Codex app-server account endpoints](https://learn.chatgpt.com/docs/app-server), [Claude Code status-line rate limits](https://code.claude.com/docs/en/statusline#rate-limit-usage).
 
 ### Infrastructure monitoring collection requirements
 
