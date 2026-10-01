@@ -156,6 +156,27 @@ Claude does not include `rate_limits` in every status-line payload. The collecto
 
 References: [Codex app-server account endpoints](https://learn.chatgpt.com/docs/app-server), [Claude Code status-line rate limits](https://code.claude.com/docs/en/statusline#rate-limit-usage).
 
+### Grafana alerting and Discord notifications
+
+Files under `provisioning/alerting/` provision 18 Grafana-managed rules for infrastructure availability, disk and temperature capacity, n8n, Hermes, Orca, OpenViking, and AI subscription monitoring. `notifications.yml` routes firing and resolved notifications to the `Gullinkambi Discord` contact point. The webhook is supplied only through `GF_DISCORD_WEBHOOK_URL`; never commit its value.
+
+The AI subscription rules are:
+
+| Rule | Condition | For |
+| --- | --- | --- |
+| AI subscription collector down | Codex or Claude `ai_subscription_collector_up < 1` | 5 minutes |
+| Codex subscription data stale | Last successful Codex collection is more than 15 minutes old | 5 minutes |
+| AI weekly quota high | Codex or Claude weekly usage exceeds 85% | 10 minutes |
+
+Claude intentionally has no 15-minute stale rule because its status line refreshes when Claude Code handles a message. Its collector state instead uses the last valid snapshot and the 24-hour cache limit. Discord groups alerts by `alertname`, `service`, and `severity`, waits 30 seconds before the first notification, groups updates every 5 minutes, repeats unresolved alerts every 4 hours, and sends resolved notifications.
+
+Set Grafana's canonical public URL so notification `Source` and `Silence` links never point to `localhost`:
+
+```dotenv
+GF_SERVER_DOMAIN=monitoring.dove-nest.com
+GF_SERVER_ROOT_URL=https://monitoring.dove-nest.com/
+```
+
 ### Infrastructure monitoring collection requirements
 
 | Target | Prometheus job | Required metrics |

@@ -159,6 +159,27 @@ Claude는 모든 status line 입력에 `rate_limits`를 포함하지 않습니�
 
 참고: [Codex app-server 계정 endpoint](https://learn.chatgpt.com/docs/app-server), [Claude Code status line rate limit](https://code.claude.com/docs/en/statusline#rate-limit-usage).
 
+### Grafana 알람과 Discord 알림
+
+`provisioning/alerting/`의 파일은 인프라 가용성, 디스크·온도, n8n, Hermes, Orca, OpenViking, AI 구독 상태를 감시하는 Grafana-managed alert 18개를 provisioning합니다. `notifications.yml`은 firing과 resolved 알림을 `Gullinkambi Discord` contact point로 전달합니다. Webhook 실값은 `GF_DISCORD_WEBHOOK_URL` 환경변수로만 주입하고 저장소에 커밋하지 않습니다.
+
+AI 구독 관련 규칙은 다음과 같습니다.
+
+| 규칙 | 조건 | 지속 시간 |
+| --- | --- | --- |
+| AI subscription collector down | Codex 또는 Claude의 `ai_subscription_collector_up < 1` | 5분 |
+| Codex subscription data stale | Codex 마지막 성공 수집이 15분 이상 지연 | 5분 |
+| AI weekly quota high | Codex 또는 Claude 주간 사용률 85% 초과 | 10분 |
+
+Claude status line은 Claude Code가 메시지를 처리할 때 갱신되므로 Claude에는 15분 stale 규칙을 적용하지 않습니다. 대신 마지막 유효 스냅샷과 24시간 캐시 만료로 collector 상태를 판단합니다. Discord는 `alertname`, `service`, `severity`로 알람을 묶고 최초 알림은 30초 대기하며, 그룹 갱신은 5분, 미복구 반복 알림은 4시간 간격으로 전송합니다. resolved 알림도 활성화되어 있습니다.
+
+Discord 알림의 `Source`와 `Silence` 링크가 `localhost`를 가리키지 않도록 Grafana의 외부 기준 URL을 설정합니다.
+
+```dotenv
+GF_SERVER_DOMAIN=monitoring.dove-nest.com
+GF_SERVER_ROOT_URL=https://monitoring.dove-nest.com/
+```
+
 ### 인프라 모니터링 수집 조건
 
 | 대상 | Prometheus job | 필요한 메트릭 |
