@@ -6708,6 +6708,33 @@
                     {
                       "kind": "RowsLayoutRow",
                       "spec": {
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-ai-subscription-8"
+                                  },
+                                  "height": 8,
+                                  "width": 23,
+                                  "x": 0,
+                                  "y": 0
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "title": "사용 추이"
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
                         "collapse": true,
                         "layout": {
                           "kind": "GridLayout",
@@ -6756,33 +6783,6 @@
                           }
                         },
                         "title": "초기화 및 수집 상태"
-                      }
-                    },
-                    {
-                      "kind": "RowsLayoutRow",
-                      "spec": {
-                        "collapse": true,
-                        "layout": {
-                          "kind": "GridLayout",
-                          "spec": {
-                            "items": [
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-ai-subscription-8"
-                                  },
-                                  "height": 8,
-                                  "width": 23,
-                                  "x": 0,
-                                  "y": 0
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        "title": "사용 추이"
                       }
                     },
                     {
