@@ -4368,7 +4368,7 @@
               "transformations": []
             }
           },
-          "description": "선택 기간의 Orca Codex/Claude 총 토큰",
+          "description": "선택 기간의 Orca Codex·Claude·Antigravity 총 토큰",
           "id": 41,
           "links": [],
           "title": "Orca 총 토큰",
@@ -4466,7 +4466,7 @@
               "transformations": []
             }
           },
-          "description": "선택 기간의 Orca Codex response와 Claude message 합계",
+          "description": "선택 기간의 Orca Codex response, Claude message, Antigravity generation 합계",
           "id": 42,
           "links": [],
           "title": "Orca 모델 호출 수",
@@ -4663,7 +4663,7 @@
               "transformations": []
             }
           },
-          "description": "선택 기간의 Orca Codex/Claude 모델·프로젝트별 일별 집계. 상단 Hermes 프로필/모델 필터와는 독립적입니다.",
+          "description": "선택 기간의 Orca Codex·Claude·Antigravity 모델·프로젝트별 일별 집계. 상단 Hermes 프로필/모델 필터와는 독립적입니다.",
           "id": 44,
           "links": [],
           "title": "Orca 모델별 사용량",
