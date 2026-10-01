@@ -6616,7 +6616,7 @@
                                     "name": "panel-ai-subscription-2"
                                   },
                                   "height": 6,
-                                  "width": 6,
+                                  "width": 9,
                                   "x": 0,
                                   "y": 0
                                 }
@@ -6629,8 +6629,8 @@
                                     "name": "panel-ai-subscription-3"
                                   },
                                   "height": 6,
-                                  "width": 6,
-                                  "x": 6,
+                                  "width": 8,
+                                  "x": 9,
                                   "y": 0
                                 }
                               },
@@ -6642,8 +6642,8 @@
                                     "name": "panel-ai-subscription-4"
                                   },
                                   "height": 6,
-                                  "width": 6,
-                                  "x": 12,
+                                  "width": 7,
+                                  "x": 17,
                                   "y": 0
                                 }
                               },
@@ -6655,20 +6655,7 @@
                                     "name": "panel-ai-subscription-13"
                                   },
                                   "height": 6,
-                                  "width": 6,
-                                  "x": 18,
-                                  "y": 0
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-ai-subscription-14"
-                                  },
-                                  "height": 6,
-                                  "width": 8,
+                                  "width": 5,
                                   "x": 0,
                                   "y": 6
                                 }
@@ -6681,8 +6668,21 @@
                                     "name": "panel-ai-subscription-15"
                                   },
                                   "height": 6,
-                                  "width": 8,
-                                  "x": 8,
+                                  "width": 6,
+                                  "x": 5,
+                                  "y": 6
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-ai-subscription-14"
+                                  },
+                                  "height": 6,
+                                  "width": 7,
+                                  "x": 11,
                                   "y": 6
                                 }
                               },
@@ -6694,8 +6694,8 @@
                                     "name": "panel-ai-subscription-16"
                                   },
                                   "height": 6,
-                                  "width": 8,
-                                  "x": 16,
+                                  "width": 6,
+                                  "x": 18,
                                   "y": 6
                                 }
                               }
