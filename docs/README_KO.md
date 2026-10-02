@@ -17,7 +17,7 @@ n8n과 Hermes 에이전트의 실행 상태, Hermes Kanban 작업, OpenViking, N
 | 대시보드 | 배포 방식 | 주요 내용 | 데이터 소스 |
 | --- | --- | --- | --- |
 | 통합 대시보드 | Grafana Git Sync | n8n 실행, Hermes Agent·Kanban, Orca 사용량, OpenViking, Codex·Claude·Antigravity 구독 사용량 | PostgreSQL/TimescaleDB, Prometheus |
-| 인프라 모니터링 | Grafana Git Sync | NAS·Mac mini 시스템과 Docker 컨테이너, M4 하드웨어 | Prometheus/cAdvisor, node exporter, macmon |
+| 인프라 모니터링 | Grafana Git Sync | NAS·Mac mini 시스템과 Docker 컨테이너, M4 하드웨어, Nginx Proxy Manager | Prometheus/cAdvisor, node exporter, macmon, NPM 수집기 |
 | Mac mini 시스템 모니터링 (독립 뷰) | File provisioning | CPU, 메모리, 디스크, 네트워크, 온도, M4 전력·주파수 | Prometheus/node exporter |
 | OpenViking Overview | File provisioning | exporter, 컨테이너 자원, 토큰·API 사용량, 큐와 로그 | Prometheus |
 
@@ -63,6 +63,7 @@ n8n과 Hermes 에이전트의 실행 상태, Hermes Kanban 작업, OpenViking, N
 ![Docker monitoring dashboard](../assets/macmini%20docker%20monitoring%20dashboard.png)
 
 - `NAS Docker`, `Mac mini Docker`, `NAS 시스템`, `Mac mini 시스템` 탭에서 컨테이너와 호스트 상태를 한 대시보드에서 확인할 수 있습니다.
+- `NPM` 탭은 Nginx Proxy Manager 컨테이너 상태, 프록시 호스트별 요청 수, 상태 코드 분포, 5xx 비율, 응답 트래픽, SSL 인증서 만료일을 보여 줍니다.
 - 시스템 탭은 CPU·메모리·파일시스템·네트워크·부하와 함께 마운트 볼륨의 사용량/전체 용량, IOPS, I/O 사용률을 제공하며, Mac mini에서는 M4 CPU·GPU의 사용률, 온도, 전력 및 동작 주파수도 함께 보여 줍니다.
 
 ### 3. MacMini 시스템 모니터링 대시보드
@@ -139,7 +140,7 @@ provider 설정은 각 하위 디렉터리만 읽으며 60초마다 변경을 �
 - Hermes Kanban은 PostgreSQL/TimescaleDB UID `ffskrzljzwr28b`와 `observability` 스키마의 Kanban 테이블을 사용합니다.
 - 독립 Mac mini 대시보드는 `Prometheus` 데이터 소스 변수와 `macmini_node` job의 node exporter 메트릭을 사용합니다.
 - OpenViking 대시보드는 이름이 `Prometheus`인 데이터 소스와 OpenViking exporter·컨테이너 메트릭을 사용합니다.
-- 인프라 모니터링은 NAS와 Mac mini의 cAdvisor 메트릭, `node_exporter`·`macmini_node` node exporter job, `macmini_soc` macmon job을 사용합니다.
+- 인프라 모니터링은 NAS와 Mac mini의 cAdvisor 메트릭, `node_exporter`·`macmini_node` node exporter job, `macmini_soc` macmon job을 사용합니다. `NPM` 탭은 아래에 정리한 정규화된 `npm_*` 메트릭도 사용합니다.
 
 ### AI 구독 모니터링 수집 조건
 
@@ -162,7 +163,7 @@ Claude는 모든 status line 입력에 `rate_limits`를 포함하지 않습니�
 
 ### Grafana 알람과 Discord 알림
 
-`provisioning/alerting/`의 파일은 인프라 가용성, 디스크·온도, n8n, Hermes, Orca, OpenViking, AI 구독 상태를 감시하는 Grafana-managed alert 18개를 provisioning합니다. `notifications.yml`은 firing과 resolved 알림을 `Gullinkambi Discord` contact point로 전달합니다. Webhook 실값은 `GF_DISCORD_WEBHOOK_URL` 환경변수로만 주입하고 저장소에 커밋하지 않습니다.
+`provisioning/alerting/`의 파일은 인프라 가용성, 디스크·온도, n8n, Hermes, Orca, OpenViking, Nginx Proxy Manager, AI 구독 상태를 감시하는 Grafana-managed alert 22개를 provisioning합니다. `notifications.yml`은 firing과 resolved 알림을 `Gullinkambi Discord` contact point로 전달합니다. Webhook 실값은 `GF_DISCORD_WEBHOOK_URL` 환경변수로만 주입하고 저장소에 커밋하지 않습니다.
 
 AI 구독 관련 규칙은 다음과 같습니다.
 
@@ -192,6 +193,26 @@ GF_SERVER_ROOT_URL=https://monitoring.dove-nest.com/
 인프라 대시보드는 `NAS 인스턴스`와 `Mac mini 인스턴스` 변수를 자동으로 생성합니다. Prometheus의 job 이름이 다르면 대시보드 JSON의 `node_exporter`, `macmini_node`, `macmini_soc`를 실제 scrape job 이름에 맞게 변경해야 합니다. NAS 시스템과 디스크 패널에 데이터가 들어오려면 NAS의 `node_exporter` 대상이 실행 중이어야 합니다.
 
 현재 `macmini_node` 대상은 OrbStack Linux VM 안에서 실행되므로 디스크 장치 목록, IOPS, 사용률은 Mac의 물리 SSD가 아니라 OrbStack 가상 블록 장치를 나타냅니다. macOS 물리 디스크와 SMART 상태를 확인하려면 macOS 네이티브 수집기 또는 smartctl exporter를 별도로 연결해야 합니다. NAS의 RAID·SMART 상태도 표준 node exporter 범위에 포함되지 않으므로 전용 exporter가 필요합니다.
+
+### Nginx Proxy Manager 수집 조건
+
+`NPM` 탭의 컨테이너 패널은 NAS `nginx-proxy-manager` 컨테이너의 cAdvisor 메트릭을 사용하므로 별도 설정 없이 동작합니다. 트래픽과 인증서 패널은 아래의 정규화된 Prometheus 메트릭을 사용합니다. AI 구독 exporter와 마찬가지로 NPM 액세스 로그를 파싱하고 인증서 정보를 읽는 수집기는 이 저장소에 포함하지 않습니다.
+
+| 메트릭 | 필수 레이블 | 의미 |
+| --- | --- | --- |
+| `npm_http_requests_total` | `host`, `status` | 프록시 호스트와 세 자리 HTTP 상태 코드별로 단조 증가하는 요청 누적값 |
+| `npm_http_response_bytes_total` | `host` | 프록시 호스트별로 단조 증가하는 응답 바이트 누적값 |
+| `npm_certificate_expiry_timestamp_seconds` | `domain` | SSL 인증서 만료 시각의 Unix timestamp(초) |
+| `npm_collector_last_success_timestamp_seconds` | 없음 | 마지막 성공 수집 시각의 Unix timestamp(초) |
+
+| 규칙 | 조건 | 지속 시간 |
+| --- | --- | --- |
+| Nginx Proxy Manager down | cAdvisor가 2분 동안 `nginx-proxy-manager` 컨테이너를 관측하지 못함 | 3분 |
+| Nginx Proxy Manager 5xx elevated | 초당 0.05건을 넘는 요청을 처리하는 프록시 호스트의 5xx 비율이 5% 초과 | 10분 |
+| Nginx Proxy Manager certificate expiring | 인증서 만료까지 14일 미만 | 10분 |
+| Nginx Proxy Manager collector stale | 마지막 성공 수집이 15분 이상 지연 | 5분 |
+
+5xx, 인증서, 수집 지연 규칙은 `noDataState: OK`를 사용하므로 수집기를 배포하기 전에는 알림이 발생하지 않습니다. 수집기를 배포한 뒤에는 수집기가 Prometheus에서 사라지는 상황도 감지하도록 수집 지연 규칙을 `Alerting`으로 바꾸는 것을 권장합니다.
 
 다른 Grafana 인스턴스에 적용할 때는 해당 인스턴스의 데이터 소스 이름과 UID에 맞게 JSON을 수정합니다. 대시보드가 열리더라도 데이터가 비어 있으면 먼저 데이터 소스 UID, Prometheus job·instance 레이블, PostgreSQL의 `observability` 스키마를 확인합니다.
 

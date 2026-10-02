@@ -15,7 +15,7 @@ The project is named after Gullinkambi, the rooster from Norse mythology. In the
 | Dashboard | Deployment | Coverage | Data sources |
 | --- | --- | --- | --- |
 | Unified dashboard | Grafana Git Sync | n8n runs, Hermes Agent and Kanban, Orca usage, OpenViking, Codex, Claude, and Antigravity subscription usage | PostgreSQL/TimescaleDB, Prometheus |
-| Infrastructure monitoring | Grafana Git Sync | NAS and Mac mini hosts, Docker containers, M4 hardware | Prometheus/cAdvisor, node exporter, macmon |
+| Infrastructure monitoring | Grafana Git Sync | NAS and Mac mini hosts, Docker containers, M4 hardware, Nginx Proxy Manager | Prometheus/cAdvisor, node exporter, macmon, NPM collector |
 | Mac mini system monitoring (standalone) | File provisioning | CPU, memory, disk, network, temperature, M4 power and frequency | Prometheus/node exporter |
 | OpenViking Overview | File provisioning | Exporter, container resources, token and API usage, queues, and logs | Prometheus |
 
@@ -60,6 +60,7 @@ The project is named after Gullinkambi, the rooster from Norse mythology. In the
 ![Docker monitoring dashboard](assets/macmini%20docker%20monitoring%20dashboard.png)
 
 - Combines container and host health in the `NAS Docker`, `Mac mini Docker`, `NAS System`, and `Mac mini System` tabs.
+- The `NPM` tab shows Nginx Proxy Manager container health, per-host request rate, status code mix, 5xx ratio, response traffic, and SSL certificate expiry.
 - The system tabs cover CPU, memory, filesystems, network, load, and detailed disk views for mounted-volume used and total capacity, IOPS, and I/O utilization. The Mac mini tab also includes M4 CPU/GPU utilization, temperature, power, and frequency.
 
 ### 3. Mac mini system monitoring
@@ -136,7 +137,7 @@ The referenced data sources must already be registered in Grafana.
 - Hermes Kanban uses PostgreSQL/TimescaleDB UID `ffskrzljzwr28b` and the Kanban tables in the `observability` schema.
 - The standalone Mac mini dashboard uses the `Prometheus` data source variable and node exporter metrics from the `macmini_node` job.
 - OpenViking uses the data source named `Prometheus` together with OpenViking exporter and container metrics.
-- Infrastructure monitoring uses cAdvisor metrics from both hosts, the `node_exporter` and `macmini_node` node exporter jobs, and the `macmini_soc` macmon job.
+- Infrastructure monitoring uses cAdvisor metrics from both hosts, the `node_exporter` and `macmini_node` node exporter jobs, and the `macmini_soc` macmon job. Its `NPM` tab also uses the normalized `npm_*` metrics described below.
 
 ### AI subscription monitoring collection requirements
 
@@ -159,7 +160,7 @@ References: [Codex app-server account endpoints](https://learn.chatgpt.com/docs/
 
 ### Grafana alerting and Discord notifications
 
-Files under `provisioning/alerting/` provision 18 Grafana-managed rules for infrastructure availability, disk and temperature capacity, n8n, Hermes, Orca, OpenViking, and AI subscription monitoring. `notifications.yml` routes firing and resolved notifications to the `Gullinkambi Discord` contact point. The webhook is supplied only through `GF_DISCORD_WEBHOOK_URL`; never commit its value.
+Files under `provisioning/alerting/` provision 22 Grafana-managed rules for infrastructure availability, disk and temperature capacity, n8n, Hermes, Orca, OpenViking, Nginx Proxy Manager, and AI subscription monitoring. `notifications.yml` routes firing and resolved notifications to the `Gullinkambi Discord` contact point. The webhook is supplied only through `GF_DISCORD_WEBHOOK_URL`; never commit its value.
 
 The AI subscription rules are:
 
@@ -189,6 +190,26 @@ GF_SERVER_ROOT_URL=https://monitoring.dove-nest.com/
 The infrastructure dashboard automatically populates `NAS Instance` and `Mac mini Instance` variables. If your Prometheus job names differ, update `node_exporter`, `macmini_node`, and `macmini_soc` in the dashboard JSON to match the actual scrape jobs. The NAS `node_exporter` target must be running for the NAS system and disk panels to receive data.
 
 The current `macmini_node` target runs inside the OrbStack Linux VM, so its disk inventory, IOPS, and utilization describe OrbStack virtual block devices rather than the Mac's physical SSD. Native macOS disk/SMART monitoring requires a separate macOS collector or smartctl exporter. NAS RAID and SMART health are also outside the standard node exporter metric set and require dedicated exporters.
+
+### Nginx Proxy Manager collection requirements
+
+The container panels in the `NPM` tab use cAdvisor metrics for the NAS `nginx-proxy-manager` container and work without extra setup. The traffic and certificate panels expect the following normalized Prometheus metrics. As with the AI subscription exporter, the collector that parses NPM access logs and reads certificate data is kept outside this repository.
+
+| Metric | Required labels | Meaning |
+| --- | --- | --- |
+| `npm_http_requests_total` | `host`, `status` | Monotonic request counter per proxy host and three-digit HTTP status |
+| `npm_http_response_bytes_total` | `host` | Monotonic counter of response bytes sent per proxy host |
+| `npm_certificate_expiry_timestamp_seconds` | `domain` | SSL certificate expiry as a Unix timestamp in seconds |
+| `npm_collector_last_success_timestamp_seconds` | none | Unix timestamp in seconds of the last successful collection |
+
+| Rule | Condition | For |
+| --- | --- | --- |
+| Nginx Proxy Manager down | cAdvisor has not seen the `nginx-proxy-manager` container for 2 minutes | 3m |
+| Nginx Proxy Manager 5xx elevated | A proxy host's 5xx ratio exceeds 5% while it serves more than 0.05 req/s | 10m |
+| Nginx Proxy Manager certificate expiring | A certificate expires in fewer than 14 days | 10m |
+| Nginx Proxy Manager collector stale | The last successful collection is more than 15 minutes old | 5m |
+
+The 5xx, certificate, and stale-collector rules use `noDataState: OK`, so they stay quiet until the collector is deployed. Once it runs, consider switching the stale-collector rule to `Alerting` so that a collector disappearing from Prometheus is also reported.
 
 When installing these dashboards in another Grafana instance, update data source names and UIDs as needed. If a dashboard loads without data, check its data source UID, Prometheus job and instance labels, and the PostgreSQL `observability` schema first.
 

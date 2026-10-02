@@ -285,3 +285,171 @@ groups:
           - refId: C
             datasourceUid: __expr__
             model: *threshold_gt_zero
+
+  - orgId: 1
+    name: Gullinkambi Nginx Proxy Manager
+    folder: Gullinkambi Alerts
+    interval: 1m
+    rules:
+      - uid: gk_npm_container_down
+        title: Nginx Proxy Manager down
+        condition: C
+        dashboardUid: dbft4cr2a6z7r4b
+        panelId: 65
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 3m
+        annotations:
+          summary: Nginx Proxy Manager 컨테이너가 관측되지 않습니다.
+          description: NAS의 nginx-proxy-manager 컨테이너 상태를 확인하세요. 모든 외부 접속이 영향을 받습니다.
+        labels: {severity: critical, service: nginx-proxy-manager, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: '(max(container_last_seen{instance="nas",name="nginx-proxy-manager"}) > bool (time() - 120)) or vector(0)'
+              instant: true
+              intervalMs: 1000
+              legendFormat: nginx-proxy-manager
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              <<: *threshold_gt_zero
+              conditions:
+                - evaluator: {params: [1], type: lt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query
+
+      - uid: gk_npm_5xx_high
+        title: Nginx Proxy Manager 5xx elevated
+        condition: C
+        dashboardUid: dbft4cr2a6z7r4b
+        panelId: 73
+        noDataState: OK
+        execErrState: Alerting
+        for: 10m
+        annotations:
+          summary: '{{ $labels.host }}의 5xx 응답 비율이 5%를 넘었습니다.'
+          description: 해당 프록시 호스트의 업스트림 서비스 상태를 확인하세요.
+        labels: {severity: warning, service: nginx-proxy-manager, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: >-
+                sum by (host) (rate(npm_http_requests_total{status=~"5.."}[5m]))
+                / sum by (host) (rate(npm_http_requests_total[5m])) * 100
+                and sum by (host) (rate(npm_http_requests_total[5m])) > 0.05
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{host}}'
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              <<: *threshold_gt_zero
+              conditions:
+                - evaluator: {params: [5], type: gt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query
+
+      - uid: gk_npm_cert_expiring
+        title: Nginx Proxy Manager certificate expiring
+        condition: C
+        dashboardUid: dbft4cr2a6z7r4b
+        panelId: 75
+        noDataState: OK
+        execErrState: Alerting
+        for: 10m
+        annotations:
+          summary: '{{ $labels.domain }} 인증서가 14일 안에 만료됩니다.'
+          description: Nginx Proxy Manager의 SSL 인증서 자동 갱신 상태를 확인하세요.
+        labels: {severity: warning, service: nginx-proxy-manager, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: (npm_certificate_expiry_timestamp_seconds - time()) / 86400
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{domain}}'
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              <<: *threshold_gt_zero
+              conditions:
+                - evaluator: {params: [14], type: lt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query
+
+      - uid: gk_npm_collector_stale
+        title: Nginx Proxy Manager collector stale
+        condition: C
+        dashboardUid: dbft4cr2a6z7r4b
+        panelId: 69
+        noDataState: OK
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          summary: NPM 트래픽·인증서 수집이 15분 이상 지연되었습니다.
+          description: NPM 로그 수집기와 Prometheus scrape 대상을 확인하세요.
+        labels: {severity: warning, service: nginx-proxy-manager, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: time() - max(npm_collector_last_success_timestamp_seconds)
+              instant: true
+              intervalMs: 1000
+              legendFormat: collector
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              <<: *threshold_gt_zero
+              conditions:
+                - evaluator: {params: [900], type: gt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query
