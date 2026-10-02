@@ -1,5 +1,42 @@
 apiVersion: 1
 
+templates:
+  - orgId: 1
+    name: Gullinkambi Discord card
+    template: |
+      {{ define "gullinkambi.discord.title" -}}
+      {{- if gt (len .Alerts.Firing) 0 -}}
+      🚨 [FIRING] Gullinkambi Grafana 알림
+      {{- else -}}
+      ✅ [RESOLVED] Gullinkambi Grafana 알림
+      {{- end -}}
+      {{- end }}
+
+      {{ define "gullinkambi.discord.alerts" -}}
+      {{- range . }}
+      • {{ with index .Annotations "summary" }}{{ . }}{{ else }}{{ index .Labels "alertname" }}{{ end }}
+      {{- end }}
+      {{- end }}
+
+      {{ define "gullinkambi.discord.message" -}}
+      **{{ with index .CommonLabels "alertname" }}{{ . }}{{ else }}Grafana alert{{ end }}**
+      {{ with index .CommonAnnotations "description" }}{{ . }}
+
+      {{ end -}}
+      {{- if gt (len .Alerts.Firing) 0 }}
+      **발생 · {{ len .Alerts.Firing }}건**
+      {{ template "gullinkambi.discord.alerts" .Alerts.Firing }}
+      {{ end -}}
+      {{- if gt (len .Alerts.Resolved) 0 }}
+      **복구 · {{ len .Alerts.Resolved }}건**
+      {{ template "gullinkambi.discord.alerts" .Alerts.Resolved }}
+      {{ end -}}
+      {{- with index .Alerts 0 }}
+
+      {{ if .GeneratorURL }}[Source]({{ .GeneratorURL }}){{ end }}{{ if .SilenceURL }} · [Silence]({{ .SilenceURL }}){{ end }}{{ if .DashboardURL }} · [Dashboard]({{ .DashboardURL }}){{ end }}{{ if .PanelURL }} · [Panel]({{ .PanelURL }}){{ end }}
+      {{- end }}
+      {{- end }}
+
 contactPoints:
   - orgId: 1
     name: Gullinkambi Discord
@@ -10,8 +47,10 @@ contactPoints:
         settings:
           url: $GF_DISCORD_WEBHOOK_URL
           use_discord_username: false
+          use_embed_description: true
+          title: '{{ template "gullinkambi.discord.title" . }}'
           message: |
-            {{ template "default.message" . }}
+            {{ template "gullinkambi.discord.message" . }}
 
 policies:
   - orgId: 1

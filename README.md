@@ -169,7 +169,7 @@ The AI subscription rules are:
 | Codex subscription data stale | Last successful Codex collection is more than 15 minutes old | 5 minutes |
 | AI weekly quota high | Codex, Claude, or an Antigravity pool exceeds 85% weekly usage | 10 minutes |
 
-Claude intentionally has no 15-minute stale rule because its status line refreshes when Claude Code handles a message. Its collector state instead uses the last valid snapshot and the 24-hour cache limit. Discord groups alerts by `alertname`, `service`, and `severity`, waits 30 seconds before the first notification, groups updates every 5 minutes, repeats unresolved alerts every 4 hours, and sends resolved notifications.
+Claude intentionally has no 15-minute stale rule because its status line refreshes when Claude Code handles a message. Its collector state instead uses the last valid snapshot and the 24-hour cache limit. Discord groups alerts by `alertname`, `service`, and `severity`, waits 30 seconds before the first notification, groups updates every 5 minutes, repeats unresolved alerts every 4 hours, and sends resolved notifications. A provisioned Discord template combines every alert instance in the group into one color-coded embed card with concise firing or resolved summaries and Source, Silence, Dashboard, and Panel links.
 
 Set Grafana's canonical public URL so notification `Source` and `Silence` links never point to `localhost`:
 
