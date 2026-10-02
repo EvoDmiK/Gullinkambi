@@ -172,6 +172,8 @@ The AI subscription rules are:
 
 Claude intentionally has no 15-minute stale rule because its status line refreshes when Claude Code handles a message. Its collector state instead uses the last valid snapshot and the 24-hour cache limit. Discord groups alerts by `alertname`, `service`, and `severity`, waits 30 seconds before the first notification, groups updates every 5 minutes, repeats unresolved alerts every 4 hours, and sends resolved notifications. A provisioned Discord template combines every alert instance in the group into one color-coded embed card with concise firing or resolved summaries and Source, Silence, Dashboard, and Panel links.
 
+Claude values refresh only when Claude Code CLI runs on the Mac mini; usage from other environments such as the VS Code extension is reflected in the account-wide percentage at the next refresh. The `AI subscription` tab and the `AI weekly quota high` rule therefore exclude windows whose reset time has already passed, and those panels show `초기화됨 · 갱신 대기` (reset, waiting for refresh).
+
 Set Grafana's canonical public URL so notification `Source` and `Silence` links never point to `localhost`:
 
 ```dotenv

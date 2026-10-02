@@ -4118,7 +4118,7 @@
               "transformations": []
             }
           },
-          "description": "마지막 성공 수집 이후 경과 시간입니다. 5분부터 주의, 15분부터 위험으로 표시합니다.",
+          "description": "마지막 성공 수집 이후 경과 시간입니다. 5분부터 주의, 15분부터 위험으로 표시합니다. Claude는 Mac mini의 Claude Code status line이 실행될 때만 갱신되므로 Claude Code를 쓰지 않는 동안에는 지연이 계속 늘어나는 것이 정상입니다.",
           "id": 2012,
           "links": [],
           "title": "수집 지연",
@@ -4194,7 +4194,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"gemini\",window=\"session\"})",
+                        "expr": "max(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"gemini\",window=\"session\"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
                         "legendFormat": ""
                       },
                       "version": "v0"
@@ -4207,7 +4207,7 @@
               "transformations": []
             }
           },
-          "description": "Antigravity Gemini 모델 풀의 5시간 사용 구간 소진율입니다. agy /usage의 remaining_fraction을 사용률로 변환합니다.",
+          "description": "Antigravity Gemini 모델 풀의 5시간 사용 구간 소진율입니다. agy /usage의 remaining_fraction을 사용률로 변환합니다. 초기화 시각이 지난 구간은 새 값이 들어올 때까지 갱신 대기로 표시합니다.",
           "id": 2013,
           "links": [],
           "title": "Antigravity Gemini · 5시간",
@@ -4244,7 +4244,8 @@
                       }
                     ]
                   },
-                  "unit": "percent"
+                  "unit": "percent",
+                  "noValue": "초기화됨 · 갱신 대기"
                 },
                 "overrides": []
               },
@@ -4288,7 +4289,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"gemini\",window=\"weekly\"})",
+                        "expr": "max(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"gemini\",window=\"weekly\"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
                         "legendFormat": ""
                       },
                       "version": "v0"
@@ -4301,7 +4302,7 @@
               "transformations": []
             }
           },
-          "description": "Antigravity Gemini 모델 풀의 주간 사용 구간 소진율입니다. agy /usage의 remaining_fraction을 사용률로 변환합니다.",
+          "description": "Antigravity Gemini 모델 풀의 주간 사용 구간 소진율입니다. agy /usage의 remaining_fraction을 사용률로 변환합니다. 초기화 시각이 지난 구간은 새 값이 들어올 때까지 갱신 대기로 표시합니다.",
           "id": 2014,
           "links": [],
           "title": "Antigravity Gemini · 주간",
@@ -4338,7 +4339,8 @@
                       }
                     ]
                   },
-                  "unit": "percent"
+                  "unit": "percent",
+                  "noValue": "초기화됨 · 갱신 대기"
                 },
                 "overrides": []
               },
@@ -4382,7 +4384,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"third_party\",window=\"session\"})",
+                        "expr": "max(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"third_party\",window=\"session\"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
                         "legendFormat": ""
                       },
                       "version": "v0"
@@ -4395,7 +4397,7 @@
               "transformations": []
             }
           },
-          "description": "Antigravity Claude·GPT 모델 풀의 5시간 사용 구간 소진율입니다. agy /usage의 remaining_fraction을 사용률로 변환합니다.",
+          "description": "Antigravity Claude·GPT 모델 풀의 5시간 사용 구간 소진율입니다. agy /usage의 remaining_fraction을 사용률로 변환합니다. 초기화 시각이 지난 구간은 새 값이 들어올 때까지 갱신 대기로 표시합니다.",
           "id": 2015,
           "links": [],
           "title": "Antigravity Claude·GPT · 5시간",
@@ -4432,7 +4434,8 @@
                       }
                     ]
                   },
-                  "unit": "percent"
+                  "unit": "percent",
+                  "noValue": "초기화됨 · 갱신 대기"
                 },
                 "overrides": []
               },
@@ -4476,7 +4479,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"third_party\",window=\"weekly\"})",
+                        "expr": "max(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"third_party\",window=\"weekly\"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
                         "legendFormat": ""
                       },
                       "version": "v0"
@@ -4489,7 +4492,7 @@
               "transformations": []
             }
           },
-          "description": "Antigravity Claude·GPT 모델 풀의 주간 사용 구간 소진율입니다. agy /usage의 remaining_fraction을 사용률로 변환합니다.",
+          "description": "Antigravity Claude·GPT 모델 풀의 주간 사용 구간 소진율입니다. agy /usage의 remaining_fraction을 사용률로 변환합니다. 초기화 시각이 지난 구간은 새 값이 들어올 때까지 갱신 대기로 표시합니다.",
           "id": 2016,
           "links": [],
           "title": "Antigravity Claude·GPT · 주간",
@@ -4526,7 +4529,8 @@
                       }
                     ]
                   },
-                  "unit": "percent"
+                  "unit": "percent",
+                  "noValue": "초기화됨 · 갱신 대기"
                 },
                 "overrides": []
               },
@@ -4570,7 +4574,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"antigravity\",pool=\"gemini\",window=\"session\"}) * 1000",
+                        "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"antigravity\",pool=\"gemini\",window=\"session\"} \u003e time()) * 1000",
                         "legendFormat": "Gemini"
                       },
                       "version": "v0"
@@ -4589,7 +4593,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"antigravity\",pool=\"third_party\",window=\"session\"}) * 1000",
+                        "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"antigravity\",pool=\"third_party\",window=\"session\"} \u003e time()) * 1000",
                         "legendFormat": "Claude·GPT"
                       },
                       "version": "v0"
@@ -4625,7 +4629,8 @@
                       }
                     ]
                   },
-                  "unit": "dateTimeAsLocal"
+                  "unit": "dateTimeAsLocal",
+                  "noValue": "초기화됨 · 갱신 대기"
                 },
                 "overrides": []
               },
@@ -4669,7 +4674,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max(ai_subscription_quota_used_percent{provider=\"codex\",window=\"weekly\"})",
+                        "expr": "max(ai_subscription_quota_used_percent{provider=\"codex\",window=\"weekly\"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
                         "legendFormat": ""
                       },
                       "version": "v0"
@@ -4682,7 +4687,7 @@
               "transformations": []
             }
           },
-          "description": "Codex 구독의 장기 사용 구간 소진율입니다. codex app-server의 secondary rate-limit 구간을 exporter가 weekly로 정규화합니다.",
+          "description": "Codex 구독의 장기 사용 구간 소진율입니다. codex app-server의 secondary rate-limit 구간을 exporter가 weekly로 정규화합니다. 초기화 시각이 지난 구간은 새 값이 들어올 때까지 갱신 대기로 표시합니다.",
           "id": 2002,
           "links": [],
           "title": "Codex · 주간 사용률",
@@ -4719,7 +4724,8 @@
                       }
                     ]
                   },
-                  "unit": "percent"
+                  "unit": "percent",
+                  "noValue": "초기화됨 · 갱신 대기"
                 },
                 "overrides": []
               },
@@ -4763,7 +4769,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max(ai_subscription_quota_used_percent{provider=\"claude\",window=\"session\"})",
+                        "expr": "max(ai_subscription_quota_used_percent{provider=\"claude\",window=\"session\"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
                         "legendFormat": ""
                       },
                       "version": "v0"
@@ -4776,7 +4782,7 @@
               "transformations": []
             }
           },
-          "description": "Claude 구독의 5시간 사용 구간 소진율입니다. 로그인된 Claude Code의 /usage 결과를 exporter가 정규화합니다.",
+          "description": "Claude 구독의 5시간 사용 구간 소진율입니다. 로그인된 Claude Code의 /usage 결과를 exporter가 정규화합니다. 초기화 시각이 지난 구간은 새 값이 들어올 때까지 갱신 대기로 표시합니다.",
           "id": 2003,
           "links": [],
           "title": "Claude · 5시간 사용률",
@@ -4813,7 +4819,8 @@
                       }
                     ]
                   },
-                  "unit": "percent"
+                  "unit": "percent",
+                  "noValue": "초기화됨 · 갱신 대기"
                 },
                 "overrides": []
               },
@@ -4857,7 +4864,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max(ai_subscription_quota_used_percent{provider=\"claude\",window=\"weekly\"})",
+                        "expr": "max(ai_subscription_quota_used_percent{provider=\"claude\",window=\"weekly\"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
                         "legendFormat": ""
                       },
                       "version": "v0"
@@ -4870,7 +4877,7 @@
               "transformations": []
             }
           },
-          "description": "Claude 구독의 주간 사용 구간 소진율입니다. 로그인된 Claude Code의 /usage 결과를 exporter가 정규화합니다.",
+          "description": "Claude 구독의 주간 사용 구간 소진율입니다. 로그인된 Claude Code의 /usage 결과를 exporter가 정규화합니다. 초기화 시각이 지난 구간은 새 값이 들어올 때까지 갱신 대기로 표시합니다.",
           "id": 2004,
           "links": [],
           "title": "Claude · 주간 사용률",
@@ -4907,7 +4914,8 @@
                       }
                     ]
                   },
-                  "unit": "percent"
+                  "unit": "percent",
+                  "noValue": "초기화됨 · 갱신 대기"
                 },
                 "overrides": []
               },
@@ -4951,7 +4959,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"codex\",window=\"session\"}) * 1000",
+                        "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"codex\",window=\"session\"} \u003e time()) * 1000",
                         "legendFormat": ""
                       },
                       "version": "v0"
@@ -5031,7 +5039,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"claude\",window=\"session\"}) * 1000",
+                        "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"claude\",window=\"session\"} \u003e time()) * 1000",
                         "legendFormat": ""
                       },
                       "version": "v0"
@@ -5067,7 +5075,8 @@
                       }
                     ]
                   },
-                  "unit": "dateTimeAsLocal"
+                  "unit": "dateTimeAsLocal",
+                  "noValue": "초기화됨 · 갱신 대기"
                 },
                 "overrides": []
               },
@@ -5208,7 +5217,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max by (provider, pool, window) (ai_subscription_quota_used_percent)",
+                        "expr": "max by (provider, pool, window) (ai_subscription_quota_used_percent unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
                         "legendFormat": "{{provider}} · {{pool}} · {{window}}"
                       },
                       "version": "v0"

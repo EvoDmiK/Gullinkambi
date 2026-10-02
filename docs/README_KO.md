@@ -175,6 +175,8 @@ AI 구독 관련 규칙은 다음과 같습니다.
 
 Claude status line은 Claude Code가 메시지를 처리할 때 갱신되므로 Claude에는 15분 stale 규칙을 적용하지 않습니다. 대신 마지막 유효 스냅샷과 24시간 캐시 만료로 collector 상태를 판단합니다. Discord는 `alertname`, `service`, `severity`로 알람을 묶고 최초 알림은 30초 대기하며, 그룹 갱신은 5분, 미복구 반복 알림은 4시간 간격으로 전송합니다. resolved 알림도 활성화되어 있습니다. Provisioning된 Discord 전용 템플릿은 같은 그룹의 alert instance를 한 개의 색상 embed 카드로 합치고, 발생·복구 요약과 Source·Silence·Dashboard·Panel 링크만 간결하게 표시합니다.
 
+Claude 값은 Mac mini에서 Claude Code CLI를 사용할 때만 갱신되며, VS Code 확장 등 다른 환경의 사용량은 다음 갱신 때 계정 전체 사용률에 함께 반영됩니다. 그래서 `AI 구독` 탭과 `AI weekly quota high` 규칙은 초기화 시각이 이미 지난 구간을 제외하고, 해당 패널에 `초기화됨 · 갱신 대기`를 표시합니다.
+
 Discord 알림의 `Source`와 `Silence` 링크가 `localhost`를 가리키지 않도록 Grafana의 외부 기준 URL을 설정합니다.
 
 ```dotenv
