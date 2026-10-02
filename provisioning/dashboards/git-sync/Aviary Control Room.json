@@ -6621,7 +6621,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "WITH days AS (\n  SELECT d::date AS day\n  FROM generate_series(\n    (now() - interval '28 days')::date,\n    now()::date - 1,\n    interval '1 day'\n  ) AS d\n),\nusage AS (\n  SELECT usage_date, agent, sum(total_tokens)::double precision AS tokens\n  FROM observability.orca_usage_daily\n  WHERE usage_date BETWEEN (SELECT min(day) FROM days) AND (SELECT max(day) FROM days)\n  GROUP BY usage_date, agent\n)\nSELECT\n  (ARRAY['월','화','수','목','금','토','일'])[extract(isodow FROM d.day)::int] AS \"요일\",\n  COALESCE(sum(u.tokens) FILTER (WHERE u.agent = 'codex'), 0) / count(DISTINCT d.day) AS \"Codex\",\n  COALESCE(sum(u.tokens) FILTER (WHERE u.agent = 'claude'), 0) / count(DISTINCT d.day) AS \"Claude\",\n  COALESCE(sum(u.tokens) FILTER (WHERE u.agent = 'antigravity'), 0) / count(DISTINCT d.day) AS \"Antigravity\"\nFROM days d\nLEFT JOIN usage u ON u.usage_date = d.day\nGROUP BY 1\nORDER BY min(extract(isodow FROM d.day));",
+                        "rawSql": "WITH days AS (\n  SELECT d::date AS day\n  FROM generate_series(now()::date - 6, now()::date, interval '1 day') AS d\n),\nusage AS (\n  SELECT usage_date, agent, sum(total_tokens)::double precision AS tokens\n  FROM observability.orca_usage_daily\n  WHERE usage_date BETWEEN (SELECT min(day) FROM days) AND (SELECT max(day) FROM days)\n  GROUP BY usage_date, agent\n)\nSELECT\n  (ARRAY['월','화','수','목','금','토','일'])[extract(isodow FROM d.day)::int] || ' ' || to_char(d.day, 'MM-DD') AS \"요일\",\n  COALESCE(sum(u.tokens) FILTER (WHERE u.agent = 'codex'), 0) AS \"Codex\",\n  COALESCE(sum(u.tokens) FILTER (WHERE u.agent = 'claude'), 0) AS \"Claude\",\n  COALESCE(sum(u.tokens) FILTER (WHERE u.agent = 'antigravity'), 0) AS \"Antigravity\"\nFROM days d\nLEFT JOIN usage u ON u.usage_date = d.day\nGROUP BY d.day\nORDER BY d.day;",
                         "sql": {
                           "columns": [
                             {
@@ -6650,10 +6650,10 @@
               "transformations": []
             }
           },
-          "description": "ORCA 작업 폴더에서 쓴 Codex·Claude·Antigravity 토큰을 요일별 하루 평균으로 보여 줍니다. 오늘을 제외한 최근 28일(요일마다 4일)을 쓰고, 사용하지 않은 날은 0으로 넣어 평균을 냅니다. 대시보드 시간 범위와 관계없이 항상 최근 4주를 기준으로 합니다.",
+          "description": "ORCA 작업 폴더에서 쓴 Codex·Claude·Antigravity 토큰을 최근 7일 동안 하루 단위로 보여 줍니다. 오늘을 포함하므로 마지막 막대는 아직 집계 중인 값입니다. 대시보드 시간 범위와 관계없이 항상 최근 7일을 기준으로 합니다.",
           "id": 2018,
           "links": [],
-          "title": "요일별 평균 토큰 (최근 4주)",
+          "title": "요일별 토큰 사용량 (최근 7일)",
           "vizConfig": {
             "group": "barchart",
             "kind": "VizConfig",
@@ -6709,7 +6709,7 @@
                 "groupWidth": 0.7,
                 "legend": {
                   "calcs": [
-                    "mean"
+                    "sum"
                   ],
                   "displayMode": "list",
                   "overflow": "ellipsis",
