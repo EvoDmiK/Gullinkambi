@@ -9834,10 +9834,10 @@
         "1d"
       ],
       "fiscalYearStartMonth": 0,
-      "from": "now/d",
+      "from": "now-6h",
       "hideTimepicker": false,
       "timezone": "Asia/Seoul",
-      "to": "now/d"
+      "to": "now"
     },
     "title": "인프라 모니터링",
     "variables": [
