@@ -195,7 +195,7 @@ The current `macmini_node` target runs inside the OrbStack Linux VM, so its disk
 
 ### Nginx Proxy Manager collection requirements
 
-The container panels in the `NPM` tab use cAdvisor metrics for the NAS `nginx-proxy-manager` container and work without extra setup. The traffic and certificate panels expect the following normalized Prometheus metrics. As with the AI subscription exporter, the collector that parses NPM access logs and reads certificate data is kept outside this repository.
+The container panels in the `NPM` tab use cAdvisor metrics for the NAS `nginx-proxy-manager` container and work without extra setup. The traffic and certificate panels expect the following normalized Prometheus metrics. As with the AI subscription exporter, the collector is kept outside this repository: `Birds-Nest/docker-compose/monitoring/npm-exporter` follows the `proxy-host-*_access.log` files and reads proxy hosts and certificate expiry from NPM's SQLite database, so certificate private keys are never mounted. The NAS Prometheus scrapes it as the `npm_exporter` job. The `host` label uses each proxy host's first domain registered in NPM rather than the request's Host header, which keeps label cardinality bounded. It also exposes `npm_collector_up` and `npm_log_parse_errors_total`.
 
 | Metric | Required labels | Meaning |
 | --- | --- | --- |
@@ -211,7 +211,7 @@ The container panels in the `NPM` tab use cAdvisor metrics for the NAS `nginx-pr
 | Nginx Proxy Manager certificate expiring | A certificate expires in fewer than 14 days | 10m |
 | Nginx Proxy Manager collector stale | The last successful collection is more than 15 minutes old | 5m |
 
-The 5xx, certificate, and stale-collector rules use `noDataState: OK`, so they stay quiet until the collector is deployed. Once it runs, consider switching the stale-collector rule to `Alerting` so that a collector disappearing from Prometheus is also reported.
+The 5xx and certificate rules use `noDataState: OK`. The stale-collector rule uses `Alerting`, so a collector that disappears from Prometheus is reported as well.
 
 When installing these dashboards in another Grafana instance, update data source names and UIDs as needed. If a dashboard loads without data, check its data source UID, Prometheus job and instance labels, and the PostgreSQL `observability` schema first.
 

@@ -198,7 +198,7 @@ GF_SERVER_ROOT_URL=https://monitoring.dove-nest.com/
 
 ### Nginx Proxy Manager 수집 조건
 
-`NPM` 탭의 컨테이너 패널은 NAS `nginx-proxy-manager` 컨테이너의 cAdvisor 메트릭을 사용하므로 별도 설정 없이 동작합니다. 트래픽과 인증서 패널은 아래의 정규화된 Prometheus 메트릭을 사용합니다. AI 구독 exporter와 마찬가지로 NPM 액세스 로그를 파싱하고 인증서 정보를 읽는 수집기는 이 저장소에 포함하지 않습니다.
+`NPM` 탭의 컨테이너 패널은 NAS `nginx-proxy-manager` 컨테이너의 cAdvisor 메트릭을 사용하므로 별도 설정 없이 동작합니다. 트래픽과 인증서 패널은 아래의 정규화된 Prometheus 메트릭을 사용합니다. AI 구독 exporter와 마찬가지로 수집기는 이 저장소에 포함하지 않습니다. `Birds-Nest/docker-compose/monitoring/npm-exporter`가 `proxy-host-*_access.log`를 이어서 읽고, NPM SQLite DB에서 프록시 호스트와 인증서 만료일을 읽으므로 인증서 개인키는 마운트하지 않습니다. NAS Prometheus는 이를 `npm_exporter` job으로 수집합니다. `host` 레이블은 요청의 Host 헤더가 아니라 NPM에 등록된 프록시 호스트의 첫 번째 도메인을 사용하므로 레이블 수가 제한됩니다. 이 외에 `npm_collector_up`과 `npm_log_parse_errors_total`도 제공합니다.
 
 | 메트릭 | 필수 레이블 | 의미 |
 | --- | --- | --- |
@@ -214,7 +214,7 @@ GF_SERVER_ROOT_URL=https://monitoring.dove-nest.com/
 | Nginx Proxy Manager certificate expiring | 인증서 만료까지 14일 미만 | 10분 |
 | Nginx Proxy Manager collector stale | 마지막 성공 수집이 15분 이상 지연 | 5분 |
 
-5xx, 인증서, 수집 지연 규칙은 `noDataState: OK`를 사용하므로 수집기를 배포하기 전에는 알림이 발생하지 않습니다. 수집기를 배포한 뒤에는 수집기가 Prometheus에서 사라지는 상황도 감지하도록 수집 지연 규칙을 `Alerting`으로 바꾸는 것을 권장합니다.
+5xx와 인증서 규칙은 `noDataState: OK`를 사용합니다. 수집 지연 규칙은 `Alerting`을 사용하므로 수집기가 Prometheus에서 사라지는 상황도 알림으로 전달됩니다.
 
 다른 Grafana 인스턴스에 적용할 때는 해당 인스턴스의 데이터 소스 이름과 UID에 맞게 JSON을 수정합니다. 대시보드가 열리더라도 데이터가 비어 있으면 먼저 데이터 소스 UID, Prometheus job·instance 레이블, PostgreSQL의 `observability` 스키마를 확인합니다.
 

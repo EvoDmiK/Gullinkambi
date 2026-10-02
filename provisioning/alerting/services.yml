@@ -419,7 +419,7 @@ groups:
         condition: C
         dashboardUid: dbft4cr2a6z7r4b
         panelId: 69
-        noDataState: OK
+        noDataState: Alerting
         execErrState: Alerting
         for: 5m
         annotations:
