@@ -44,7 +44,7 @@ n8n과 Hermes 에이전트의 실행 상태, Hermes Kanban 작업, OpenViking, N
 
 - Orca에서 Codex·Claude·Antigravity의 전체 토큰 사용량과 모델 호출 수, 일별 토큰 추이 및 모델별 사용량을 보여 줍니다. 쓰레드별 상세는 Codex와 Claude에만 제공됩니다.
 - 최신 사용량 데이터의 집계 지연도 함께 표시하여 비용과 사용 패턴뿐 아니라 수집 데이터의 최신성까지 점검할 수 있습니다.
-- Antigravity는 Mac mini에서 모델·프로젝트별 일일 수치만 개인정보 보호 형태로 집계하며, 프롬프트·응답·경로·대화 ID는 telemetry pipeline으로 전송하지 않습니다.
+- Antigravity는 Mac mini에서 모델·프로젝트별 일일 수치와 대화별 수치를 저장소 이름 기준으로 집계합니다. Codex·Claude와 마찬가지로 대화 제목은 쓰레드 이름으로 전송하지만, 프롬프트·응답·경로·원본 대화 ID(해시만 전송)는 telemetry pipeline으로 전송하지 않습니다.
 
 #### 1-4. OpenViking 모니터링 대시보드
 

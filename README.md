@@ -41,7 +41,7 @@ The project is named after Gullinkambi, the rooster from Norse mythology. In the
 
 - Shows Codex, Claude, and Antigravity total token usage, model call counts, daily token trends, and usage by model. Thread-level details remain available for Codex and Claude.
 - Tracks aggregation delay so both usage patterns and data freshness can be monitored.
-- Antigravity is aggregated on the Mac mini into privacy-safe daily model/project totals; prompts, responses, paths, and conversation IDs are never sent to the telemetry pipeline.
+- Antigravity is aggregated on the Mac mini into daily model/project totals and per-conversation totals labeled by repository. Conversation titles are sent as thread names, the same as Codex and Claude; prompts, responses, paths, and raw conversation IDs (only a hash) are never sent to the telemetry pipeline.
 
 #### 1-4. OpenViking monitoring
 
