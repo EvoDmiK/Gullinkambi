@@ -5111,8 +5111,10 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max by (provider, pool) (ai_subscription_collector_up)",
-                        "legendFormat": "{{provider}} {{pool}}"
+                        "expr": "max by (provider, pool) (ai_subscription_collector_up{pool!=\"all\"})",
+                        "instant": true,
+                        "legendFormat": "{{provider}} {{pool}}",
+                        "range": false
                       },
                       "version": "v0"
                     },
