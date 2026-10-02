@@ -6598,6 +6598,139 @@
             "version": "13.2.1"
           }
         }
+      },
+      "panel-ai-subscription-18": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "dataset": "timeseries",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "WITH days AS (\n  SELECT d::date AS day\n  FROM generate_series(\n    (now() - interval '28 days')::date,\n    now()::date - 1,\n    interval '1 day'\n  ) AS d\n),\nusage AS (\n  SELECT usage_date, agent, sum(total_tokens)::double precision AS tokens\n  FROM observability.orca_usage_daily\n  WHERE usage_date BETWEEN (SELECT min(day) FROM days) AND (SELECT max(day) FROM days)\n  GROUP BY usage_date, agent\n)\nSELECT\n  (ARRAY['월','화','수','목','금','토','일'])[extract(isodow FROM d.day)::int] AS \"요일\",\n  COALESCE(sum(u.tokens) FILTER (WHERE u.agent = 'codex'), 0) / count(DISTINCT d.day) AS \"Codex\",\n  COALESCE(sum(u.tokens) FILTER (WHERE u.agent = 'claude'), 0) / count(DISTINCT d.day) AS \"Claude\",\n  COALESCE(sum(u.tokens) FILTER (WHERE u.agent = 'antigravity'), 0) / count(DISTINCT d.day) AS \"Antigravity\"\nFROM days d\nLEFT JOIN usage u ON u.usage_date = d.day\nGROUP BY 1\nORDER BY min(extract(isodow FROM d.day));",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "ORCA 작업 폴더에서 쓴 Codex·Claude·Antigravity 토큰을 요일별 하루 평균으로 보여 줍니다. 오늘을 제외한 최근 28일(요일마다 4일)을 쓰고, 사용하지 않은 날은 0으로 넣어 평균을 냅니다. 대시보드 시간 범위와 관계없이 항상 최근 4주를 기준으로 합니다.",
+          "id": 2018,
+          "links": [],
+          "title": "요일별 평균 토큰 (최근 4주)",
+          "vizConfig": {
+            "group": "barchart",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "fillOpacity": 80,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineWidth": 1,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "sishort",
+                  "decimals": 1
+                },
+                "overrides": []
+              },
+              "options": {
+                "barRadius": 0,
+                "barWidth": 0.83,
+                "fullHighlight": false,
+                "groupWidth": 0.7,
+                "legend": {
+                  "calcs": [
+                    "mean"
+                  ],
+                  "displayMode": "list",
+                  "overflow": "ellipsis",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "orientation": "vertical",
+                "showValue": "never",
+                "stacking": "normal",
+                "tooltip": {
+                  "hideZeros": true,
+                  "mode": "multi",
+                  "sort": "desc"
+                },
+                "xTickLabelRotation": 0,
+                "xTickLabelSpacing": 0
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
       }
     },
     "layout": {
@@ -6735,6 +6868,19 @@
                                   "width": 23,
                                   "x": 0,
                                   "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-ai-subscription-18"
+                                  },
+                                  "height": 8,
+                                  "width": 23,
+                                  "x": 0,
+                                  "y": 8
                                 }
                               }
                             ]
