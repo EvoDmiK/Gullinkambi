@@ -3295,7 +3295,7 @@
                     "properties": [
                       {
                         "id": "custom.width",
-                        "value": 76
+                        "value": 128
                       }
                     ]
                   },
@@ -3386,7 +3386,7 @@
                     "properties": [
                       {
                         "id": "custom.width",
-                        "value": 59
+                        "value": 72
                       }
                     ]
                   },
@@ -3399,7 +3399,7 @@
                     "properties": [
                       {
                         "id": "custom.width",
-                        "value": 159
+                        "value": 275
                       }
                     ]
                   }
@@ -3411,7 +3411,7 @@
                 "sortBy": [
                   {
                     "desc": true,
-                    "displayName": "캐시 쓰기"
+                    "displayName": "총 토큰"
                   }
                 ]
               }
