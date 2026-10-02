@@ -6731,6 +6731,213 @@
             "version": "13.2.1"
           }
         }
+      },
+      "panel-ai-subscription-19": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(sum_over_time((clamp_min(ai_subscription_quota_used_percent{provider=\"codex\",window=\"weekly\"} - (ai_subscription_quota_used_percent{provider=\"codex\",window=\"weekly\"} offset 5m), 0))[1d:5m] offset -15h))",
+                        "interval": "1d",
+                        "legendFormat": "Codex",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(sum_over_time((clamp_min(ai_subscription_quota_used_percent{provider=\"claude\",window=\"weekly\"} - (ai_subscription_quota_used_percent{provider=\"claude\",window=\"weekly\"} offset 5m), 0))[1d:5m] offset -15h))",
+                        "interval": "1d",
+                        "legendFormat": "Claude",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(sum_over_time((clamp_min(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"gemini\",window=\"weekly\"} - (ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"gemini\",window=\"weekly\"} offset 5m), 0))[1d:5m] offset -15h))",
+                        "interval": "1d",
+                        "legendFormat": "Antigravity Gemini",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "C"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(sum_over_time((clamp_min(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"third_party\",window=\"weekly\"} - (ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"third_party\",window=\"weekly\"} offset 5m), 0))[1d:5m] offset -15h))",
+                        "interval": "1d",
+                        "legendFormat": "Antigravity Claude·GPT",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "D"
+                  }
+                }
+              ],
+              "queryOptions": {
+                "timeFrom": "7d",
+                "interval": "1d"
+              },
+              "transformations": [
+                {
+                  "group": "joinByField",
+                  "kind": "Transformation",
+                  "spec": {
+                    "options": {
+                      "byField": "Time",
+                      "mode": "outer"
+                    }
+                  }
+                },
+                {
+                  "group": "formatTime",
+                  "kind": "Transformation",
+                  "spec": {
+                    "options": {
+                      "timeField": "Time",
+                      "outputFormat": "MM-DD ddd",
+                      "useTimezone": true
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "description": "하루(한국 시간 00:00~24:00) 동안 각 구독의 주간 사용률이 몇 %p 늘었는지 보여 줍니다. 5분 간격 증가분만 더하므로 주간 초기화로 값이 떨어진 구간은 0으로 처리합니다. Prometheus 구독 지표는 2026-10-01부터 쌓이므로 그 이전 날짜는 비어 있습니다. 오늘 막대는 집계 중인 값입니다.",
+          "id": 2019,
+          "links": [],
+          "title": "요일별 주간 사용률 증가 (최근 7일)",
+          "vizConfig": {
+            "group": "barchart",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "fillOpacity": 80,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineWidth": 1,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "percent",
+                  "decimals": 1
+                },
+                "overrides": []
+              },
+              "options": {
+                "barRadius": 0,
+                "barWidth": 0.83,
+                "fullHighlight": false,
+                "groupWidth": 0.7,
+                "legend": {
+                  "calcs": [
+                    "sum"
+                  ],
+                  "displayMode": "list",
+                  "overflow": "ellipsis",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "orientation": "vertical",
+                "showValue": "never",
+                "stacking": "none",
+                "tooltip": {
+                  "hideZeros": true,
+                  "mode": "multi",
+                  "sort": "desc"
+                },
+                "xTickLabelRotation": 0,
+                "xTickLabelSpacing": 0
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
       }
     },
     "layout": {
@@ -6881,6 +7088,19 @@
                                   "width": 23,
                                   "x": 0,
                                   "y": 8
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-ai-subscription-19"
+                                  },
+                                  "height": 8,
+                                  "width": 23,
+                                  "x": 0,
+                                  "y": 16
                                 }
                               }
                             ]
