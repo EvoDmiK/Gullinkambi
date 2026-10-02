@@ -2881,7 +2881,7 @@
                     "properties": [
                       {
                         "id": "custom.width",
-                        "value": 65
+                        "value": 84
                       }
                     ]
                   },
@@ -2907,7 +2907,7 @@
                     "properties": [
                       {
                         "id": "custom.width",
-                        "value": 125
+                        "value": 160
                       }
                     ]
                   },
@@ -3007,12 +3007,7 @@
               "options": {
                 "cellHeight": "sm",
                 "showHeader": true,
-                "sortBy": [
-                  {
-                    "desc": true,
-                    "displayName": "총 토큰"
-                  }
-                ]
+                "sortBy": []
               }
             },
             "version": "13.2.1"
@@ -3256,7 +3251,7 @@
                     "properties": [
                       {
                         "id": "custom.width",
-                        "value": 65
+                        "value": 84
                       }
                     ]
                   },
