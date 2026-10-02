@@ -7884,10 +7884,10 @@
         "1d"
       ],
       "fiscalYearStartMonth": 0,
-      "from": "now-24h",
+      "from": "now/d",
       "hideTimepicker": false,
       "timezone": "Asia/Seoul",
-      "to": "now"
+      "to": "now/d"
     },
     "title": "통합 대시보드",
     "variables": [
