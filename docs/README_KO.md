@@ -155,9 +155,11 @@ provider 설정은 각 하위 디렉터리만 읽으며 60초마다 변경을 �
 | `ai_subscription_collector_up` | `provider`, 선택 `pool` | 최근 수집 성공은 `1`, 실패는 `0` |
 | `ai_subscription_last_success_timestamp_seconds` | `provider`, 선택 `pool` | 마지막 성공 수집 시각의 Unix timestamp(초) |
 
-`provider`는 `codex`, `claude`, `antigravity`, `window`는 `session`과 `weekly`를 사용합니다. Antigravity는 `pool="gemini"` 또는 `pool="third_party"`를 추가하며, 대시보드와 알림은 `gemini` pool만 다룹니다. 배포 수집기는 Codex rate limit, Claude Code status line 제한, Antigravity CLI `/usage` JSON을 이 스키마로 정규화합니다. 수집기와 macOS LaunchAgent installer는 `Birds-Nest/docker-compose/monitoring/ai-subscription-exporter`에 있으며, Mac mini Prometheus가 `host.docker.internal:9819`를 scrape하고 NAS Prometheus가 federation으로 정규화 지표를 가져옵니다. 수집기는 신뢰할 수 있는 모니터링 네트워크에서만 사용하고 저장된 로그인 자격 증명을 Grafana에 노출하지 마세요.
+`provider`는 `codex`, `claude`, `antigravity`, `window`는 `session`과 `weekly`를 사용합니다. Antigravity는 `pool="gemini"` 또는 `pool="third_party"`를 추가하며, 대시보드와 알림은 `gemini` pool만 다룹니다. 배포 수집기는 Codex rate limit, Claude Code OAuth 사용량 endpoint의 계정 전체 사용률(실패 시 Claude Code status line 제한), Antigravity CLI `/usage` JSON을 이 스키마로 정규화합니다. 수집기와 macOS LaunchAgent installer는 `Birds-Nest/docker-compose/monitoring/ai-subscription-exporter`에 있으며, Mac mini Prometheus가 `host.docker.internal:9819`를 scrape하고 NAS Prometheus가 federation으로 정규화 지표를 가져옵니다. 수집기는 신뢰할 수 있는 모니터링 네트워크에서만 사용하고 저장된 로그인 자격 증명을 Grafana에 노출하지 마세요.
 
-Claude는 모든 status line 입력에 `rate_limits`를 포함하지 않습니다. 따라서 수집기는 유효한 제한 정보가 있을 때만 Claude 캐시를 교체하고, 제한 정보가 없는 입력에서는 마지막 정상 스냅샷을 보존합니다. 유효한 캐시가 없거나 `CLAUDE_MAX_AGE_SECONDS`의 기본값인 24시간을 초과했을 때만 `ai_subscription_collector_up{provider="claude"}`가 `0`이 되므로, 일시적인 빈 입력으로 인한 오탐을 막으면서 실제 데이터 노후화는 계속 감지합니다.
+수집기는 Claude Code가 macOS 키체인에 저장한 access token으로 Claude 사용량 endpoint를 5분마다(`CLAUDE_USAGE_INTERVAL_SECONDS`) 조회합니다. 토큰은 읽기만 하고 갱신하지 않으며(갱신하면 Claude Code 로그인 세션이 바뀔 수 있습니다), 로그와 지표에는 출력하지 않습니다. 이 endpoint는 공식 문서화된 API가 아니므로 조회에 실패하면 아래의 status line 캐시로 되돌아갑니다. 계정 전체 값이라 VS Code 확장 등 다른 기기·클라이언트의 사용량도 Mac mini에서 Claude Code가 실행되기를 기다리지 않고 반영됩니다.
+
+Claude는 모든 status line 입력에 `rate_limits`를 포함하지 않습니다. 폴백용으로 수집기는 유효한 제한 정보가 있을 때만 Claude 캐시를 교체하고, 제한 정보가 없는 입력에서는 마지막 정상 스냅샷을 보존합니다. 유효한 캐시가 없거나 `CLAUDE_MAX_AGE_SECONDS`의 기본값인 24시간을 초과했을 때만 `ai_subscription_collector_up{provider="claude"}`가 `0`이 되므로, 일시적인 빈 입력으로 인한 오탐을 막으면서 실제 데이터 노후화는 계속 감지합니다.
 
 참고: [Codex app-server 계정 endpoint](https://learn.chatgpt.com/docs/app-server), [Claude Code status line rate limit](https://code.claude.com/docs/en/statusline#rate-limit-usage), [Antigravity 모델 quota](https://antigravity.google/docs/cli/commands/usage/), [Antigravity headless JSON](https://antigravity.google/docs/cli/headless/).
 
@@ -174,9 +176,9 @@ AI 구독 관련 규칙은 다음과 같습니다.
 | AI weekly quota high | Codex, Claude 또는 Antigravity Gemini의 주간 사용률이 50%, 70%, 85%, 95%를 넘을 때마다 주간 구간당 한 번씩 알림 | 10분 |
 | AI 5-hour quota high | Claude 또는 Antigravity Gemini의 5시간 사용률 80% 초과 (Codex는 5시간 한도 없음) | 2분 |
 
-Claude status line은 Claude Code가 메시지를 처리할 때 갱신되므로 Claude에는 15분 stale 규칙을 적용하지 않습니다. 대신 마지막 유효 스냅샷과 24시간 캐시 만료로 collector 상태를 판단합니다. Discord는 `alertname`, `service`, `severity`로 알람을 묶고 최초 알림은 30초 대기하며, 그룹 갱신은 5분, 미복구 반복 알림은 4시간 간격으로 전송합니다(주간 사용률 구간 알림은 반복하지 않음). resolved 알림도 활성화되어 있습니다. Provisioning된 Discord 전용 템플릿은 같은 그룹의 alert instance를 한 개의 색상 embed 카드로 합치고, 발생·복구 요약과 Source·Silence·Dashboard·Panel 링크만 간결하게 표시합니다.
+Claude에는 아직 15분 stale 규칙을 적용하지 않습니다. 사용량 endpoint를 쓸 수 없으면 Claude Code가 메시지를 처리할 때만 갱신되는 status line 캐시로 되돌아가기 때문입니다. 이 경우 마지막 유효 스냅샷과 24시간 캐시 만료로 collector 상태를 판단합니다. Discord는 `alertname`, `service`, `severity`로 알람을 묶고 최초 알림은 30초 대기하며, 그룹 갱신은 5분, 미복구 반복 알림은 4시간 간격으로 전송합니다(주간 사용률 구간 알림은 반복하지 않음). resolved 알림도 활성화되어 있습니다. Provisioning된 Discord 전용 템플릿은 같은 그룹의 alert instance를 한 개의 색상 embed 카드로 합치고, 발생·복구 요약과 Source·Silence·Dashboard·Panel 링크만 간결하게 표시합니다.
 
-Claude 값은 Mac mini에서 Claude Code CLI를 사용할 때만 갱신되며, VS Code 확장 등 다른 환경의 사용량은 다음 갱신 때 계정 전체 사용률에 함께 반영됩니다. 그래서 `AI 구독` 탭과 사용률 알림 규칙은 초기화 시각이 이미 지난 구간을 제외하고, 해당 패널에 `초기화됨 · 갱신 대기`를 표시합니다.
+Claude 값은 평소 계정 전체 사용량 endpoint에서 5분마다 갱신됩니다. status line 폴백 중에만 Mac mini에서 Claude Code CLI를 사용할 때 갱신되며, 이때 VS Code 확장 등 다른 환경의 사용량은 다음 갱신 때 계정 전체 사용률에 함께 반영됩니다. 그래서 `AI 구독` 탭과 사용률 알림 규칙은 초기화 시각이 이미 지난 구간을 제외하고, 해당 패널에 `초기화됨 · 갱신 대기`를 표시합니다.
 
 Discord 알림의 `Source`와 `Silence` 링크가 `localhost`를 가리키지 않도록 Grafana의 외부 기준 URL을 설정합니다.
 
