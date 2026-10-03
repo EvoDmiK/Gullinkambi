@@ -5063,7 +5063,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"codex\",window=\"session\"} \u003e time()) * 1000",
+                        "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"codex\",window=\"weekly\"} \u003e time()) * 1000",
                         "legendFormat": ""
                       },
                       "version": "v0"
@@ -5076,10 +5076,10 @@
               "transformations": []
             }
           },
-          "description": "Codex 단기 사용 구간이 초기화되는 로컬 시각입니다. Prometheus 값은 Unix seconds이며 Grafana 표시를 위해 milliseconds로 변환합니다.",
+          "description": "Codex 주간 사용 구간이 초기화되는 로컬 시각입니다. Prometheus 값은 Unix seconds이며 Grafana 표시를 위해 milliseconds로 변환합니다.",
           "id": 2005,
           "links": [],
-          "title": "Codex · 다음 초기화",
+          "title": "Codex · 주간 초기화",
           "vizConfig": {
             "group": "stat",
             "kind": "VizConfig",
