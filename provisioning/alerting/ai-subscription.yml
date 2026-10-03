@@ -25,7 +25,7 @@ groups:
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
               editorMode: code
-              expr: 'max by (provider, pool) (ai_subscription_collector_up)'
+              expr: 'max by (provider, pool) (ai_subscription_collector_up{pool!="third_party"})'
               instant: true
               intervalMs: 1000
               legendFormat: '{{provider}} {{pool}}'
@@ -109,7 +109,7 @@ groups:
         execErrState: Alerting
         for: 10m
         annotations:
-          summary: '{{ $labels.provider }}{{ if $labels.pool }} ({{ $labels.pool }}){{ end }} 주간 구독 사용률이 85%를 초과했습니다.'
+          summary: '{{ $labels.provider }}{{ if $labels.pool }} ({{ $labels.pool }}){{ end }} 주간 구독 사용률이 {{ $labels.tier }}%를 넘었습니다. (현재 {{ printf "%.0f" $values.B.Value }}%)'
           description: 다음 초기화 시각과 남은 작업량을 확인하세요.
         labels: {severity: warning, service: ai-subscription, source: gullinkambi}
         data:
@@ -119,7 +119,12 @@ groups:
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
               editorMode: code
-              expr: 'max by (provider, pool) (ai_subscription_quota_used_percent{window="weekly"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds <= time()))'
+              # One instance per crossed tier, so each of 50/70/85/95% notifies once per weekly window.
+              expr: >-
+                label_replace(max by (provider, pool) (ai_subscription_quota_used_percent{window="weekly", pool!="third_party"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds <= time())) >= 50, "tier", "50", "", "")
+                or label_replace(max by (provider, pool) (ai_subscription_quota_used_percent{window="weekly", pool!="third_party"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds <= time())) >= 70, "tier", "70", "", "")
+                or label_replace(max by (provider, pool) (ai_subscription_quota_used_percent{window="weekly", pool!="third_party"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds <= time())) >= 85, "tier", "85", "", "")
+                or label_replace(max by (provider, pool) (ai_subscription_quota_used_percent{window="weekly", pool!="third_party"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds <= time())) >= 95, "tier", "95", "", "")
               instant: true
               intervalMs: 1000
               legendFormat: '{{provider}} {{pool}}'
@@ -134,7 +139,47 @@ groups:
             model:
               <<: *threshold_lt_one
               conditions:
-                - evaluator: {params: [85], type: gt}
+                - evaluator: {params: [0], type: gt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query
+
+      - uid: gk_ai_session_quota
+        title: AI 5-hour quota high
+        condition: C
+        dashboardUid: dafsnnz67rw6ioc
+        panelId: 2008
+        noDataState: OK
+        execErrState: Alerting
+        for: 2m
+        annotations:
+          summary: '{{ $labels.provider }}{{ if $labels.pool }} ({{ $labels.pool }}){{ end }} 5시간 구독 사용률이 80%를 초과했습니다.'
+          description: 다음 초기화 시각과 남은 작업량을 확인하세요.
+        labels: {severity: warning, service: ai-subscription, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 1800, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: 'max by (provider, pool) (ai_subscription_quota_used_percent{window="session", provider=~"claude|antigravity", pool!="third_party"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds <= time()))'
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{provider}} {{pool}}'
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              <<: *threshold_lt_one
+              conditions:
+                - evaluator: {params: [80], type: gt}
                   operator: {type: and}
                   query: {params: [C]}
                   reducer: {params: [], type: last}

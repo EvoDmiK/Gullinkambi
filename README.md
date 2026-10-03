@@ -160,19 +160,20 @@ References: [Codex app-server account endpoints](https://learn.chatgpt.com/docs/
 
 ### Grafana alerting and Discord notifications
 
-Files under `provisioning/alerting/` provision 22 Grafana-managed rules for infrastructure availability, disk and temperature capacity, n8n, Hermes, Orca, OpenViking, Nginx Proxy Manager, and AI subscription monitoring. `notifications.yml` routes firing and resolved notifications to the `Gullinkambi Discord` contact point. The webhook is supplied only through `GF_DISCORD_WEBHOOK_URL`; never commit its value.
+Files under `provisioning/alerting/` provision 23 Grafana-managed rules for infrastructure availability, disk and temperature capacity, n8n, Hermes, Orca, OpenViking, Nginx Proxy Manager, and AI subscription monitoring. `notifications.yml` routes firing and resolved notifications to the `Gullinkambi Discord` contact point. The webhook is supplied only through `GF_DISCORD_WEBHOOK_URL`; never commit its value.
 
 The AI subscription rules are:
 
 | Rule | Condition | For |
 | --- | --- | --- |
-| AI subscription collector down | Codex, Claude, or an Antigravity pool has `ai_subscription_collector_up < 1` | 5 minutes |
+| AI subscription collector down | Codex, Claude, or Antigravity Gemini has `ai_subscription_collector_up < 1` | 5 minutes |
 | Codex subscription data stale | Last successful Codex collection is more than 15 minutes old | 5 minutes |
-| AI weekly quota high | Codex, Claude, or an Antigravity pool exceeds 85% weekly usage | 10 minutes |
+| AI weekly quota high | Codex, Claude, or Antigravity Gemini crosses 50%, 70%, 85%, or 95% weekly usage; each tier notifies once per weekly window | 10 minutes |
+| AI 5-hour quota high | Claude or Antigravity Gemini exceeds 80% 5-hour usage (Codex has no 5-hour window) | 2 minutes |
 
-Claude intentionally has no 15-minute stale rule because its status line refreshes when Claude Code handles a message. Its collector state instead uses the last valid snapshot and the 24-hour cache limit. Discord groups alerts by `alertname`, `service`, and `severity`, waits 30 seconds before the first notification, groups updates every 5 minutes, repeats unresolved alerts every 4 hours, and sends resolved notifications. A provisioned Discord template combines every alert instance in the group into one color-coded embed card with concise firing or resolved summaries and Source, Silence, Dashboard, and Panel links.
+Claude intentionally has no 15-minute stale rule because its status line refreshes when Claude Code handles a message. Its collector state instead uses the last valid snapshot and the 24-hour cache limit. Discord groups alerts by `alertname`, `service`, and `severity`, waits 30 seconds before the first notification, groups updates every 5 minutes, repeats unresolved alerts every 4 hours (weekly quota tiers are not repeated), and sends resolved notifications. A provisioned Discord template combines every alert instance in the group into one color-coded embed card with concise firing or resolved summaries and Source, Silence, Dashboard, and Panel links.
 
-Claude values refresh only when Claude Code CLI runs on the Mac mini; usage from other environments such as the VS Code extension is reflected in the account-wide percentage at the next refresh. The `AI subscription` tab and the `AI weekly quota high` rule therefore exclude windows whose reset time has already passed, and those panels show `초기화됨 · 갱신 대기` (reset, waiting for refresh).
+Claude values refresh only when Claude Code CLI runs on the Mac mini; usage from other environments such as the VS Code extension is reflected in the account-wide percentage at the next refresh. The `AI subscription` tab and the quota rules therefore exclude windows whose reset time has already passed, and those panels show `초기화됨 · 갱신 대기` (reset, waiting for refresh).
 
 Set Grafana's canonical public URL so notification `Source` and `Silence` links never point to `localhost`:
 

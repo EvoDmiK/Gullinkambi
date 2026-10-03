@@ -62,3 +62,9 @@ policies:
     group_wait: 30s
     group_interval: 5m
     repeat_interval: 4h
+    routes:
+      # Weekly quota tiers notify once when crossed; the next tier or the weekly reset sends the next card.
+      - receiver: Gullinkambi Discord
+        object_matchers:
+          - ['alertname', '=', 'AI weekly quota high']
+        repeat_interval: 168h
