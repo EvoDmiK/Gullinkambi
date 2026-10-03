@@ -4101,9 +4101,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "expr": "time() - max by (provider, pool) (ai_subscription_last_success_timestamp_seconds{pool!=\"third_party\"})",
-                        "legendFormat": "{{provider}} {{pool}}",
-                        "instant": true,
-                        "range": false
+                        "legendFormat": "{{provider}} {{pool}}"
                       },
                       "version": "v0"
                     },
@@ -4192,9 +4190,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "expr": "max(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"gemini\",window=\"session\"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
-                        "legendFormat": "",
-                        "instant": true,
-                        "range": false
+                        "legendFormat": ""
                       },
                       "version": "v0"
                     },
@@ -4289,9 +4285,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "expr": "max(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"gemini\",window=\"weekly\"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
-                        "legendFormat": "",
-                        "instant": true,
-                        "range": false
+                        "legendFormat": ""
                       },
                       "version": "v0"
                     },
@@ -4386,9 +4380,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"antigravity\",pool=\"gemini\",window=\"session\"} \u003e time()) * 1000",
-                        "legendFormat": "Gemini",
-                        "instant": true,
-                        "range": false
+                        "legendFormat": "Gemini"
                       },
                       "version": "v0"
                     },
@@ -4787,9 +4779,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "expr": "max(ai_subscription_quota_used_percent{provider=\"codex\",window=\"weekly\"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
-                        "legendFormat": "",
-                        "instant": true,
-                        "range": false
+                        "legendFormat": ""
                       },
                       "version": "v0"
                     },
@@ -4884,9 +4874,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "expr": "max(ai_subscription_quota_used_percent{provider=\"claude\",window=\"session\"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
-                        "legendFormat": "",
-                        "instant": true,
-                        "range": false
+                        "legendFormat": ""
                       },
                       "version": "v0"
                     },
@@ -4981,9 +4969,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "expr": "max(ai_subscription_quota_used_percent{provider=\"claude\",window=\"weekly\"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
-                        "legendFormat": "",
-                        "instant": true,
-                        "range": false
+                        "legendFormat": ""
                       },
                       "version": "v0"
                     },
@@ -5078,9 +5064,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"codex\",window=\"session\"} \u003e time()) * 1000",
-                        "legendFormat": "",
-                        "instant": true,
-                        "range": false
+                        "legendFormat": ""
                       },
                       "version": "v0"
                     },
@@ -5160,9 +5144,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"claude\",window=\"session\"} \u003e time()) * 1000",
-                        "legendFormat": "",
-                        "instant": true,
-                        "range": false
+                        "legendFormat": ""
                       },
                       "version": "v0"
                     },
