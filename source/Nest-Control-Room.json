@@ -7091,7 +7091,8 @@
                         "expr": "(max(container_last_seen{instance=\"nas\",name=\"nginx-proxy-manager\"}) \u003e bool (time() - 120)) or vector(0)",
                         "interval": "",
                         "legendFormat": "NPM · 컨테이너 상태",
-                        "range": true
+                        "range": false,
+                        "instant": true
                       },
                       "version": "v0"
                     },
@@ -7114,6 +7115,21 @@
               "fieldConfig": {
                 "defaults": {
                   "decimals": 0,
+                  "mappings": [
+                    {
+                      "options": {
+                        "0": {
+                          "index": 0,
+                          "text": "DOWN"
+                        },
+                        "1": {
+                          "index": 1,
+                          "text": "UP"
+                        }
+                      },
+                      "type": "value"
+                    }
+                  ],
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -7127,22 +7143,7 @@
                       }
                     ]
                   },
-                  "unit": "none",
-                  "mappings": [
-                    {
-                      "type": "value",
-                      "options": {
-                        "0": {
-                          "text": "DOWN",
-                          "index": 0
-                        },
-                        "1": {
-                          "text": "UP",
-                          "index": 1
-                        }
-                      }
-                    }
-                  ]
+                  "unit": "none"
                 },
                 "overrides": []
               },
@@ -7358,7 +7359,8 @@
                         "expr": "min(npm_certificate_expiry_timestamp_seconds - time()) / 86400",
                         "interval": "",
                         "legendFormat": "NPM · 최단 인증서 만료",
-                        "range": true
+                        "range": false,
+                        "instant": true
                       },
                       "version": "v0"
                     },
@@ -7450,7 +7452,8 @@
                         "expr": "time() - max(npm_collector_last_success_timestamp_seconds)",
                         "interval": "",
                         "legendFormat": "NPM · 수집 지연",
-                        "range": true
+                        "range": false,
+                        "instant": true
                       },
                       "version": "v0"
                     },
@@ -7699,6 +7702,7 @@
                       "mode": "off"
                     }
                   },
+                  "decimals": 1,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -7708,8 +7712,7 @@
                       }
                     ]
                   },
-                  "unit": "reqps",
-                  "decimals": 1
+                  "unit": "reqps"
                 },
                 "overrides": [
                   {
@@ -7841,6 +7844,7 @@
                       "mode": "off"
                     }
                   },
+                  "decimals": 1,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -7850,8 +7854,7 @@
                       }
                     ]
                   },
-                  "unit": "reqps",
-                  "decimals": 1
+                  "unit": "reqps"
                 },
                 "overrides": []
               },
@@ -7966,6 +7969,7 @@
                       "mode": "off"
                     }
                   },
+                  "decimals": 1,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -7979,8 +7983,7 @@
                       }
                     ]
                   },
-                  "unit": "percent",
-                  "decimals": 1
+                  "unit": "percent"
                 },
                 "overrides": []
               },
@@ -8095,6 +8098,7 @@
                       "mode": "off"
                     }
                   },
+                  "decimals": 1,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -8104,8 +8108,7 @@
                       }
                     ]
                   },
-                  "unit": "Bps",
-                  "decimals": 1
+                  "unit": "Bps"
                 },
                 "overrides": []
               },
@@ -8159,9 +8162,9 @@
                       "spec": {
                         "editorMode": "code",
                         "expr": "sort((npm_certificate_expiry_timestamp_seconds - time()) / 86400)",
+                        "instant": true,
                         "interval": "",
                         "legendFormat": "{{domain}}",
-                        "instant": true,
                         "range": false
                       },
                       "version": "v0"
@@ -8185,6 +8188,8 @@
               "fieldConfig": {
                 "defaults": {
                   "decimals": 0,
+                  "max": 90,
+                  "min": 0,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -8206,9 +8211,7 @@
                       }
                     ]
                   },
-                  "unit": "d",
-                  "max": 90,
-                  "min": 0
+                  "unit": "d"
                 },
                 "overrides": []
               },
@@ -8322,6 +8325,7 @@
                       "mode": "off"
                     }
                   },
+                  "decimals": 1,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -8335,8 +8339,7 @@
                       }
                     ]
                   },
-                  "unit": "percent",
-                  "decimals": 1
+                  "unit": "percent"
                 },
                 "overrides": []
               },
@@ -8473,6 +8476,7 @@
                       "mode": "off"
                     }
                   },
+                  "decimals": 1,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -8482,8 +8486,7 @@
                       }
                     ]
                   },
-                  "unit": "Bps",
-                  "decimals": 1
+                  "unit": "Bps"
                 },
                 "overrides": []
               },
@@ -8522,6 +8525,244 @@
       "kind": "TabsLayout",
       "spec": {
         "tabs": [
+          {
+            "kind": "TabsLayoutTab",
+            "spec": {
+              "layout": {
+                "kind": "RowsLayout",
+                "spec": {
+                  "rows": [
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-65"
+                                  },
+                                  "height": 4,
+                                  "width": 4,
+                                  "x": 0,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-66"
+                                  },
+                                  "height": 4,
+                                  "width": 4,
+                                  "x": 4,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-67"
+                                  },
+                                  "height": 4,
+                                  "width": 4,
+                                  "x": 8,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-68"
+                                  },
+                                  "height": 4,
+                                  "width": 4,
+                                  "x": 12,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-69"
+                                  },
+                                  "height": 4,
+                                  "width": 4,
+                                  "x": 16,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-70"
+                                  },
+                                  "height": 4,
+                                  "width": 4,
+                                  "x": 20,
+                                  "y": 0
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "title": "상태 요약"
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-71"
+                                  },
+                                  "height": 8,
+                                  "width": 8,
+                                  "x": 0,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-72"
+                                  },
+                                  "height": 8,
+                                  "width": 8,
+                                  "x": 8,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-74"
+                                  },
+                                  "height": 8,
+                                  "width": 8,
+                                  "x": 16,
+                                  "y": 0
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "title": "트래픽"
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-73"
+                                  },
+                                  "height": 8,
+                                  "width": 12,
+                                  "x": 0,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-75"
+                                  },
+                                  "height": 8,
+                                  "width": 12,
+                                  "x": 12,
+                                  "y": 0
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "title": "오류와 인증서"
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-76"
+                                  },
+                                  "height": 8,
+                                  "width": 12,
+                                  "x": 0,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-77"
+                                  },
+                                  "height": 8,
+                                  "width": 12,
+                                  "x": 12,
+                                  "y": 0
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "title": "컨테이너 자원"
+                      }
+                    }
+                  ]
+                }
+              },
+              "title": "NPM"
+            }
+          },
           {
             "kind": "TabsLayoutTab",
             "spec": {
@@ -9557,244 +9798,6 @@
               },
               "title": "Mac mini 시스템"
             }
-          },
-          {
-            "kind": "TabsLayoutTab",
-            "spec": {
-              "layout": {
-                "kind": "RowsLayout",
-                "spec": {
-                  "rows": [
-                    {
-                      "kind": "RowsLayoutRow",
-                      "spec": {
-                        "collapse": false,
-                        "layout": {
-                          "kind": "GridLayout",
-                          "spec": {
-                            "items": [
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-65"
-                                  },
-                                  "height": 4,
-                                  "width": 4,
-                                  "x": 0,
-                                  "y": 0
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-66"
-                                  },
-                                  "height": 4,
-                                  "width": 4,
-                                  "x": 4,
-                                  "y": 0
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-67"
-                                  },
-                                  "height": 4,
-                                  "width": 4,
-                                  "x": 8,
-                                  "y": 0
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-68"
-                                  },
-                                  "height": 4,
-                                  "width": 4,
-                                  "x": 12,
-                                  "y": 0
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-69"
-                                  },
-                                  "height": 4,
-                                  "width": 4,
-                                  "x": 16,
-                                  "y": 0
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-70"
-                                  },
-                                  "height": 4,
-                                  "width": 4,
-                                  "x": 20,
-                                  "y": 0
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        "title": "상태 요약"
-                      }
-                    },
-                    {
-                      "kind": "RowsLayoutRow",
-                      "spec": {
-                        "collapse": false,
-                        "layout": {
-                          "kind": "GridLayout",
-                          "spec": {
-                            "items": [
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-71"
-                                  },
-                                  "height": 8,
-                                  "width": 8,
-                                  "x": 0,
-                                  "y": 0
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-72"
-                                  },
-                                  "height": 8,
-                                  "width": 8,
-                                  "x": 8,
-                                  "y": 0
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-74"
-                                  },
-                                  "height": 8,
-                                  "width": 8,
-                                  "x": 16,
-                                  "y": 0
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        "title": "트래픽"
-                      }
-                    },
-                    {
-                      "kind": "RowsLayoutRow",
-                      "spec": {
-                        "collapse": false,
-                        "layout": {
-                          "kind": "GridLayout",
-                          "spec": {
-                            "items": [
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-73"
-                                  },
-                                  "height": 8,
-                                  "width": 12,
-                                  "x": 0,
-                                  "y": 0
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-75"
-                                  },
-                                  "height": 8,
-                                  "width": 12,
-                                  "x": 12,
-                                  "y": 0
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        "title": "오류와 인증서"
-                      }
-                    },
-                    {
-                      "kind": "RowsLayoutRow",
-                      "spec": {
-                        "collapse": false,
-                        "layout": {
-                          "kind": "GridLayout",
-                          "spec": {
-                            "items": [
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-76"
-                                  },
-                                  "height": 8,
-                                  "width": 12,
-                                  "x": 0,
-                                  "y": 0
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-77"
-                                  },
-                                  "height": 8,
-                                  "width": 12,
-                                  "x": 12,
-                                  "y": 0
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        "title": "컨테이너 자원"
-                      }
-                    }
-                  ]
-                }
-              },
-              "title": "NPM"
-            }
           }
         ]
       }
@@ -9834,7 +9837,7 @@
         "1d"
       ],
       "fiscalYearStartMonth": 0,
-      "from": "now-6h",
+      "from": "now/w",
       "hideTimepicker": false,
       "timezone": "Asia/Seoul",
       "to": "now"

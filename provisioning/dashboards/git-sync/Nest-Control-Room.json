@@ -7091,7 +7091,8 @@
                         "expr": "(max(container_last_seen{instance=\"nas\",name=\"nginx-proxy-manager\"}) \u003e bool (time() - 120)) or vector(0)",
                         "interval": "",
                         "legendFormat": "NPM · 컨테이너 상태",
-                        "range": true
+                        "range": false,
+                        "instant": true
                       },
                       "version": "v0"
                     },
@@ -7358,7 +7359,8 @@
                         "expr": "min(npm_certificate_expiry_timestamp_seconds - time()) / 86400",
                         "interval": "",
                         "legendFormat": "NPM · 최단 인증서 만료",
-                        "range": true
+                        "range": false,
+                        "instant": true
                       },
                       "version": "v0"
                     },
@@ -7450,7 +7452,8 @@
                         "expr": "time() - max(npm_collector_last_success_timestamp_seconds)",
                         "interval": "",
                         "legendFormat": "NPM · 수집 지연",
-                        "range": true
+                        "range": false,
+                        "instant": true
                       },
                       "version": "v0"
                     },
