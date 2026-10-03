@@ -4100,7 +4100,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "time() - max by (provider, pool) (ai_subscription_last_success_timestamp_seconds)",
+                        "expr": "time() - max by (provider, pool) (ai_subscription_last_success_timestamp_seconds{pool!=\"third_party\"})",
                         "legendFormat": "{{provider}} {{pool}}"
                       },
                       "version": "v0"
@@ -4361,196 +4361,6 @@
           }
         }
       },
-      "panel-ai-subscription-15": {
-        "kind": "Panel",
-        "spec": {
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "PBFA97CFB590B2093"
-                      },
-                      "group": "prometheus",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "expr": "max(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"third_party\",window=\"session\"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
-                        "legendFormat": ""
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "A"
-                  }
-                }
-              ],
-              "queryOptions": {},
-              "transformations": []
-            }
-          },
-          "description": "Antigravity Claude·GPT 모델 풀의 5시간 사용 구간 소진율입니다. agy /usage의 remaining_fraction을 사용률로 변환합니다. 초기화 시각이 지난 구간은 새 값이 들어올 때까지 갱신 대기로 표시합니다.",
-          "id": 2015,
-          "links": [],
-          "title": "Antigravity Claude·GPT · 5시간",
-          "vizConfig": {
-            "group": "stat",
-            "kind": "VizConfig",
-            "spec": {
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "decimals": 1,
-                  "max": 100,
-                  "min": 0,
-                  "noValue": "초기화됨 · 갱신 대기",
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green",
-                        "value": 0
-                      },
-                      {
-                        "color": "light-yellow",
-                        "value": 60
-                      },
-                      {
-                        "color": "red",
-                        "value": 85
-                      },
-                      {
-                        "color": "dark-red",
-                        "value": 90
-                      }
-                    ]
-                  },
-                  "unit": "percent"
-                },
-                "overrides": []
-              },
-              "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "percentChangeColorMode": "standard",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "textMode": "auto",
-                "wideLayout": true
-              }
-            },
-            "version": "13.2.1"
-          }
-        }
-      },
-      "panel-ai-subscription-16": {
-        "kind": "Panel",
-        "spec": {
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "PBFA97CFB590B2093"
-                      },
-                      "group": "prometheus",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "expr": "max(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"third_party\",window=\"weekly\"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
-                        "legendFormat": ""
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "A"
-                  }
-                }
-              ],
-              "queryOptions": {},
-              "transformations": []
-            }
-          },
-          "description": "Antigravity Claude·GPT 모델 풀의 주간 사용 구간 소진율입니다. agy /usage의 remaining_fraction을 사용률로 변환합니다. 초기화 시각이 지난 구간은 새 값이 들어올 때까지 갱신 대기로 표시합니다.",
-          "id": 2016,
-          "links": [],
-          "title": "Antigravity Claude·GPT · 주간",
-          "vizConfig": {
-            "group": "stat",
-            "kind": "VizConfig",
-            "spec": {
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "decimals": 1,
-                  "max": 100,
-                  "min": 0,
-                  "noValue": "초기화됨 · 갱신 대기",
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green",
-                        "value": 0
-                      },
-                      {
-                        "color": "light-yellow",
-                        "value": 60
-                      },
-                      {
-                        "color": "red",
-                        "value": 85
-                      },
-                      {
-                        "color": "dark-red",
-                        "value": 90
-                      }
-                    ]
-                  },
-                  "unit": "percent"
-                },
-                "overrides": []
-              },
-              "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "percentChangeColorMode": "standard",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "textMode": "auto",
-                "wideLayout": true
-              }
-            },
-            "version": "13.2.1"
-          }
-        }
-      },
       "panel-ai-subscription-17": {
         "kind": "Panel",
         "spec": {
@@ -4576,32 +4386,13 @@
                     },
                     "refId": "A"
                   }
-                },
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "PBFA97CFB590B2093"
-                      },
-                      "group": "prometheus",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"antigravity\",pool=\"third_party\",window=\"session\"} \u003e time()) * 1000",
-                        "legendFormat": "Claude·GPT"
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "B"
-                  }
                 }
               ],
               "queryOptions": {},
               "transformations": []
             }
           },
-          "description": "Antigravity Gemini와 Claude·GPT 모델 풀의 5시간 사용 구간 초기화 시각입니다.",
+          "description": "Antigravity Gemini 모델 풀의 5시간 사용 구간 초기화 시각입니다.",
           "id": 2017,
           "links": [],
           "title": "Antigravity · 다음 초기화",
@@ -4855,28 +4646,6 @@
                       "version": "v0"
                     },
                     "refId": "C"
-                  }
-                },
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "PBFA97CFB590B2093"
-                      },
-                      "group": "prometheus",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "editorMode": "code",
-                        "expr": "sum(sum_over_time((clamp_min(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"third_party\",window=\"weekly\"} - (ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"third_party\",window=\"weekly\"} offset 5m), 0))[1d:5m] offset -15h))",
-                        "interval": "1d",
-                        "legendFormat": "Antigravity Claude·GPT",
-                        "range": true
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "D"
                   }
                 }
               ],
@@ -5455,7 +5224,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max by (provider, pool) (ai_subscription_collector_up{pool!=\"all\"})",
+                        "expr": "max by (provider, pool) (ai_subscription_collector_up{pool!=\"all\",pool!=\"third_party\"})",
                         "instant": true,
                         "legendFormat": "{{provider}} {{pool}}",
                         "range": false
@@ -5552,7 +5321,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max by (provider, pool, window) (ai_subscription_quota_used_percent unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
+                        "expr": "max by (provider, pool, window) (ai_subscription_quota_used_percent{pool!=\"third_party\"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
                         "legendFormat": "{{provider}} · {{pool}} · {{window}}"
                       },
                       "version": "v0"
@@ -7001,21 +6770,8 @@
                                     "name": "panel-ai-subscription-13"
                                   },
                                   "height": 6,
-                                  "width": 5,
+                                  "width": 12,
                                   "x": 0,
-                                  "y": 6
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-ai-subscription-15"
-                                  },
-                                  "height": 6,
-                                  "width": 6,
-                                  "x": 5,
                                   "y": 6
                                 }
                               },
@@ -7027,21 +6783,8 @@
                                     "name": "panel-ai-subscription-14"
                                   },
                                   "height": 6,
-                                  "width": 7,
-                                  "x": 11,
-                                  "y": 6
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-ai-subscription-16"
-                                  },
-                                  "height": 6,
-                                  "width": 6,
-                                  "x": 18,
+                                  "width": 12,
+                                  "x": 12,
                                   "y": 6
                                 }
                               }
@@ -7889,7 +7632,7 @@
       "timezone": "Asia/Seoul",
       "to": "now/d"
     },
-    "title": "통합 대시보드",
+    "title": "서비스 모니터링",
     "variables": [
       {
         "kind": "QueryVariable",

@@ -16,13 +16,13 @@ n8n과 Hermes 에이전트의 실행 상태, Hermes Kanban 작업, OpenViking, N
 
 | 대시보드 | 배포 방식 | 주요 내용 | 데이터 소스 |
 | --- | --- | --- | --- |
-| 통합 대시보드 | Grafana Git Sync | n8n 실행, Hermes Agent·Kanban, Orca 사용량, OpenViking, Codex·Claude·Antigravity 구독 사용량 | PostgreSQL/TimescaleDB, Prometheus |
+| 서비스 모니터링 | Grafana Git Sync | n8n 실행, Hermes Agent·Kanban, Orca 사용량, OpenViking, Codex·Claude·Antigravity 구독 사용량 | PostgreSQL/TimescaleDB, Prometheus |
 | 인프라 모니터링 | Grafana Git Sync | NAS·Mac mini 시스템과 Docker 컨테이너, M4 하드웨어, Nginx Proxy Manager | Prometheus/cAdvisor, node exporter, macmon, NPM 수집기 |
 | Mac mini 시스템 모니터링 (독립 뷰) | File provisioning | CPU, 메모리, 디스크, 네트워크, 온도, M4 전력·주파수 | Prometheus/node exporter |
 | OpenViking Overview | File provisioning | exporter, 컨테이너 자원, 토큰·API 사용량, 큐와 로그 | Prometheus |
 
 
-### 1. 통합 대시보드
+### 1. 서비스 모니터링
 
 #### 1-1. n8n 모니터링 대시보드
 
@@ -109,7 +109,7 @@ Grafana의 Git Sync 설정에서 다음 값을 지정합니다.
 | Branch | `main` |
 | Path | `provisioning/dashboards/git-sync` |
 
-이 경로에는 `통합 대시보드`와 `인프라 모니터링`만 있습니다. `provisioning/dashboards/` 전체를 Git Sync 경로로 지정하면 일반 dashboard JSON과 provider YAML까지 섞이므로 사용하지 않습니다.
+이 경로에는 `서비스 모니터링`과 `인프라 모니터링`만 있습니다. `provisioning/dashboards/` 전체를 Git Sync 경로로 지정하면 일반 dashboard JSON과 provider YAML까지 섞이므로 사용하지 않습니다.
 
 ### File provisioning
 
@@ -144,7 +144,7 @@ provider 설정은 각 하위 디렉터리만 읽으며 60초마다 변경을 �
 
 ### AI 구독 모니터링 수집 조건
 
-통합 대시보드의 `AI 구독` 탭은 아래와 같이 정규화된 Prometheus 메트릭을 사용합니다. exporter와 자격 증명은 이 저장소에 포함하지 않습니다.
+서비스 모니터링의 `AI 구독` 탭은 아래와 같이 정규화된 Prometheus 메트릭을 사용합니다. exporter와 자격 증명은 이 저장소에 포함하지 않습니다.
 
 | 메트릭 | 필수 레이블 | 의미 |
 | --- | --- | --- |
@@ -155,7 +155,7 @@ provider 설정은 각 하위 디렉터리만 읽으며 60초마다 변경을 �
 | `ai_subscription_collector_up` | `provider`, 선택 `pool` | 최근 수집 성공은 `1`, 실패는 `0` |
 | `ai_subscription_last_success_timestamp_seconds` | `provider`, 선택 `pool` | 마지막 성공 수집 시각의 Unix timestamp(초) |
 
-`provider`는 `codex`, `claude`, `antigravity`, `window`는 `session`과 `weekly`를 사용합니다. Antigravity는 `pool="gemini"` 또는 `pool="third_party"`를 추가합니다. 배포 수집기는 Codex rate limit, Claude Code status line 제한, Antigravity CLI `/usage` JSON을 이 스키마로 정규화합니다. 수집기와 macOS LaunchAgent installer는 `Birds-Nest/docker-compose/monitoring/ai-subscription-exporter`에 있으며, Mac mini Prometheus가 `host.docker.internal:9819`를 scrape하고 NAS Prometheus가 federation으로 정규화 지표를 가져옵니다. 수집기는 신뢰할 수 있는 모니터링 네트워크에서만 사용하고 저장된 로그인 자격 증명을 Grafana에 노출하지 마세요.
+`provider`는 `codex`, `claude`, `antigravity`, `window`는 `session`과 `weekly`를 사용합니다. Antigravity는 `pool="gemini"` 또는 `pool="third_party"`를 추가하며, 대시보드와 알림은 `gemini` pool만 다룹니다. 배포 수집기는 Codex rate limit, Claude Code status line 제한, Antigravity CLI `/usage` JSON을 이 스키마로 정규화합니다. 수집기와 macOS LaunchAgent installer는 `Birds-Nest/docker-compose/monitoring/ai-subscription-exporter`에 있으며, Mac mini Prometheus가 `host.docker.internal:9819`를 scrape하고 NAS Prometheus가 federation으로 정규화 지표를 가져옵니다. 수집기는 신뢰할 수 있는 모니터링 네트워크에서만 사용하고 저장된 로그인 자격 증명을 Grafana에 노출하지 마세요.
 
 Claude는 모든 status line 입력에 `rate_limits`를 포함하지 않습니다. 따라서 수집기는 유효한 제한 정보가 있을 때만 Claude 캐시를 교체하고, 제한 정보가 없는 입력에서는 마지막 정상 스냅샷을 보존합니다. 유효한 캐시가 없거나 `CLAUDE_MAX_AGE_SECONDS`의 기본값인 24시간을 초과했을 때만 `ai_subscription_collector_up{provider="claude"}`가 `0`이 되므로, 일시적인 빈 입력으로 인한 오탐을 막으면서 실제 데이터 노후화는 계속 감지합니다.
 
