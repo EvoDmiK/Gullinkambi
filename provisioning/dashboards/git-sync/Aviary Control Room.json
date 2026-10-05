@@ -4380,11 +4380,30 @@
                       "kind": "DataQuery",
                       "spec": {
                         "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"antigravity\",pool=\"gemini\",window=\"session\"} \u003e time()) * 1000",
-                        "legendFormat": "Gemini"
+                        "legendFormat": "5시간"
                       },
                       "version": "v0"
                     },
                     "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"antigravity\",pool=\"gemini\",window=\"weekly\"} \u003e time()) * 1000",
+                        "legendFormat": "주간"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
                   }
                 }
               ],
@@ -4392,10 +4411,10 @@
               "transformations": []
             }
           },
-          "description": "Antigravity Gemini 모델 풀의 5시간 사용 구간 초기화 시각입니다.",
+          "description": "Antigravity Gemini 모델 풀의 5시간·주간 사용 구간 초기화 시각입니다.",
           "id": 2017,
           "links": [],
-          "title": "Antigravity · 다음 초기화",
+          "title": "Antigravity · 초기화",
           "vizConfig": {
             "group": "stat",
             "kind": "VizConfig",
@@ -4424,7 +4443,7 @@
                 "colorMode": "value",
                 "graphMode": "none",
                 "justifyMode": "center",
-                "orientation": "auto",
+                "orientation": "vertical",
                 "percentChangeColorMode": "standard",
                 "reduceOptions": {
                   "calcs": [
@@ -4434,7 +4453,7 @@
                   "values": false
                 },
                 "showPercentChange": false,
-                "textMode": "auto",
+                "textMode": "value_and_name",
                 "wideLayout": true
               }
             },
@@ -5144,11 +5163,30 @@
                       "kind": "DataQuery",
                       "spec": {
                         "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"claude\",window=\"session\"} \u003e time()) * 1000",
-                        "legendFormat": ""
+                        "legendFormat": "5시간"
                       },
                       "version": "v0"
                     },
                     "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"claude\",window=\"weekly\"} \u003e time()) * 1000",
+                        "legendFormat": "주간"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
                   }
                 }
               ],
@@ -5156,10 +5194,10 @@
               "transformations": []
             }
           },
-          "description": "Claude 5시간 사용 구간이 초기화되는 로컬 시각입니다. Prometheus 값은 Unix seconds이며 Grafana 표시를 위해 milliseconds로 변환합니다.",
+          "description": "Claude 5시간·주간 사용 구간이 초기화되는 로컬 시각입니다. Prometheus 값은 Unix seconds이며 Grafana 표시를 위해 milliseconds로 변환합니다.",
           "id": 2006,
           "links": [],
-          "title": "Claude · 다음 초기화",
+          "title": "Claude · 초기화",
           "vizConfig": {
             "group": "stat",
             "kind": "VizConfig",
@@ -5188,7 +5226,7 @@
                 "colorMode": "value",
                 "graphMode": "none",
                 "justifyMode": "center",
-                "orientation": "auto",
+                "orientation": "vertical",
                 "percentChangeColorMode": "standard",
                 "reduceOptions": {
                   "calcs": [
@@ -5198,7 +5236,7 @@
                   "values": false
                 },
                 "showPercentChange": false,
-                "textMode": "auto",
+                "textMode": "value_and_name",
                 "wideLayout": true
               }
             },
