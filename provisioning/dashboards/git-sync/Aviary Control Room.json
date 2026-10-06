@@ -6558,6 +6558,7 @@
                       "mode": "off"
                     }
                   },
+                  "noValue": "대기 중인 메시지 없음",
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
