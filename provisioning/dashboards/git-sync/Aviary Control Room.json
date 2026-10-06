@@ -5619,8 +5619,8 @@
                     "axisPlacement": "auto",
                     "barAlignment": 0,
                     "barWidthFactor": 0.6,
-                    "drawStyle": "line",
-                    "fillOpacity": 0,
+                    "drawStyle": "bars",
+                    "fillOpacity": 80,
                     "gradientMode": "none",
                     "hideFrom": {
                       "legend": false,
@@ -5629,7 +5629,7 @@
                     },
                     "insertNulls": false,
                     "lineInterpolation": "linear",
-                    "lineWidth": 1,
+                    "lineWidth": 0,
                     "pointSize": 5,
                     "scaleDistribution": {
                       "type": "linear"
@@ -5669,7 +5669,7 @@
                 },
                 "legend": {
                   "calcs": [
-                    "lastNotNull"
+                    "sum"
                   ],
                   "displayMode": "table",
                   "enableFacetedFilter": false,
@@ -5740,8 +5740,8 @@
                     "axisPlacement": "auto",
                     "barAlignment": 0,
                     "barWidthFactor": 0.6,
-                    "drawStyle": "line",
-                    "fillOpacity": 0,
+                    "drawStyle": "bars",
+                    "fillOpacity": 80,
                     "gradientMode": "none",
                     "hideFrom": {
                       "legend": false,
@@ -5750,7 +5750,7 @@
                     },
                     "insertNulls": false,
                     "lineInterpolation": "linear",
-                    "lineWidth": 1,
+                    "lineWidth": 0,
                     "pointSize": 5,
                     "scaleDistribution": {
                       "type": "linear"
@@ -5790,7 +5790,7 @@
                 },
                 "legend": {
                   "calcs": [
-                    "lastNotNull"
+                    "sum"
                   ],
                   "displayMode": "table",
                   "enableFacetedFilter": false,
