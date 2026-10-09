@@ -10,9 +10,5 @@
 .env
 .env.*
 
-# Graphify transient and cache files
-graphify-out/cache/
-graphify-out/manifest.json
-graphify-out/cost.json
-graphify-out/.graphify_*
-graphify-out/2026-*/
+# Graphify output (regenerate with `graphify update .`)
+graphify-out/
