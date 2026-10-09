@@ -6742,7 +6742,7 @@
           }
         }
       },
-      "panel-orca-dev-1": {
+      "panel-orca-dev-5": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -6760,11 +6760,10 @@
                       "group": "grafana-postgresql-datasource",
                       "kind": "DataQuery",
                       "spec": {
-                        "dataset": "timeseries",
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "WITH latest AS (\n  SELECT DISTINCT ON (task_id, attempt_id) task_id, attempt_id, revision, snapshot, created_at\n  FROM observability.orca_attempt_snapshots\n  ORDER BY task_id, attempt_id, revision DESC\n), attempts AS (\n  SELECT\n    l.task_id AS task, l.attempt_id AS attempt,\n    l.snapshot-\u003e\u003e'project_key' AS project,\n    l.snapshot-\u003e\u003e'reported_status' AS reported,\n    l.snapshot-\u003e\u003e'verification_state' AS verified,\n    (l.snapshot-\u003e\u003e'request_count')::bigint AS requests,\n    (l.snapshot-\u003e'metrics'-\u003e\u003e'processed_total_tokens')::bigint AS processed,\n    (l.snapshot-\u003e'metrics'-\u003e\u003e'non_cache_tokens')::bigint AS non_cache,\n    (l.snapshot-\u003e'metrics'-\u003e\u003e'cache_read_tokens')::bigint AS cache_read,\n    (l.snapshot-\u003e'metrics'-\u003e\u003e'normalized_input_tokens')::bigint AS norm_input,\n    (l.snapshot-\u003e'metrics'-\u003e\u003e'output_tokens')::bigint AS output,\n    (l.snapshot-\u003e\u003e'cache_hit_rate_percent')::double precision AS hit_rate,\n    l.snapshot-\u003e\u003e'usage_coverage' AS coverage,\n    COALESCE(r.committed_snapshot_revision::text, '—') || ' / ' || l.revision AS published,\n    r.run_id AS run_id,\n    l.created_at AS at\n  FROM latest l\n  LEFT JOIN LATERAL (\n    SELECT run_id, committed_snapshot_revision\n    FROM observability.orca_mlflow_runs m\n    WHERE m.task_id = l.task_id AND m.attempt_id = l.attempt_id\n    ORDER BY m.updated_at DESC LIMIT 1\n  ) r ON true\n), unassigned AS (\n  SELECT\n    CASE attribution_status WHEN 'ambiguous' THEN '(모호)' ELSE '(미귀속)' END AS task,\n    left(session_id_hash, 8) AS attempt, NULL::text AS project,\n    NULL::text AS reported, NULL::text AS verified,\n    count(*)::bigint AS requests,\n    CASE WHEN count(processed_total_tokens) = count(*) THEN sum(processed_total_tokens)::bigint END AS processed,\n    CASE WHEN count(non_cache_tokens) = count(*) THEN sum(non_cache_tokens)::bigint END AS non_cache,\n    CASE WHEN count(cache_read_tokens) = count(*) THEN sum(cache_read_tokens)::bigint END AS cache_read,\n    CASE WHEN count(normalized_input_tokens) = count(*) THEN sum(normalized_input_tokens)::bigint END AS norm_input,\n    CASE WHEN count(output_tokens) = count(*) THEN sum(output_tokens)::bigint END AS output,\n    CASE WHEN count(*) FILTER (WHERE cache_read_tokens IS NOT NULL AND normalized_input_tokens IS NOT NULL) \u003e 0\n         AND sum(normalized_input_tokens) FILTER (WHERE cache_read_tokens IS NOT NULL) \u003e 0\n      THEN 100.0 * sum(cache_read_tokens) FILTER (WHERE normalized_input_tokens IS NOT NULL)\n           / sum(normalized_input_tokens) FILTER (WHERE cache_read_tokens IS NOT NULL) END AS hit_rate,\n    CASE WHEN count(processed_total_tokens) = count(*) THEN 'complete'\n         WHEN count(processed_total_tokens) = 0 THEN 'unknown' ELSE 'partial' END AS coverage,\n    NULL::text AS published, NULL::text AS run_id, max(occurred_at) AS at\n  FROM observability.orca_call_events\n  WHERE source_kind = 'raw_call' AND attribution_status \u003c\u003e 'explicit' AND $__timeFilter(occurred_at)\n  GROUP BY attribution_status, session_id_hash\n)\nSELECT\n  task AS \"작업\", attempt AS \"시도\", project AS \"프로젝트 키\", reported AS \"보고 상태\", verified AS \"검증 상태\",\n  requests AS \"모델 호출 수\", processed AS \"처리 토큰\", non_cache AS \"캐시 제외 토큰\",\n  cache_read AS \"캐시 읽기\", norm_input AS \"정규화 입력\", output AS \"출력 토큰\",\n  hit_rate AS \"캐시 적중률\", coverage AS \"커버리지\", published AS \"MLflow 반영/최신\", run_id AS \"MLflow Run\"\nFROM (SELECT * FROM attempts WHERE $__timeFilter(at) UNION ALL SELECT * FROM unassigned) t\nORDER BY at DESC NULLS LAST, processed DESC NULLS LAST;",
+                        "rawSql": "SELECT CASE WHEN count(*) = count(processed_total_tokens) THEN sum(processed_total_tokens) END::double precision AS value\nFROM observability.orca_call_events WHERE source_kind = 'raw_call' AND $__timeFilter(occurred_at);",
                         "sql": {
                           "columns": [
                             {
@@ -6793,28 +6792,19 @@
               "transformations": []
             }
           },
-          "description": "작업·시도(attempt)별 최신 snapshot입니다. 처리 토큰 = 정규화 입력 + 출력(리즈닝은 출력의 부분집합이라 다시 더하지 않음). '캐시 제외 토큰'은 캐시 읽기를 뺀 값이며 청구 토큰이 아닙니다. 빈 칸(N/A)은 0이 아니라 관측되지 않은 값입니다. 명시적 manifest가 없는 호출은 쓰레드(세션) 단위로 (미귀속)/(모호) 행에 표시되며 작업 행과 중복 집계하지 않습니다. 보고 상태는 에이전트가 보고한 결과이고 검증 상태는 승인된 verifier가 확인한 경우에만 evidence_verified입니다.",
-          "id": 3001,
+          "description": "선택 기간 Codex·Claude 호출의 처리 토큰(정규화 입력 + 출력) 합계. 값을 모르는 호출이 섞여 있으면 부분합 대신 N/A로 표시합니다.",
+          "id": 3005,
           "links": [],
-          "title": "ORCA 개발 관측 · 작업/시도별 사용량·결과",
+          "title": "ORCA 처리 토큰",
           "vizConfig": {
-            "group": "table",
+            "group": "stat",
             "kind": "VizConfig",
             "spec": {
               "fieldConfig": {
                 "defaults": {
                   "color": {
-                    "mode": "thresholds"
-                  },
-                  "custom": {
-                    "align": "auto",
-                    "cellOptions": {
-                      "type": "auto"
-                    },
-                    "footer": {
-                      "reducers": []
-                    },
-                    "inspect": false
+                    "mode": "fixed",
+                    "fixedColor": "blue"
                   },
                   "thresholds": {
                     "mode": "absolute",
@@ -6822,175 +6812,443 @@
                       {
                         "color": "green",
                         "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "sishort",
+                  "noValue": "N/A",
+                  "overrides": []
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-orca-dev-6": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
                       },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT count(*)::double precision AS value\nFROM observability.orca_call_events WHERE source_kind = 'raw_call' AND $__timeFilter(occurred_at);",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "선택 기간에 기록된 모델 호출(raw call) 수.",
+          "id": 3006,
+          "links": [],
+          "title": "모델 호출",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "purple"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "short",
+                  "noValue": "N/A",
+                  "overrides": []
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-orca-dev-7": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT 100.0 * sum(cache_read_tokens) FILTER (WHERE normalized_input_tokens IS NOT NULL)\n       / NULLIF(sum(normalized_input_tokens) FILTER (WHERE cache_read_tokens IS NOT NULL), 0) AS value\nFROM observability.orca_call_events WHERE source_kind = 'raw_call' AND $__timeFilter(occurred_at);",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "캐시에서 읽은 입력 ÷ 전체 입력. 90% 이상이 정상 범위이고 70% 미만이면 문맥 재사용이 잘 안 되고 있다는 신호입니다.",
+          "id": 3007,
+          "links": [],
+          "title": "캐시 적중률",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
                       {
                         "color": "red",
-                        "value": 80
-                      }
-                    ]
-                  },
-                  "unit": "none",
-                  "noValue": "N/A"
-                },
-                "overrides": [
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "작업",
-                      "scope": "series"
-                    },
-                    "properties": [
+                        "value": 0
+                      },
                       {
-                        "id": "custom.width",
-                        "value": 110
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "시도",
-                      "scope": "series"
-                    },
-                    "properties": [
+                        "color": "orange",
+                        "value": 70
+                      },
                       {
-                        "id": "custom.width",
+                        "color": "green",
                         "value": 90
                       }
                     ]
                   },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "프로젝트 키",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.width",
-                        "value": 130
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "MLflow Run",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.width",
-                        "value": 250
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "처리 토큰",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "sishort"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "캐시 제외 토큰",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "sishort"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "캐시 읽기",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "sishort"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "정규화 입력",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "sishort"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "출력 토큰",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "sishort"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "모델 호출 수",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "short"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "캐시 적중률",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "percent"
-                      },
-                      {
-                        "id": "decimals",
-                        "value": 1
-                      }
-                    ]
-                  }
-                ]
+                  "unit": "percent",
+                  "noValue": "N/A",
+                  "overrides": [],
+                  "decimals": 1,
+                  "min": 0,
+                  "max": 100
+                },
+                "overrides": []
               },
               "options": {
-                "cellHeight": "sm",
-                "showHeader": true,
-                "sortBy": [
-                  {
-                    "desc": true,
-                    "displayName": "총 토큰"
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-orca-dev-8": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "WITH latest AS (\n  SELECT DISTINCT ON (task_id, attempt_id) snapshot\n  FROM observability.orca_attempt_snapshots\n  ORDER BY task_id, attempt_id, revision DESC\n)\nSELECT count(*) FILTER (WHERE snapshot-\u003e\u003e'verification_state' = 'evidence_verified') || ' / ' || count(*) AS value FROM latest;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
                   }
-                ]
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "verifier가 직접 실행해 서명한 증거로 검증된 작업 수 / 등록된 작업 수. 에이전트가 보고만 한 작업은 세지 않습니다.",
+          "id": 3008,
+          "links": [],
+          "title": "검증된 작업",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "green"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "none",
+                  "noValue": "N/A",
+                  "overrides": []
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-orca-dev-9": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT\n  COALESCE(task_id, CASE agent WHEN 'codex' THEN 'Codex' WHEN 'claude' THEN 'Claude' ELSE agent END || ' · ' || left(session_id_hash, 6)) AS metric,\n  CASE WHEN count(*) = count(processed_total_tokens) THEN sum(processed_total_tokens) END::double precision AS value\nFROM observability.orca_call_events WHERE source_kind = 'raw_call' AND $__timeFilter(occurred_at)\nGROUP BY 1\nORDER BY value DESC NULLS LAST\nLIMIT 8;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "선택 기간에 처리 토큰이 많은 순서입니다. 작업으로 등록된 호출은 작업 이름으로, 등록되지 않은 호출은 에이전트와 세션 앞 6자리로 묶어 보여줍니다.",
+          "id": 3009,
+          "links": [],
+          "title": "토큰 사용 상위 세션·작업",
+          "vizConfig": {
+            "group": "bargauge",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "continuous-BlPu"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "blue",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "sishort",
+                  "noValue": "N/A",
+                  "min": 0
+                },
+                "overrides": []
+              },
+              "options": {
+                "displayMode": "gradient",
+                "maxVizHeight": 300,
+                "minVizHeight": 18,
+                "minVizWidth": 8,
+                "namePlacement": "left",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                  "calcs": [],
+                  "fields": "",
+                  "values": true
+                },
+                "showUnfilled": true,
+                "sizing": "auto",
+                "valueMode": "color"
               }
             },
             "version": "13.2.1"
@@ -7047,10 +7305,10 @@
               "transformations": []
             }
           },
-          "description": "호출 단위(최종 확정된 raw 호출)의 정규화 입력, 캐시 읽기, 출력 토큰의 분포입니다. 값을 알 수 없는 호출은 제외하며 누적 구간은 호출로 세지 않습니다.",
+          "description": "호출 한 건당 입력·캐시 읽기·출력 토큰의 중앙값(p50)과 상위 5%(p95). 최종 확정된 호출만 대상입니다.",
           "id": 3002,
           "links": [],
-          "title": "ORCA 개발 관측 · 호출별 입력·캐시·출력 크기 (p50/p95)",
+          "title": "호출 크기 분포 (p50 / p95)",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -7136,6 +7394,376 @@
           }
         }
       },
+      "panel-orca-dev-1": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "dataset": "timeseries",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "WITH latest AS (\n  SELECT DISTINCT ON (task_id, attempt_id) task_id, attempt_id, revision, snapshot, created_at\n  FROM observability.orca_attempt_snapshots\n  ORDER BY task_id, attempt_id, revision DESC\n)\nSELECT\n  l.task_id AS \"작업\",\n  l.attempt_id AS \"시도\",\n  l.snapshot-\u003e\u003e'reported_status' AS \"상태\",\n  l.snapshot-\u003e\u003e'verification_state' AS \"검증\",\n  (l.snapshot-\u003e\u003e'request_count')::bigint AS \"호출\",\n  (l.snapshot-\u003e'metrics'-\u003e\u003e'processed_total_tokens')::bigint AS \"처리 토큰\",\n  (l.snapshot-\u003e\u003e'cache_hit_rate_percent')::double precision AS \"캐시 적중률\",\n  left(r.run_id, 8) AS \"MLflow\",\n  to_char(l.created_at AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') AS \"갱신(KST)\"\nFROM latest l\nLEFT JOIN LATERAL (\n  SELECT run_id FROM observability.orca_mlflow_runs m\n  WHERE m.task_id = l.task_id AND m.attempt_id = l.attempt_id\n  ORDER BY m.updated_at DESC LIMIT 1\n) r ON true\nWHERE $__timeFilter(l.created_at)\nORDER BY l.created_at DESC;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "orca_task begin/end로 등록한 작업(시도)의 최신 결과입니다. 상태는 에이전트가 보고한 값이고, 검증은 verifier가 직접 실행해 서명한 증거가 있을 때만 '검증됨'입니다. 등록되지 않은 호출은 왼쪽 막대 패널에서 세션별로 봅니다.",
+          "id": 3001,
+          "links": [],
+          "title": "작업/시도 결과",
+          "vizConfig": {
+            "group": "table",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "none",
+                  "noValue": "등록된 작업이 없습니다 — orca_task begin/end로 표시하세요"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "작업",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 300
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "시도",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 70
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "상태",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 100
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-background",
+                          "mode": "basic"
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "completed": {
+                                "text": "완료",
+                                "color": "green",
+                                "index": 0
+                              },
+                              "failed": {
+                                "text": "실패",
+                                "color": "red",
+                                "index": 1
+                              },
+                              "blocked": {
+                                "text": "막힘",
+                                "color": "orange",
+                                "index": 2
+                              },
+                              "cancelled": {
+                                "text": "취소",
+                                "color": "dark-gray",
+                                "index": 3
+                              },
+                              "unknown": {
+                                "text": "미보고",
+                                "color": "dark-gray",
+                                "index": 4
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "검증",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 110
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-background",
+                          "mode": "basic"
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "evidence_verified": {
+                                "text": "검증됨",
+                                "color": "green",
+                                "index": 0
+                              },
+                              "unverified": {
+                                "text": "미검증",
+                                "color": "yellow",
+                                "index": 1
+                              },
+                              "failed": {
+                                "text": "검증 실패",
+                                "color": "red",
+                                "index": 2
+                              },
+                              "unknown": {
+                                "text": "알 수 없음",
+                                "color": "dark-gray",
+                                "index": 3
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "호출",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 80
+                      },
+                      {
+                        "id": "unit",
+                        "value": "short"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "처리 토큰",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 230
+                      },
+                      {
+                        "id": "unit",
+                        "value": "sishort"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "continuous-BlPu"
+                        }
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "gauge",
+                          "mode": "gradient",
+                          "valueDisplayMode": "text"
+                        }
+                      },
+                      {
+                        "id": "min",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "캐시 적중률",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 110
+                      },
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "thresholds"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "color": "red",
+                              "value": 0
+                            },
+                            {
+                              "color": "orange",
+                              "value": 70
+                            },
+                            {
+                              "color": "green",
+                              "value": 90
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "MLflow",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 100
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "갱신(KST)",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 120
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "desc": true,
+                    "displayName": "총 토큰"
+                  }
+                ]
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
       "panel-orca-dev-3": {
         "kind": "Panel",
         "spec": {
@@ -7187,10 +7815,10 @@
               "transformations": []
             }
           },
-          "description": "호출 이벤트 수와 최신성, 귀속 상태, 미확인·미확정 값, MLflow 전송 대기·실패 건수입니다.",
+          "description": "호출 이벤트 수와 최신성, 귀속 상태, 값이 비어 있는 호출, MLflow 전송 대기·실패 건수.",
           "id": 3003,
           "links": [],
-          "title": "ORCA 개발 관측 · 수집 품질·전송 상태",
+          "title": "수집 품질·전송 상태",
           "vizConfig": {
             "group": "table",
             "kind": "VizConfig",
@@ -7250,140 +7878,6 @@
                       {
                         "id": "custom.width",
                         "value": 140
-                      }
-                    ]
-                  }
-                ]
-              },
-              "options": {
-                "cellHeight": "sm",
-                "showHeader": true,
-                "sortBy": [
-                  {
-                    "desc": true,
-                    "displayName": "총 토큰"
-                  }
-                ]
-              }
-            },
-            "version": "13.2.1"
-          }
-        }
-      },
-      "panel-orca-dev-4": {
-        "kind": "Panel",
-        "spec": {
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "ffskrzljzwr28b"
-                      },
-                      "group": "grafana-postgresql-datasource",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "dataset": "timeseries",
-                        "editorMode": "code",
-                        "format": "table",
-                        "rawQuery": true,
-                        "rawSql": "SELECT m.\"지표\", COALESCE(sum(v.value)::text, 'N/A') AS \"값\",\n  CASE WHEN count(v.value) = 0 THEN '구조화된 근거 이벤트가 수집되지 않아 표시하지 않습니다' ELSE '근거 이벤트가 있는 attempt만 합산' END AS \"설명\"\nFROM (VALUES ('재시도', 'retry_count'), ('도구 실패', 'tool_failure_count'), ('재검증', 'reverification_count')) AS m(\"지표\", key)\nLEFT JOIN LATERAL (\n  SELECT (s.snapshot-\u003e\u003em.key)::bigint AS value\n  FROM (SELECT DISTINCT ON (task_id, attempt_id) snapshot FROM observability.orca_attempt_snapshots\n        ORDER BY task_id, attempt_id, revision DESC) s\n  WHERE s.snapshot ? m.key\n) v ON true\nGROUP BY m.\"지표\", m.key\nORDER BY m.\"지표\";",
-                        "sql": {
-                          "columns": [
-                            {
-                              "parameters": [],
-                              "type": "function"
-                            }
-                          ],
-                          "groupBy": [
-                            {
-                              "property": {
-                                "type": "string"
-                              },
-                              "type": "groupBy"
-                            }
-                          ],
-                          "limit": 50
-                        }
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "A"
-                  }
-                }
-              ],
-              "queryOptions": {},
-              "transformations": []
-            }
-          },
-          "description": "근거가 되는 구조화 이벤트가 있는 attempt만 합산합니다. 이벤트가 수집되지 않으면 0이 아니라 N/A로 표시합니다. 토큰 증가만으로 재시도를 추정하지 않습니다.",
-          "id": 3004,
-          "links": [],
-          "title": "ORCA 개발 관측 · 재시도·도구 실패·재검증",
-          "vizConfig": {
-            "group": "table",
-            "kind": "VizConfig",
-            "spec": {
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "custom": {
-                    "align": "auto",
-                    "cellOptions": {
-                      "type": "auto"
-                    },
-                    "footer": {
-                      "reducers": []
-                    },
-                    "inspect": false
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green",
-                        "value": 0
-                      },
-                      {
-                        "color": "red",
-                        "value": 80
-                      }
-                    ]
-                  },
-                  "unit": "none",
-                  "noValue": "N/A"
-                },
-                "overrides": [
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "지표",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.width",
-                        "value": 140
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "값",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.width",
-                        "value": 100
                       }
                     ]
                   }
@@ -8118,10 +8612,10 @@
                       "spec": {
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-orca-dev-1"
+                          "name": "panel-orca-dev-5"
                         },
-                        "height": 12,
-                        "width": 24,
+                        "height": 4,
+                        "width": 6,
                         "x": 0,
                         "y": 28
                       }
@@ -8131,12 +8625,77 @@
                       "spec": {
                         "element": {
                           "kind": "ElementReference",
+                          "name": "panel-orca-dev-6"
+                        },
+                        "height": 4,
+                        "width": 6,
+                        "x": 6,
+                        "y": 28
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-orca-dev-7"
+                        },
+                        "height": 4,
+                        "width": 6,
+                        "x": 12,
+                        "y": 28
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-orca-dev-8"
+                        },
+                        "height": 4,
+                        "width": 6,
+                        "x": 18,
+                        "y": 28
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-orca-dev-9"
+                        },
+                        "height": 9,
+                        "width": 12,
+                        "x": 0,
+                        "y": 32
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
                           "name": "panel-orca-dev-2"
                         },
-                        "height": 10,
-                        "width": 13,
+                        "height": 9,
+                        "width": 12,
+                        "x": 12,
+                        "y": 32
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-orca-dev-1"
+                        },
+                        "height": 7,
+                        "width": 24,
                         "x": 0,
-                        "y": 40
+                        "y": 41
                       }
                     },
                     {
@@ -8146,23 +8705,10 @@
                           "kind": "ElementReference",
                           "name": "panel-orca-dev-3"
                         },
-                        "height": 10,
-                        "width": 11,
-                        "x": 13,
-                        "y": 40
-                      }
-                    },
-                    {
-                      "kind": "GridLayoutItem",
-                      "spec": {
-                        "element": {
-                          "kind": "ElementReference",
-                          "name": "panel-orca-dev-4"
-                        },
-                        "height": 6,
+                        "height": 7,
                         "width": 24,
                         "x": 0,
-                        "y": 50
+                        "y": 48
                       }
                     }
                   ]
