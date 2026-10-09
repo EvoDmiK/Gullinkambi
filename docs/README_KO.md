@@ -46,6 +46,8 @@ n8n과 Hermes 에이전트의 실행 상태, Hermes Kanban 작업, OpenViking, N
 - 최신 사용량 데이터의 집계 지연도 함께 표시하여 비용과 사용 패턴뿐 아니라 수집 데이터의 최신성까지 점검할 수 있습니다.
 - Antigravity는 Mac mini에서 모델·프로젝트별 일일 수치와 대화별 수치를 저장소 이름 기준으로 집계합니다. Codex·Claude와 마찬가지로 대화 제목은 쓰레드 이름으로 전송하지만, 프롬프트·응답·경로·원본 대화 ID(해시만 전송)는 telemetry pipeline으로 전송하지 않습니다.
 
+- 하단의 `ORCA 개발 관측` 패널 4개는 작업·시도별 사용량과 결과, 호출별 입력·캐시·출력 분포(p50/p95), 수집 품질과 MLflow 전송 상태, 근거가 있는 재시도·도구 실패·재검증을 보여 줍니다. `observability.orca_call_events`, `orca_attempt_snapshots`, `orca_mlflow_*` 테이블이 필요하며 Birds-Nest의 `homelab/timescaledb/migrations/001~003`을 적용하기 전에는 이 패널들에서 쿼리 오류가 납니다. 값이 없는 칸은 0이 아니라 `N/A`(관측되지 않음)이고, 재시도·도구 실패·재검증은 근거 이벤트가 수집되기 전까지 `N/A`입니다.
+
 #### 1-4. OpenViking 모니터링 대시보드
 
 ![OpenViking monitoring dashboard](../assets/openviking%20monitoring%20dashboard.png)
