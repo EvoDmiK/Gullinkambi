@@ -2222,31 +2222,241 @@
           "data": {
             "kind": "QueryGroup",
             "spec": {
-              "queries": [],
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "cfrgthsaa3ev4b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "format": "table",
+                        "rawSql": "WITH ex AS (\n  SELECT e.\"workflowId\" AS wid, e.status, e.\"stoppedAt\" AS t,\n         lag(e.\"stoppedAt\") OVER (PARTITION BY e.\"workflowId\" ORDER BY e.\"stoppedAt\") AS prev_t\n  FROM execution_entity e\n  WHERE e.\"stoppedAt\" \u003e now() - interval '7 days' AND e.status IN ('success', 'error', 'crashed')\n), cad AS (\n  SELECT wid, count(*) + 1 AS runs7d,\n         percentile_cont(0.5) WITHIN GROUP (ORDER BY extract(epoch FROM t - prev_t)) AS med,\n         percentile_cont(0.9) WITHIN GROUP (ORDER BY extract(epoch FROM t - prev_t)) AS p90\n  FROM ex WHERE prev_t IS NOT NULL GROUP BY wid\n), agg AS (\n  SELECT wid,\n         count(*) FILTER (WHERE t \u003e now() - interval '24 hours') AS runs24,\n         count(*) FILTER (WHERE t \u003e now() - interval '24 hours' AND status \u003c\u003e 'success') AS bad24,\n         max(t) FILTER (WHERE status = 'success') AS last_ok,\n         max(t) FILTER (WHERE status \u003c\u003e 'success') AS last_bad,\n         (array_agg(status ORDER BY t DESC))[1] AS last_status\n  FROM ex GROUP BY wid\n), judged AS (\n  SELECT w.name, a.runs24, a.bad24, a.last_ok, a.last_bad,\n         CASE\n           WHEN a.wid IS NULL THEN 'idle'\n           WHEN a.last_status \u003c\u003e 'success' THEN 'failing'\n           WHEN c.runs7d \u003e= 50 AND c.med \u003e 0 AND c.p90 \u003c= 4 * c.med\n                AND extract(epoch FROM now() - a.last_ok) \u003e 3 * greatest(c.med, 60) THEN 'late'\n           WHEN c.runs7d \u003e= 50 AND c.med \u003e 0 AND c.p90 \u003c= 4 * c.med THEN 'ok'\n           ELSE 'irregular'\n         END AS state\n  FROM workflow_entity w\n  LEFT JOIN agg a ON a.wid = w.id\n  LEFT JOIN cad c ON c.wid = w.id\n  WHERE w.active\n)\nSELECT\n  name AS \"워크플로우\",\n  state AS \"상태\",\n  runs24 AS \"24h 실행\",\n  CASE WHEN runs24 \u003e 0 THEN round(100.0 * (runs24 - bad24) / runs24, 1) END AS \"성공률\",\n  extract(epoch FROM now() - last_ok)::bigint AS \"마지막 성공 후\",\n  to_char(last_bad AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') AS \"마지막 실패(KST)\"\nFROM judged\nORDER BY CASE state WHEN 'failing' THEN 0 WHEN 'late' THEN 1 WHEN 'ok' THEN 2 WHEN 'irregular' THEN 3 ELSE 4 END,\n         runs24 DESC NULLS LAST, name;"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
               "queryOptions": {},
               "transformations": []
             }
           },
-          "description": "",
+          "description": "활성 워크플로우의 현재 상태입니다(대시보드 기간과 무관). '지연'은 실행 간격이 규칙적인 워크플로우(최근 7일 50회 이상, 상위 10% 간격이 중앙값의 4배 이내)에서 마지막 성공이 평소 간격의 3배를 넘었을 때만 표시합니다. 메일·파일 변경처럼 이벤트로 도는 워크플로우는 간격이 불규칙해서 '불규칙'으로 두고 판단하지 않으며, 7일간 실행이 없으면 '7일간 없음'입니다. 가져온 건수(item 수)는 n8n이 저장하지 않아 표시하지 않습니다.",
           "id": 38,
           "links": [],
-          "title": "데이터 수집 워크플로우",
+          "title": "수집 워크플로우 상태",
           "vizConfig": {
-            "group": "text",
+            "group": "table",
             "kind": "VizConfig",
             "spec": {
               "fieldConfig": {
-                "defaults": {},
-                "overrides": []
+                "defaults": {
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "noValue": "활성 워크플로우가 없습니다",
+                  "unit": "none"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "워크플로우",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 260
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "상태",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 100
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-background",
+                          "mode": "basic"
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "failing": {
+                                "text": "실패 중",
+                                "color": "red",
+                                "index": 0
+                              },
+                              "late": {
+                                "text": "지연",
+                                "color": "orange",
+                                "index": 1
+                              },
+                              "ok": {
+                                "text": "정상",
+                                "color": "green",
+                                "index": 2
+                              },
+                              "irregular": {
+                                "text": "불규칙",
+                                "color": "#6B7280",
+                                "index": 3
+                              },
+                              "idle": {
+                                "text": "7일간 없음",
+                                "color": "#6B7280",
+                                "index": 4
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "24h 실행",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 90
+                      },
+                      {
+                        "id": "unit",
+                        "value": "short"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "성공률",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 90
+                      },
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "thresholds"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "color": "red",
+                              "value": 0
+                            },
+                            {
+                              "color": "orange",
+                              "value": 80
+                            },
+                            {
+                              "color": "green",
+                              "value": 97
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "마지막 성공 후",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 130
+                      },
+                      {
+                        "id": "unit",
+                        "value": "s"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "마지막 실패(KST)",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 140
+                      }
+                    ]
+                  }
+                ]
               },
               "options": {
-                "code": {
-                  "language": "plaintext",
-                  "showLineNumbers": false,
-                  "showMiniMap": false
-                },
-                "content": "### 데이터 수집 지표\n\n워크플로우 이름/ID 매핑과 item 수 telemetry가 아직 확정되지 않아 이 영역은 비워 둡니다.\n\n\u003e `workflow_entity` 매핑 후 별도 패널로 추가하세요. 추정값이나 mock 데이터는 표시하지 않습니다.",
-                "mode": "markdown"
+                "cellHeight": "sm",
+                "showHeader": true
               }
             },
             "version": "13.2.1"
@@ -2259,31 +2469,205 @@
           "data": {
             "kind": "QueryGroup",
             "spec": {
-              "queries": [],
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "cfrgthsaa3ev4b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "format": "table",
+                        "rawSql": "WITH j AS (\n  SELECT e.id, e.\"workflowId\", e.\"stoppedAt\", d.data::jsonb AS a\n  FROM execution_entity e\n  JOIN execution_data d ON d.\"executionId\" = e.id\n  WHERE e.status = 'error' AND $__timeFilter(e.\"stoppedAt\") AND d.data LIKE '[%'\n), rd AS (\n  SELECT j.*, (SELECT elem FROM jsonb_array_elements(a) AS t(elem)\n               WHERE jsonb_typeof(elem) = 'object' AND elem ? 'lastNodeExecuted' LIMIT 1) AS result\n  FROM j\n), x AS (\n  SELECT rd.*, a -\u003e ((result -\u003e\u003e 'lastNodeExecuted')::int) #\u003e\u003e '{}' AS node,\n         a -\u003e ((result -\u003e\u003e 'error')::int) AS err\n  FROM rd\n)\nSELECT\n  coalesce(w.name, x.\"workflowId\") AS \"워크플로우\",\n  coalesce(x.node, '?') AS \"실패 노드\",\n  coalesce(a -\u003e ((err -\u003e\u003e 'name')::int) #\u003e\u003e '{}', '?') AS \"오류 종류\",\n  coalesce(a -\u003e ((err -\u003e\u003e 'httpCode')::int) #\u003e\u003e '{}', '-') AS \"HTTP\",\n  count(*) AS \"건수\",\n  to_char(max(\"stoppedAt\") AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') AS \"마지막(KST)\"\nFROM x LEFT JOIN workflow_entity w ON w.id = x.\"workflowId\"\nWHERE NOT (w.name = '[Tools] Hermes Telemetry Ingest' AND x.node = 'Validate and Split Telemetry')\nGROUP BY 1, 2, 3, 4\nORDER BY count(*) DESC, max(\"stoppedAt\") DESC\nLIMIT 20;"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
               "queryOptions": {},
               "transformations": []
             }
           },
-          "description": "",
+          "description": "선택 기간에 실패한 실행을 실패한 노드, 오류 종류, HTTP 코드별로 묶었습니다(많은 순서 최대 20줄). 오류 메시지 본문은 URL이나 토큰 조각이 섞일 수 있어 일부러 표시하지 않습니다. Hermes Telemetry Ingest의 입력 검증 거부(Validate and Split Telemetry)는 외부 API 오류가 아니라서 제외합니다. '?'는 n8n이 오류 상세를 남기지 않은 경우입니다.",
           "id": 39,
           "links": [],
           "title": "외부 API 오류 분포",
           "vizConfig": {
-            "group": "text",
+            "group": "table",
             "kind": "VizConfig",
             "spec": {
               "fieldConfig": {
-                "defaults": {},
-                "overrides": []
+                "defaults": {
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "noValue": "선택 기간에 외부 API 오류가 없습니다",
+                  "unit": "none"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "워크플로우",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 230
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "실패 노드",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 200
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "오류 종류",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 160
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "HTTP",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 70
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "regex",
+                            "options": {
+                              "pattern": "^4\\d\\d$",
+                              "result": {
+                                "color": "orange",
+                                "index": 0
+                              }
+                            }
+                          },
+                          {
+                            "type": "regex",
+                            "options": {
+                              "pattern": "^5\\d\\d$",
+                              "result": {
+                                "color": "red",
+                                "index": 1
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "건수",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 170
+                      },
+                      {
+                        "id": "unit",
+                        "value": "short"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "orange"
+                        }
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "gauge",
+                          "mode": "gradient",
+                          "valueDisplayMode": "text"
+                        }
+                      },
+                      {
+                        "id": "min",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "마지막(KST)",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 130
+                      }
+                    ]
+                  }
+                ]
               },
               "options": {
-                "code": {
-                  "language": "plaintext",
-                  "showLineNumbers": false,
-                  "showMiniMap": false
-                },
-                "content": "### 외부 API 오류\n\n현재 `execution_entity`만으로는 HTTP status·retry를 신뢰성 있게 구분할 수 없습니다.\n\n\u003e `execution_data` 또는 별도 telemetry(event_type, status_code, retry_count)가 연결되면 이 영역을 쿼리 패널로 교체하세요.",
-                "mode": "markdown"
+                "cellHeight": "sm",
+                "showHeader": true
               }
             },
             "version": "13.2.1"
@@ -8349,7 +8733,7 @@
                                     "kind": "ElementReference",
                                     "name": "panel-38"
                                   },
-                                  "height": 5,
+                                  "height": 8,
                                   "width": 12,
                                   "x": 0,
                                   "y": 0
@@ -8362,7 +8746,7 @@
                                     "kind": "ElementReference",
                                     "name": "panel-39"
                                   },
-                                  "height": 5,
+                                  "height": 8,
                                   "width": 12,
                                   "x": 12,
                                   "y": 0
