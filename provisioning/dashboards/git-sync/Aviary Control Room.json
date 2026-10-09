@@ -7177,7 +7177,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "SELECT\n  COALESCE(task_id, CASE agent WHEN 'codex' THEN 'Codex' WHEN 'claude' THEN 'Claude' ELSE agent END || ' · ' || left(session_id_hash, 6)) AS metric,\n  CASE WHEN count(*) = count(processed_total_tokens) THEN sum(processed_total_tokens) END::double precision AS value\nFROM observability.orca_call_events WHERE source_kind = 'raw_call' AND $__timeFilter(occurred_at)\nGROUP BY 1\nORDER BY value DESC NULLS LAST\nLIMIT 8;",
+                        "rawSql": "SELECT\n  CASE WHEN task_id LIKE 'auto-%' OR task_id IS NULL\n       THEN CASE agent WHEN 'codex' THEN 'Codex' WHEN 'claude' THEN 'Claude' ELSE agent END || ' · ' || left(session_id_hash, 6)\n       ELSE task_id END AS metric,\n  CASE WHEN count(*) = count(processed_total_tokens) THEN sum(processed_total_tokens) END::double precision AS value\nFROM observability.orca_call_events\nWHERE source_kind = 'raw_call' AND $__timeFilter(occurred_at)\nGROUP BY 1\nORDER BY value DESC NULLS LAST\nLIMIT 8;",
                         "sql": {
                           "columns": [
                             {
@@ -7206,7 +7206,7 @@
               "transformations": []
             }
           },
-          "description": "선택 기간에 처리 토큰이 많은 순서입니다. 작업으로 등록된 호출은 작업 이름으로, 등록되지 않은 호출은 에이전트와 세션 앞 6자리로 묶어 보여줍니다.",
+          "description": "선택 기간에 처리 토큰이 많은 순서입니다. 등록한 작업은 작업 이름으로, 등록하지 않은 세션은 에이전트와 세션 앞 6자리로 보여줍니다(자동으로 Run이 만들어집니다).",
           "id": 3009,
           "links": [],
           "title": "토큰 사용 상위 세션·작업",
@@ -7416,7 +7416,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "WITH latest AS (\n  SELECT DISTINCT ON (task_id, attempt_id) task_id, attempt_id, revision, snapshot, created_at\n  FROM observability.orca_attempt_snapshots\n  ORDER BY task_id, attempt_id, revision DESC\n)\nSELECT\n  l.task_id AS \"작업\",\n  l.attempt_id AS \"시도\",\n  l.snapshot-\u003e\u003e'reported_status' AS \"상태\",\n  l.snapshot-\u003e\u003e'verification_state' AS \"검증\",\n  (l.snapshot-\u003e\u003e'request_count')::bigint AS \"호출\",\n  (l.snapshot-\u003e'metrics'-\u003e\u003e'processed_total_tokens')::bigint AS \"처리 토큰\",\n  (l.snapshot-\u003e\u003e'cache_hit_rate_percent')::double precision AS \"캐시 적중률\",\n  left(r.run_id, 8) AS \"MLflow\",\n  to_char(l.created_at AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') AS \"갱신(KST)\"\nFROM latest l\nLEFT JOIN LATERAL (\n  SELECT run_id FROM observability.orca_mlflow_runs m\n  WHERE m.task_id = l.task_id AND m.attempt_id = l.attempt_id\n  ORDER BY m.updated_at DESC LIMIT 1\n) r ON true\nWHERE $__timeFilter(l.created_at)\nORDER BY l.created_at DESC;",
+                        "rawSql": "WITH latest AS (\n  SELECT DISTINCT ON (task_id, attempt_id) task_id, attempt_id, revision, snapshot, created_at\n  FROM observability.orca_attempt_snapshots\n  ORDER BY task_id, attempt_id, revision DESC\n)\nSELECT\n  CASE WHEN l.snapshot-\u003e\u003e'origin' = 'auto' THEN 'auto' ELSE 'registered' END AS \"구분\",\n  CASE WHEN l.snapshot-\u003e\u003e'origin' = 'auto'\n       THEN CASE split_part(l.task_id, '-', 2) WHEN 'codex' THEN 'Codex' WHEN 'claude' THEN 'Claude' ELSE split_part(l.task_id, '-', 2) END || ' · ' || left(split_part(l.task_id, '-', 3), 6)\n       ELSE l.task_id END AS \"작업\",\n  l.snapshot-\u003e\u003e'reported_status' AS \"상태\",\n  l.snapshot-\u003e\u003e'verification_state' AS \"검증\",\n  (l.snapshot-\u003e\u003e'request_count')::bigint AS \"호출\",\n  (l.snapshot-\u003e'metrics'-\u003e\u003e'processed_total_tokens')::bigint AS \"처리 토큰\",\n  (l.snapshot-\u003e\u003e'cache_hit_rate_percent')::double precision AS \"캐시 적중률\",\n  left(r.run_id, 8) AS \"MLflow\",\n  to_char(l.created_at AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') AS \"갱신(KST)\"\nFROM latest l\nLEFT JOIN LATERAL (\n  SELECT run_id FROM observability.orca_mlflow_runs m\n  WHERE m.task_id = l.task_id AND m.attempt_id = l.attempt_id\n  ORDER BY m.updated_at DESC LIMIT 1\n) r ON true\nWHERE $__timeFilter(l.created_at)\nORDER BY COALESCE(l.snapshot-\u003e\u003e'origin', '') = 'auto' ASC, l.created_at DESC;",
                         "sql": {
                           "columns": [
                             {
@@ -7445,7 +7445,7 @@
               "transformations": []
             }
           },
-          "description": "orca_task begin/end로 등록한 작업(시도)의 최신 결과입니다. 상태는 에이전트가 보고한 값이고, 검증은 verifier가 직접 실행해 서명한 증거가 있을 때만 '검증됨'입니다. 등록되지 않은 호출은 왼쪽 막대 패널에서 세션별로 봅니다.",
+          "description": "Run이 만들어진 작업(시도)의 최신 결과입니다. '등록'은 orca_task begin/end로 직접 표시한 작업이고, '자동'은 등록하지 않은 세션을 세션 하나당 하나로 자동으로 묶은 것입니다(상태·검증은 보고되지 않아 비어 있습니다). 검증은 verifier가 직접 실행해 서명한 증거가 있을 때만 '검증됨'입니다.",
           "id": 3001,
           "links": [],
           "title": "작업/시도 결과",
@@ -7482,9 +7482,49 @@
                     ]
                   },
                   "unit": "none",
-                  "noValue": "등록된 작업이 없습니다 — orca_task begin/end로 표시하세요"
+                  "noValue": "아직 Run이 없습니다"
                 },
                 "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "구분",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 80
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-background",
+                          "mode": "basic"
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "registered": {
+                                "text": "등록",
+                                "color": "blue",
+                                "index": 0
+                              },
+                              "auto": {
+                                "text": "자동",
+                                "color": "dark-gray",
+                                "index": 1
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
                   {
                     "matcher": {
                       "id": "byName",
@@ -7495,19 +7535,6 @@
                       {
                         "id": "custom.width",
                         "value": 300
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "시도",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.width",
-                        "value": 70
                       }
                     ]
                   },
@@ -7786,7 +7813,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "WITH calls AS (\n  SELECT * FROM observability.orca_call_events\n  WHERE source_kind = 'raw_call' AND $__timeFilter(occurred_at)\n), outbox AS (\n  SELECT count(*) FILTER (WHERE state = 'pending') AS pending,\n         count(*) FILTER (WHERE state = 'dead') AS dead,\n         COALESCE(round(extract(epoch FROM now() - min(updated_at) FILTER (WHERE state = 'pending')) / 60), 0) AS oldest_min\n  FROM observability.orca_mlflow_outbox\n)\nSELECT \"항목\", \"값\", \"설명\" FROM (\n  SELECT 1 AS ord, '호출 이벤트 (선택 기간)' AS \"항목\", count(*)::text AS \"값\",\n         '저장된 호출 단위 이벤트 수' AS \"설명\" FROM calls\n  UNION ALL SELECT 2, '마지막 호출 후 경과',\n         COALESCE(round(extract(epoch FROM now() - (SELECT max(occurred_at) FROM observability.orca_call_events)) / 60)::text || '분', 'N/A'),\n         '선택 기간과 무관한 전체 최신 호출 기준'\n  UNION ALL SELECT 3, '귀속 explicit / ambiguous / unassigned',\n         count(*) FILTER (WHERE attribution_status = 'explicit') || ' / ' ||\n         count(*) FILTER (WHERE attribution_status = 'ambiguous') || ' / ' ||\n         count(*) FILTER (WHERE attribution_status = 'unassigned'),\n         '명시적 manifest로 귀속된 호출 비율 확인용' FROM calls\n  UNION ALL SELECT 4, '캐시 제외 토큰 미확인 호출',\n         count(*) FILTER (WHERE non_cache_tokens IS NULL) || ' / ' || count(*),\n         '값이 없으면 0이 아니라 미확인입니다' FROM calls\n  UNION ALL SELECT 5, '미확정(partial) 호출', count(*) FILTER (WHERE event_status \u003c\u003e 'final')::text,\n         '스트리밍 중간 상태. 최종본이 오면 교체됩니다' FROM calls\n  UNION ALL SELECT 6, 'MLflow 전송 대기 / 가장 오래된 대기',\n         pending || '건 / ' || oldest_min::bigint || '분', '장애 중에도 DB 기록과 조회는 계속됩니다' FROM outbox\n  UNION ALL SELECT 7, 'MLflow 전송 실패(dead)', dead::text, '운영자 확인이 필요한 항목' FROM outbox\n) rows\nORDER BY ord;",
+                        "rawSql": "WITH calls AS (\n  SELECT * FROM observability.orca_call_events\n  WHERE source_kind = 'raw_call' AND $__timeFilter(occurred_at)\n), outbox AS (\n  SELECT count(*) FILTER (WHERE state = 'pending') AS pending,\n         count(*) FILTER (WHERE state = 'dead') AS dead,\n         COALESCE(round(extract(epoch FROM now() - min(updated_at) FILTER (WHERE state = 'pending')) / 60), 0) AS oldest_min\n  FROM observability.orca_mlflow_outbox\n)\nSELECT \"항목\", \"값\", \"설명\" FROM (\n  SELECT 1 AS ord, '호출 이벤트 (선택 기간)' AS \"항목\", count(*)::text AS \"값\",\n         '저장된 호출 단위 이벤트 수' AS \"설명\" FROM calls\n  UNION ALL SELECT 2, '마지막 호출 후 경과',\n         COALESCE(round(extract(epoch FROM now() - (SELECT max(occurred_at) FROM observability.orca_call_events)) / 60)::text || '분', 'N/A'),\n         '선택 기간과 무관한 전체 최신 호출 기준'\n  UNION ALL SELECT 3, '귀속 명시 / 자동 / 모호 / 미귀속',\n         count(*) FILTER (WHERE attribution_status = 'explicit') || ' / ' ||\n         count(*) FILTER (WHERE attribution_status = 'auto') || ' / ' ||\n         count(*) FILTER (WHERE attribution_status = 'ambiguous') || ' / ' ||\n         count(*) FILTER (WHERE attribution_status = 'unassigned'),\n         '명시 = 직접 등록, 자동 = 세션 단위 자동 묶음' FROM calls\n  UNION ALL SELECT 4, '캐시 제외 토큰 미확인 호출',\n         count(*) FILTER (WHERE non_cache_tokens IS NULL) || ' / ' || count(*),\n         '값이 없으면 0이 아니라 미확인입니다' FROM calls\n  UNION ALL SELECT 5, '미확정(partial) 호출', count(*) FILTER (WHERE event_status \u003c\u003e 'final')::text,\n         '스트리밍 중간 상태. 최종본이 오면 교체됩니다' FROM calls\n  UNION ALL SELECT 6, 'MLflow 전송 대기 / 가장 오래된 대기',\n         pending || '건 / ' || oldest_min::bigint || '분', '장애 중에도 DB 기록과 조회는 계속됩니다' FROM outbox\n  UNION ALL SELECT 7, 'MLflow 전송 실패(dead)', dead::text, '운영자 확인이 필요한 항목' FROM outbox\n) rows\nORDER BY ord;",
                         "sql": {
                           "columns": [
                             {
@@ -8692,7 +8719,7 @@
                           "kind": "ElementReference",
                           "name": "panel-orca-dev-1"
                         },
-                        "height": 7,
+                        "height": 11,
                         "width": 24,
                         "x": 0,
                         "y": 41
@@ -8708,7 +8735,7 @@
                         "height": 7,
                         "width": 24,
                         "x": 0,
-                        "y": 48
+                        "y": 52
                       }
                     }
                   ]
