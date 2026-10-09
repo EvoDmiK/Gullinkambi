@@ -7516,7 +7516,7 @@
                               },
                               "auto": {
                                 "text": "자동",
-                                "color": "dark-gray",
+                                "color": "#6B7280",
                                 "index": 1
                               }
                             }
@@ -7579,12 +7579,12 @@
                               },
                               "cancelled": {
                                 "text": "취소",
-                                "color": "dark-gray",
+                                "color": "#6B7280",
                                 "index": 3
                               },
                               "unknown": {
                                 "text": "미보고",
-                                "color": "dark-gray",
+                                "color": "#6B7280",
                                 "index": 4
                               }
                             }
@@ -7634,7 +7634,7 @@
                               },
                               "unknown": {
                                 "text": "알 수 없음",
-                                "color": "dark-gray",
+                                "color": "#6B7280",
                                 "index": 3
                               }
                             }
@@ -9088,7 +9088,7 @@
             "text": "All",
             "value": "$__all"
           },
-          "definition": "SELECT DISTINCT board AS __text, board AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;",
+          "definition": "SELECT __text, __value FROM (\nSELECT DISTINCT board AS __text, board AS __value\nFROM observability.hermes_kanban_tasks\n  UNION ALL\n  SELECT '(없음)', '(없음)'\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_kanban_tasks)\n) AS t\nORDER BY 1;",
           "hide": "dontHide",
           "includeAll": true,
           "label": "보드",
@@ -9102,7 +9102,7 @@
             "group": "postgres",
             "kind": "DataQuery",
             "spec": {
-              "__legacyStringValue": "SELECT DISTINCT board AS __text, board AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;"
+              "__legacyStringValue": "SELECT __text, __value FROM (\nSELECT DISTINCT board AS __text, board AS __value\nFROM observability.hermes_kanban_tasks\n  UNION ALL\n  SELECT '(없음)', '(없음)'\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_kanban_tasks)\n) AS t\nORDER BY 1;"
             },
             "version": "v0"
           },
@@ -9121,7 +9121,7 @@
             "text": "All",
             "value": "$__all"
           },
-          "definition": "SELECT DISTINCT\n  CASE status\n    WHEN 'done' THEN '완료'\n    WHEN 'archived' THEN '보관'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'running' THEN '실행 중'\n    WHEN 'triage' THEN '검토'\n    ELSE status\n  END AS __text,\n  status AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;",
+          "definition": "SELECT __text, __value FROM (\nSELECT DISTINCT\n  CASE status\n    WHEN 'done' THEN '완료'\n    WHEN 'archived' THEN '보관'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'running' THEN '실행 중'\n    WHEN 'triage' THEN '검토'\n    ELSE status\n  END AS __text,\n  status AS __value\nFROM observability.hermes_kanban_tasks\n  UNION ALL\n  SELECT '(없음)', '(없음)'\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_kanban_tasks)\n) AS t\nORDER BY 1;",
           "hide": "dontHide",
           "includeAll": true,
           "label": "상태",
@@ -9135,7 +9135,7 @@
             "group": "postgres",
             "kind": "DataQuery",
             "spec": {
-              "__legacyStringValue": "SELECT DISTINCT\n  CASE status\n    WHEN 'done' THEN '완료'\n    WHEN 'archived' THEN '보관'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'running' THEN '실행 중'\n    WHEN 'triage' THEN '검토'\n    ELSE status\n  END AS __text,\n  status AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;"
+              "__legacyStringValue": "SELECT __text, __value FROM (\nSELECT DISTINCT\n  CASE status\n    WHEN 'done' THEN '완료'\n    WHEN 'archived' THEN '보관'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'running' THEN '실행 중'\n    WHEN 'triage' THEN '검토'\n    ELSE status\n  END AS __text,\n  status AS __value\nFROM observability.hermes_kanban_tasks\n  UNION ALL\n  SELECT '(없음)', '(없음)'\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_kanban_tasks)\n) AS t\nORDER BY 1;"
             },
             "version": "v0"
           },
@@ -9154,7 +9154,7 @@
             "text": "All",
             "value": "$__all"
           },
-          "definition": "SELECT DISTINCT COALESCE(assignee, 'unassigned') AS __text, COALESCE(assignee, 'unassigned') AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;",
+          "definition": "SELECT __text, __value FROM (\nSELECT DISTINCT COALESCE(assignee, 'unassigned') AS __text, COALESCE(assignee, 'unassigned') AS __value\nFROM observability.hermes_kanban_tasks\n  UNION ALL\n  SELECT '(없음)', '(없음)'\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_kanban_tasks)\n) AS t\nORDER BY 1;",
           "hide": "dontHide",
           "includeAll": true,
           "label": "담당자",
@@ -9168,7 +9168,7 @@
             "group": "postgres",
             "kind": "DataQuery",
             "spec": {
-              "__legacyStringValue": "SELECT DISTINCT COALESCE(assignee, 'unassigned') AS __text, COALESCE(assignee, 'unassigned') AS __value\nFROM observability.hermes_kanban_tasks\nORDER BY 1;"
+              "__legacyStringValue": "SELECT __text, __value FROM (\nSELECT DISTINCT COALESCE(assignee, 'unassigned') AS __text, COALESCE(assignee, 'unassigned') AS __value\nFROM observability.hermes_kanban_tasks\n  UNION ALL\n  SELECT '(없음)', '(없음)'\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_kanban_tasks)\n) AS t\nORDER BY 1;"
             },
             "version": "v0"
           },
