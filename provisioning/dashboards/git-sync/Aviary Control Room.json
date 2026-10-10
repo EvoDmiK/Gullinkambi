@@ -30,1064 +30,6 @@
     "description": "n8n, Hermes Agent, Hermes Kanban, OpenViking 및 Codex·Claude·Antigravity 구독 사용량 통합 모니터링 대시보드.",
     "editable": true,
     "elements": {
-      "panel-10": {
-        "kind": "Panel",
-        "spec": {
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "ffskrzljzwr28b"
-                      },
-                      "group": "grafana-postgresql-datasource",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "editorMode": "code",
-                        "format": "table",
-                        "rawQuery": true,
-                        "rawSql": "SELECT\n  time_bucket('$__interval', ended_at) AS time,\n  count(*) FILTER (WHERE status = 'completed') AS completed,\n  count(*) FILTER (WHERE status = 'failed') AS failed\nFROM observability.hermes_runs\nWHERE $__timeFilter(ended_at)\n  AND status IN ('completed', 'failed')\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}'\nGROUP BY 1\nORDER BY 1;",
-                        "sql": {
-                          "columns": [
-                            {
-                              "parameters": [],
-                              "type": "function"
-                            }
-                          ],
-                          "groupBy": [
-                            {
-                              "property": {
-                                "type": "string"
-                              },
-                              "type": "groupBy"
-                            }
-                          ],
-                          "limit": 50
-                        }
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "A"
-                  }
-                }
-              ],
-              "queryOptions": {},
-              "transformations": []
-            }
-          },
-          "description": "시간대별 완료·실패 실행 수 (쌓아서 표시)",
-          "id": 10,
-          "links": [],
-          "title": "완료·실패 추이",
-          "vizConfig": {
-            "group": "timeseries",
-            "kind": "VizConfig",
-            "spec": {
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "palette-classic"
-                  },
-                  "custom": {
-                    "axisBorderShow": false,
-                    "axisCenteredZero": false,
-                    "axisColorMode": "text",
-                    "axisLabel": "",
-                    "axisPlacement": "auto",
-                    "barAlignment": 0,
-                    "barWidthFactor": 0.8,
-                    "drawStyle": "bars",
-                    "fillOpacity": 85,
-                    "gradientMode": "none",
-                    "hideFrom": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": false
-                    },
-                    "insertNulls": false,
-                    "lineInterpolation": "linear",
-                    "lineWidth": 0,
-                    "pointSize": 5,
-                    "scaleDistribution": {
-                      "type": "linear"
-                    },
-                    "showPoints": "never",
-                    "showValues": false,
-                    "spanNulls": false,
-                    "stacking": {
-                      "group": "A",
-                      "mode": "normal"
-                    },
-                    "thresholdsStyle": {
-                      "mode": "off"
-                    }
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green",
-                        "value": 0
-                      },
-                      {
-                        "color": "red",
-                        "value": 80
-                      }
-                    ]
-                  }
-                },
-                "overrides": [
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "completed"
-                    },
-                    "properties": [
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#22C55E"
-                        }
-                      },
-                      {
-                        "id": "displayName",
-                        "value": "완료"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "failed"
-                    },
-                    "properties": [
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#EF4444"
-                        }
-                      },
-                      {
-                        "id": "displayName",
-                        "value": "실패"
-                      }
-                    ]
-                  }
-                ]
-              },
-              "options": {
-                "annotations": {
-                  "clustering": -1,
-                  "multiLane": false
-                },
-                "legend": {
-                  "calcs": [],
-                  "displayMode": "list",
-                  "enableFacetedFilter": false,
-                  "overflow": "ellipsis",
-                  "placement": "bottom",
-                  "showLegend": true
-                },
-                "tooltip": {
-                  "hideZeros": false,
-                  "mode": "multi",
-                  "sort": "none"
-                }
-              }
-            },
-            "version": "13.2.1"
-          }
-        }
-      },
-      "panel-11": {
-        "kind": "Panel",
-        "spec": {
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "ffskrzljzwr28b"
-                      },
-                      "group": "grafana-postgresql-datasource",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "dataset": "timeseries",
-                        "editorMode": "code",
-                        "format": "table",
-                        "rawQuery": true,
-                        "rawSql": "SELECT\n  tools.key AS metric,\n  sum(tools.value::bigint)::double precision AS value\nFROM observability.hermes_runs AS runs\nCROSS JOIN LATERAL jsonb_each_text(runs.tool_usage) AS tools\nWHERE $__timeFilter(COALESCE(runs.ended_at, runs.started_at))\n  AND runs.profile ~ '${profile:regex}'\n  AND runs.model ~ '${model:regex}'\nGROUP BY tools.key\nORDER BY value DESC\nLIMIT 10;",
-                        "sql": {
-                          "columns": [
-                            {
-                              "parameters": [],
-                              "type": "function"
-                            }
-                          ],
-                          "groupBy": [
-                            {
-                              "property": {
-                                "type": "string"
-                              },
-                              "type": "groupBy"
-                            }
-                          ],
-                          "limit": 50
-                        }
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "A"
-                  }
-                }
-              ],
-              "queryOptions": {},
-              "transformations": []
-            }
-          },
-          "description": "도구 이름별 호출 횟수 상위 10개 (인자·내용은 수집하지 않음)",
-          "id": 11,
-          "links": [],
-          "title": "도구별 호출 수 (상위 10)",
-          "vizConfig": {
-            "group": "bargauge",
-            "kind": "VizConfig",
-            "spec": {
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "continuous-YlRd"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "blue",
-                        "value": 0
-                      }
-                    ]
-                  },
-                  "unit": "sishort",
-                  "noValue": "N/A",
-                  "min": 0
-                },
-                "overrides": []
-              },
-              "options": {
-                "displayMode": "gradient",
-                "maxVizHeight": 24,
-                "minVizHeight": 14,
-                "minVizWidth": 8,
-                "namePlacement": "top",
-                "orientation": "horizontal",
-                "reduceOptions": {
-                  "calcs": [],
-                  "fields": "",
-                  "values": true
-                },
-                "showUnfilled": true,
-                "sizing": "manual",
-                "valueMode": "color",
-                "text": {
-                  "titleSize": 13,
-                  "valueSize": 15
-                }
-              }
-            },
-            "version": "13.2.1"
-          }
-        }
-      },
-      "panel-12": {
-        "kind": "Panel",
-        "spec": {
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "ffskrzljzwr28b"
-                      },
-                      "group": "grafana-postgresql-datasource",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "dataset": "timeseries",
-                        "editorMode": "code",
-                        "format": "table",
-                        "rawQuery": true,
-                        "rawSql": "SELECT\n  ended_at AS \"시각\",\n  profile AS \"프로필\",\n  model AS \"모델\",\n  source AS \"소스\",\n  end_reason AS \"종료 사유\",\n  round((duration_ms / 1000.0)::numeric, 1) AS \"처리시간(초)\"\nFROM observability.hermes_runs\nWHERE $__timeFilter(COALESCE(ended_at, started_at))\n  AND status = 'failed'\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}'\nORDER BY COALESCE(ended_at, started_at) DESC\nLIMIT 20;",
-                        "sql": {
-                          "columns": [
-                            {
-                              "parameters": [],
-                              "type": "function"
-                            }
-                          ],
-                          "groupBy": [
-                            {
-                              "property": {
-                                "type": "string"
-                              },
-                              "type": "groupBy"
-                            }
-                          ],
-                          "limit": 50
-                        }
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "A"
-                  }
-                }
-              ],
-              "queryOptions": {},
-              "transformations": []
-            }
-          },
-          "description": "실패한 실행 최근 20건.",
-          "id": 12,
-          "links": [],
-          "title": "최근 실패 상세",
-          "vizConfig": {
-            "group": "table",
-            "kind": "VizConfig",
-            "spec": {
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "custom": {
-                    "align": "auto",
-                    "cellOptions": {
-                      "type": "auto"
-                    },
-                    "footer": {
-                      "reducers": []
-                    },
-                    "inspect": false,
-                    "wrapText": false
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green",
-                        "value": 0
-                      }
-                    ]
-                  },
-                  "noValue": "-"
-                },
-                "overrides": [
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "시각",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "dateTimeAsLocal"
-                      },
-                      {
-                        "id": "custom.minWidth",
-                        "value": 150
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "프로필",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.minWidth",
-                        "value": 100
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "모델",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.minWidth",
-                        "value": 140
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "소스",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.minWidth",
-                        "value": 90
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "종료 사유",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "thresholds",
-                        "value": {
-                          "mode": "absolute",
-                          "steps": [
-                            {
-                              "color": "#EF4444",
-                              "value": 0
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "thresholds"
-                        }
-                      },
-                      {
-                        "id": "custom.cellOptions",
-                        "value": {
-                          "type": "color-text"
-                        }
-                      },
-                      {
-                        "id": "custom.minWidth",
-                        "value": 160
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "처리시간(초)",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "s"
-                      },
-                      {
-                        "id": "custom.align",
-                        "value": "center"
-                      }
-                    ]
-                  }
-                ]
-              },
-              "options": {
-                "cellHeight": "sm",
-                "showHeader": true,
-                "sortBy": [
-                  {
-                    "desc": true,
-                    "displayName": "시각"
-                  }
-                ]
-              }
-            },
-            "version": "13.2.1"
-          }
-        }
-      },
-      "panel-19": {
-        "kind": "Panel",
-        "spec": {
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "ffskrzljzwr28b"
-                      },
-                      "group": "grafana-postgresql-datasource",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "dataset": "timeseries",
-                        "editorMode": "code",
-                        "format": "table",
-                        "rawQuery": true,
-                        "rawSql": "SELECT\n  profile AS \"프로필\",\n  model AS \"모델\",\n  count(*) AS \"실행 수\",\n  COALESCE(sum(input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens), 0) AS \"총 토큰\",\n  round(avg(input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens)::numeric, 0) AS \"실행당 평균 토큰\",\n  round(COALESCE(sum(duration_ms) FILTER (WHERE status IN ('completed', 'failed') AND duration_ms IS NOT NULL) / 1000.0, 0)::numeric, 1) AS \"작업 시간\"\nFROM observability.hermes_runs\nWHERE $__timeFilter(started_at)\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}'\nGROUP BY profile, model\nORDER BY profile, \"총 토큰\" DESC;",
-                        "sql": {
-                          "columns": [
-                            {
-                              "parameters": [],
-                              "type": "function"
-                            }
-                          ],
-                          "groupBy": [
-                            {
-                              "property": {
-                                "type": "string"
-                              },
-                              "type": "groupBy"
-                            }
-                          ],
-                          "limit": 50
-                        }
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "A"
-                  }
-                }
-              ],
-              "queryOptions": {},
-              "transformations": []
-            }
-          },
-          "description": "프로필과 모델 조합별 실행 수·토큰·작업 시간.",
-          "id": 19,
-          "links": [],
-          "title": "프로필 × 모델 사용량",
-          "vizConfig": {
-            "group": "table",
-            "kind": "VizConfig",
-            "spec": {
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "custom": {
-                    "align": "auto",
-                    "cellOptions": {
-                      "type": "auto"
-                    },
-                    "footer": {
-                      "reducers": []
-                    },
-                    "inspect": false,
-                    "wrapText": false
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green",
-                        "value": 0
-                      }
-                    ]
-                  },
-                  "noValue": "-"
-                },
-                "overrides": [
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "프로필",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.minWidth",
-                        "value": 110
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "모델",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.minWidth",
-                        "value": 160
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "실행 수",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "short"
-                      },
-                      {
-                        "id": "custom.cellOptions",
-                        "value": {
-                          "type": "gauge",
-                          "mode": "gradient",
-                          "valueDisplayMode": "text"
-                        }
-                      },
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "continuous-BlPu"
-                        }
-                      },
-                      {
-                        "id": "min",
-                        "value": 0
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "총 토큰",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "sishort"
-                      },
-                      {
-                        "id": "custom.cellOptions",
-                        "value": {
-                          "type": "gauge",
-                          "mode": "gradient",
-                          "valueDisplayMode": "text"
-                        }
-                      },
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "continuous-BlPu"
-                        }
-                      },
-                      {
-                        "id": "min",
-                        "value": 0
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "실행당 평균 토큰",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "sishort"
-                      },
-                      {
-                        "id": "custom.align",
-                        "value": "center"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "작업 시간",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "s"
-                      },
-                      {
-                        "id": "custom.align",
-                        "value": "center"
-                      }
-                    ]
-                  }
-                ]
-              },
-              "options": {
-                "cellHeight": "sm",
-                "showHeader": true,
-                "sortBy": [
-                  {
-                    "desc": true,
-                    "displayName": "총 토큰"
-                  }
-                ]
-              }
-            },
-            "version": "13.2.1"
-          }
-        }
-      },
-      "panel-2": {
-        "kind": "Panel",
-        "spec": {
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "ffskrzljzwr28b"
-                      },
-                      "group": "grafana-postgresql-datasource",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "dataset": "timeseries",
-                        "editorMode": "code",
-                        "format": "table",
-                        "rawQuery": true,
-                        "rawSql": "SELECT\n  profile AS \"프로필\",\n  COALESCE(sum(input_tokens), 0) AS \"일반 입력 토큰\",\n  COALESCE(sum(cache_read_tokens), 0) AS \"캐시 읽기 토큰\",\n  COALESCE(sum(output_tokens), 0) AS \"출력 토큰\",\n  COALESCE(sum(reasoning_tokens), 0) AS \"리즈닝 토큰\",\n  COALESCE(sum(input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens), 0) AS \"총 토큰\",\n  round(COALESCE(100.0 * sum(cache_read_tokens) / NULLIF(sum(input_tokens + cache_read_tokens + cache_write_tokens), 0), 0), 1) AS \"캐시 적중률\",\n  round(COALESCE(sum(duration_ms) FILTER (WHERE status IN ('completed', 'failed') AND duration_ms IS NOT NULL) / 1000.0, 0)::numeric, 1) AS \"작업 시간\"\nFROM observability.hermes_runs\nWHERE $__timeFilter(started_at)\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}'\nGROUP BY profile\nORDER BY \"총 토큰\" DESC;",
-                        "sql": {
-                          "columns": [
-                            {
-                              "parameters": [],
-                              "type": "function"
-                            }
-                          ],
-                          "groupBy": [
-                            {
-                              "property": {
-                                "type": "string"
-                              },
-                              "type": "groupBy"
-                            }
-                          ],
-                          "limit": 50
-                        }
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "A"
-                  }
-                }
-              ],
-              "queryOptions": {},
-              "transformations": []
-            }
-          },
-          "description": "프로필별 토큰 구성과 캐시 적중률, 작업 시간. 막대는 열 안에서의 상대 크기입니다.",
-          "id": 2,
-          "links": [],
-          "title": "프로필별 토큰 사용량",
-          "vizConfig": {
-            "group": "table",
-            "kind": "VizConfig",
-            "spec": {
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "custom": {
-                    "align": "auto",
-                    "cellOptions": {
-                      "type": "auto"
-                    },
-                    "footer": {
-                      "reducers": []
-                    },
-                    "inspect": false,
-                    "wrapText": false
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green",
-                        "value": 0
-                      }
-                    ]
-                  },
-                  "noValue": "-"
-                },
-                "overrides": [
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "프로필",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.minWidth",
-                        "value": 110
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "일반 입력 토큰",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "sishort"
-                      },
-                      {
-                        "id": "custom.cellOptions",
-                        "value": {
-                          "type": "gauge",
-                          "mode": "gradient",
-                          "valueDisplayMode": "text"
-                        }
-                      },
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "continuous-BlPu"
-                        }
-                      },
-                      {
-                        "id": "min",
-                        "value": 0
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "캐시 읽기 토큰",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "sishort"
-                      },
-                      {
-                        "id": "custom.cellOptions",
-                        "value": {
-                          "type": "gauge",
-                          "mode": "gradient",
-                          "valueDisplayMode": "text"
-                        }
-                      },
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "continuous-BlPu"
-                        }
-                      },
-                      {
-                        "id": "min",
-                        "value": 0
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "출력 토큰",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "sishort"
-                      },
-                      {
-                        "id": "custom.cellOptions",
-                        "value": {
-                          "type": "gauge",
-                          "mode": "gradient",
-                          "valueDisplayMode": "text"
-                        }
-                      },
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "continuous-BlPu"
-                        }
-                      },
-                      {
-                        "id": "min",
-                        "value": 0
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "리즈닝 토큰",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "sishort"
-                      },
-                      {
-                        "id": "custom.cellOptions",
-                        "value": {
-                          "type": "gauge",
-                          "mode": "gradient",
-                          "valueDisplayMode": "text"
-                        }
-                      },
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "continuous-BlPu"
-                        }
-                      },
-                      {
-                        "id": "min",
-                        "value": 0
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "총 토큰",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "sishort"
-                      },
-                      {
-                        "id": "custom.cellOptions",
-                        "value": {
-                          "type": "gauge",
-                          "mode": "gradient",
-                          "valueDisplayMode": "text"
-                        }
-                      },
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "continuous-BlPu"
-                        }
-                      },
-                      {
-                        "id": "min",
-                        "value": 0
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "캐시 적중률",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "percent"
-                      },
-                      {
-                        "id": "thresholds",
-                        "value": {
-                          "mode": "absolute",
-                          "steps": [
-                            {
-                              "color": "#EF4444",
-                              "value": 0
-                            },
-                            {
-                              "color": "#F59E0B",
-                              "value": 50
-                            },
-                            {
-                              "color": "#22C55E",
-                              "value": 80
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "thresholds"
-                        }
-                      },
-                      {
-                        "id": "custom.cellOptions",
-                        "value": {
-                          "type": "color-text"
-                        }
-                      },
-                      {
-                        "id": "custom.align",
-                        "value": "center"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "작업 시간",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "s"
-                      },
-                      {
-                        "id": "custom.align",
-                        "value": "center"
-                      }
-                    ]
-                  }
-                ]
-              },
-              "options": {
-                "cellHeight": "sm",
-                "showHeader": true,
-                "sortBy": [
-                  {
-                    "desc": true,
-                    "displayName": "총 토큰"
-                  }
-                ]
-              }
-            },
-            "version": "13.2.1"
-          }
-        }
-      },
       "panel-29": {
         "kind": "Panel",
         "spec": {
@@ -1159,109 +101,6 @@
                 "showPercentChange": false,
                 "textMode": "value_and_name",
                 "wideLayout": true
-              }
-            },
-            "version": "13.2.1"
-          }
-        }
-      },
-      "panel-3": {
-        "kind": "Panel",
-        "spec": {
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "ffskrzljzwr28b"
-                      },
-                      "group": "grafana-postgresql-datasource",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "editorMode": "code",
-                        "format": "table",
-                        "rawQuery": true,
-                        "rawSql": "SELECT count(*) AS value\nFROM observability.hermes_runs\nWHERE $__timeFilter(started_at)\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}';",
-                        "sql": {
-                          "columns": [
-                            {
-                              "parameters": [],
-                              "type": "function"
-                            }
-                          ],
-                          "groupBy": [
-                            {
-                              "property": {
-                                "type": "string"
-                              },
-                              "type": "groupBy"
-                            }
-                          ],
-                          "limit": 50
-                        }
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "A"
-                  }
-                }
-              ],
-              "queryOptions": {},
-              "transformations": []
-            }
-          },
-          "description": "선택 기간에 시작된 Hermes 실행 수",
-          "id": 3,
-          "links": [],
-          "title": "실행 수",
-          "vizConfig": {
-            "group": "stat",
-            "kind": "VizConfig",
-            "spec": {
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "fixed",
-                    "fixedColor": "#3B82F6"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green",
-                        "value": 0
-                      }
-                    ]
-                  },
-                  "noValue": "-",
-                  "unit": "short"
-                },
-                "overrides": []
-              },
-              "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "justifyMode": "auto",
-                "orientation": "auto",
-                "percentChangeColorMode": "standard",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "textMode": "value",
-                "wideLayout": true,
-                "text": {
-                  "valueSize": 34
-                }
               }
             },
             "version": "13.2.1"
@@ -3575,633 +2414,6 @@
                     "displayName": "총 토큰"
                   }
                 ]
-              }
-            },
-            "version": "13.2.1"
-          }
-        }
-      },
-      "panel-6": {
-        "kind": "Panel",
-        "spec": {
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "ffskrzljzwr28b"
-                      },
-                      "group": "grafana-postgresql-datasource",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "editorMode": "code",
-                        "format": "table",
-                        "rawQuery": true,
-                        "rawSql": "SELECT\n  COALESCE(\n    round(\n      (100.0 * count(*) FILTER (WHERE status = 'completed')\n       / NULLIF(count(*) FILTER (WHERE status IN ('completed', 'failed')), 0))::numeric,\n      1\n    ),\n    0\n  ) AS value\nFROM observability.hermes_runs\nWHERE $__timeFilter(started_at)\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}';",
-                        "sql": {
-                          "columns": [
-                            {
-                              "parameters": [],
-                              "type": "function"
-                            }
-                          ],
-                          "groupBy": [
-                            {
-                              "property": {
-                                "type": "string"
-                              },
-                              "type": "groupBy"
-                            }
-                          ],
-                          "limit": 50
-                        }
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "A"
-                  }
-                }
-              ],
-              "queryOptions": {},
-              "transformations": []
-            }
-          },
-          "description": "완료 ÷ (완료+실패). 진행 중인 실행은 제외합니다.",
-          "id": 6,
-          "links": [],
-          "title": "성공률",
-          "vizConfig": {
-            "group": "stat",
-            "kind": "VizConfig",
-            "spec": {
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "#EF4444",
-                        "value": 0
-                      },
-                      {
-                        "color": "#F59E0B",
-                        "value": 90
-                      },
-                      {
-                        "color": "#22C55E",
-                        "value": 97
-                      }
-                    ]
-                  },
-                  "noValue": "-",
-                  "unit": "percent"
-                },
-                "overrides": []
-              },
-              "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "justifyMode": "auto",
-                "orientation": "auto",
-                "percentChangeColorMode": "standard",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "textMode": "value",
-                "wideLayout": true,
-                "text": {
-                  "valueSize": 34
-                }
-              }
-            },
-            "version": "13.2.1"
-          }
-        }
-      },
-      "panel-7": {
-        "kind": "Panel",
-        "spec": {
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "ffskrzljzwr28b"
-                      },
-                      "group": "grafana-postgresql-datasource",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "editorMode": "code",
-                        "format": "table",
-                        "rawQuery": true,
-                        "rawSql": "SELECT\n  $__timeGroupAlias(started_at, $__interval),\n  profile AS metric,\n  sum(input_tokens + output_tokens + reasoning_tokens)::double precision AS value\nFROM observability.hermes_runs\nWHERE $__timeFilter(started_at)\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}'\nGROUP BY 1, profile\nORDER BY 1, profile;",
-                        "sql": {
-                          "columns": [
-                            {
-                              "parameters": [],
-                              "type": "function"
-                            }
-                          ],
-                          "groupBy": [
-                            {
-                              "property": {
-                                "type": "string"
-                              },
-                              "type": "groupBy"
-                            }
-                          ],
-                          "limit": 50
-                        }
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "A"
-                  }
-                }
-              ],
-              "queryOptions": {},
-              "transformations": []
-            }
-          },
-          "description": "프로필별 입력+출력+리즈닝 토큰 (캐시 제외)",
-          "id": 7,
-          "links": [],
-          "title": "프로필별 토큰 사용 추이",
-          "vizConfig": {
-            "group": "timeseries",
-            "kind": "VizConfig",
-            "spec": {
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "palette-classic"
-                  },
-                  "custom": {
-                    "axisBorderShow": false,
-                    "axisCenteredZero": false,
-                    "axisColorMode": "text",
-                    "axisLabel": "",
-                    "axisPlacement": "auto",
-                    "barAlignment": 0,
-                    "barWidthFactor": 0.6,
-                    "drawStyle": "line",
-                    "fillOpacity": 22,
-                    "gradientMode": "opacity",
-                    "hideFrom": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": false
-                    },
-                    "insertNulls": false,
-                    "lineInterpolation": "smooth",
-                    "lineWidth": 2,
-                    "pointSize": 5,
-                    "scaleDistribution": {
-                      "type": "linear"
-                    },
-                    "showPoints": "never",
-                    "showValues": false,
-                    "spanNulls": false,
-                    "stacking": {
-                      "group": "A",
-                      "mode": "none"
-                    },
-                    "thresholdsStyle": {
-                      "mode": "off"
-                    }
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green",
-                        "value": 0
-                      },
-                      {
-                        "color": "red",
-                        "value": 80
-                      }
-                    ]
-                  },
-                  "unit": "sishort"
-                },
-                "overrides": []
-              },
-              "options": {
-                "annotations": {
-                  "clustering": -1,
-                  "multiLane": false
-                },
-                "legend": {
-                  "calcs": [],
-                  "displayMode": "list",
-                  "enableFacetedFilter": false,
-                  "overflow": "ellipsis",
-                  "placement": "bottom",
-                  "showLegend": true
-                },
-                "tooltip": {
-                  "hideZeros": false,
-                  "mode": "multi",
-                  "sort": "desc"
-                }
-              }
-            },
-            "version": "13.2.1"
-          }
-        }
-      },
-      "panel-8": {
-        "kind": "Panel",
-        "spec": {
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "ffskrzljzwr28b"
-                      },
-                      "group": "grafana-postgresql-datasource",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "dataset": "timeseries",
-                        "editorMode": "code",
-                        "format": "table",
-                        "rawQuery": true,
-                        "rawSql": "SELECT\n  model AS \"모델\",\n  count(*) AS \"실행 수\",\n  COALESCE(sum(input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens), 0) AS \"총 토큰\",\n  round(avg(input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens)::numeric, 0) AS \"실행당 평균 토큰\",\n  round(COALESCE(sum(duration_ms) FILTER (WHERE status IN ('completed', 'failed') AND duration_ms IS NOT NULL) / 1000.0, 0)::numeric, 1) AS \"작업 시간\"\nFROM observability.hermes_runs\nWHERE $__timeFilter(started_at)\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}'\nGROUP BY model\nORDER BY \"총 토큰\" DESC;",
-                        "sql": {
-                          "columns": [
-                            {
-                              "parameters": [],
-                              "type": "function"
-                            }
-                          ],
-                          "groupBy": [
-                            {
-                              "property": {
-                                "type": "string"
-                              },
-                              "type": "groupBy"
-                            }
-                          ],
-                          "limit": 50
-                        }
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "A"
-                  }
-                }
-              ],
-              "queryOptions": {},
-              "transformations": []
-            }
-          },
-          "description": "모델별 실행 수와 토큰.",
-          "id": 8,
-          "links": [],
-          "title": "모델별 사용량",
-          "vizConfig": {
-            "group": "table",
-            "kind": "VizConfig",
-            "spec": {
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "custom": {
-                    "align": "auto",
-                    "cellOptions": {
-                      "type": "auto"
-                    },
-                    "footer": {
-                      "reducers": []
-                    },
-                    "inspect": false,
-                    "wrapText": false
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green",
-                        "value": 0
-                      }
-                    ]
-                  },
-                  "noValue": "-"
-                },
-                "overrides": [
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "모델",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.minWidth",
-                        "value": 160
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "실행 수",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "short"
-                      },
-                      {
-                        "id": "custom.cellOptions",
-                        "value": {
-                          "type": "gauge",
-                          "mode": "gradient",
-                          "valueDisplayMode": "text"
-                        }
-                      },
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "continuous-BlPu"
-                        }
-                      },
-                      {
-                        "id": "min",
-                        "value": 0
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "총 토큰",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "sishort"
-                      },
-                      {
-                        "id": "custom.cellOptions",
-                        "value": {
-                          "type": "gauge",
-                          "mode": "gradient",
-                          "valueDisplayMode": "text"
-                        }
-                      },
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "continuous-BlPu"
-                        }
-                      },
-                      {
-                        "id": "min",
-                        "value": 0
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "실행당 평균 토큰",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "sishort"
-                      },
-                      {
-                        "id": "custom.align",
-                        "value": "center"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "작업 시간",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "s"
-                      },
-                      {
-                        "id": "custom.align",
-                        "value": "center"
-                      }
-                    ]
-                  }
-                ]
-              },
-              "options": {
-                "cellHeight": "sm",
-                "showHeader": true,
-                "sortBy": [
-                  {
-                    "desc": true,
-                    "displayName": "총 토큰"
-                  }
-                ]
-              }
-            },
-            "version": "13.2.1"
-          }
-        }
-      },
-      "panel-9": {
-        "kind": "Panel",
-        "spec": {
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "ffskrzljzwr28b"
-                      },
-                      "group": "grafana-postgresql-datasource",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "editorMode": "code",
-                        "format": "table",
-                        "rawQuery": true,
-                        "rawSql": "SELECT\n  status AS metric,\n  count(*) AS value\nFROM observability.hermes_runs\nWHERE $__timeFilter(started_at)\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}'\nGROUP BY status\nORDER BY status;",
-                        "sql": {
-                          "columns": [
-                            {
-                              "parameters": [],
-                              "type": "function"
-                            }
-                          ],
-                          "groupBy": [
-                            {
-                              "property": {
-                                "type": "string"
-                              },
-                              "type": "groupBy"
-                            }
-                          ],
-                          "limit": 50
-                        }
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "A"
-                  }
-                }
-              ],
-              "queryOptions": {},
-              "transformations": []
-            }
-          },
-          "description": "실행 상태별 건수와 비율",
-          "id": 9,
-          "links": [],
-          "title": "상태 분포",
-          "vizConfig": {
-            "group": "piechart",
-            "kind": "VizConfig",
-            "spec": {
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "fixedColor": "#73BF69",
-                    "mode": "palette-classic"
-                  },
-                  "custom": {
-                    "hideFrom": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": false
-                    }
-                  }
-                },
-                "overrides": [
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "completed"
-                    },
-                    "properties": [
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#22C55E"
-                        }
-                      },
-                      {
-                        "id": "displayName",
-                        "value": "완료"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "failed"
-                    },
-                    "properties": [
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#EF4444"
-                        }
-                      },
-                      {
-                        "id": "displayName",
-                        "value": "실패"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "open"
-                    },
-                    "properties": [
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#3B82F6"
-                        }
-                      },
-                      {
-                        "id": "displayName",
-                        "value": "진행 중"
-                      }
-                    ]
-                  }
-                ]
-              },
-              "options": {
-                "displayLabels": [
-                  "percent"
-                ],
-                "legend": {
-                  "displayMode": "table",
-                  "overflow": "ellipsis",
-                  "placement": "right",
-                  "showLegend": true,
-                  "values": [
-                    "value",
-                    "percent"
-                  ]
-                },
-                "pieType": "donut",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "fields": "",
-                  "values": true
-                },
-                "sort": "desc",
-                "tooltip": {
-                  "hideZeros": false,
-                  "mode": "single",
-                  "sort": "none"
-                }
               }
             },
             "version": "13.2.1"
@@ -8422,7 +6634,7 @@
           }
         }
       },
-      "panel-hermes-3013": {
+      "panel-hermes-active": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -8443,7 +6655,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "SELECT count(*)::double precision AS value\nFROM observability.hermes_runs\nWHERE $__timeFilter(started_at)\n  AND status = 'failed'\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}';",
+                        "rawSql": "SELECT count(*)::double precision AS value\nFROM observability.hermes_sessions_current\nWHERE state = 'active' AND profile ~ '${profile:regex}' AND model ~ '${model:regex}';",
                         "sql": {
                           "columns": [
                             {
@@ -8472,10 +6684,10 @@
               "transformations": []
             }
           },
-          "description": "선택 기간에 실패한 Hermes 실행 수",
+          "description": "최근 1시간 안에 활동한 세션 수",
           "id": 3013,
           "links": [],
-          "title": "실패 수",
+          "title": "활성 세션",
           "vizConfig": {
             "group": "stat",
             "kind": "VizConfig",
@@ -8483,23 +6695,20 @@
               "fieldConfig": {
                 "defaults": {
                   "color": {
-                    "mode": "thresholds"
+                    "mode": "fixed",
+                    "fixedColor": "#22C55E"
                   },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
                       {
-                        "color": "#22C55E",
+                        "color": "green",
                         "value": 0
-                      },
-                      {
-                        "color": "#EF4444",
-                        "value": 1
                       }
                     ]
                   },
-                  "noValue": "0",
-                  "unit": "short"
+                  "unit": "short",
+                  "noValue": "0"
                 },
                 "overrides": []
               },
@@ -8528,7 +6737,7 @@
           }
         }
       },
-      "panel-hermes-3014": {
+      "panel-hermes-idle": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -8549,7 +6758,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "SELECT COALESCE(sum(input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens), 0)::double precision AS value\nFROM observability.hermes_runs\nWHERE $__timeFilter(started_at)\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}';",
+                        "rawSql": "SELECT count(*)::double precision AS value\nFROM observability.hermes_sessions_current\nWHERE state = 'idle' AND $__timeFilter(last_activity_at) AND profile ~ '${profile:regex}' AND model ~ '${model:regex}';",
                         "sql": {
                           "columns": [
                             {
@@ -8578,10 +6787,113 @@
               "transformations": []
             }
           },
-          "description": "입력·출력·리즈닝·캐시 읽기/쓰기를 모두 합한 토큰",
+          "description": "종료 기록은 없지만 1시간 넘게 조용한 세션(선택 기간에 마지막으로 활동한 것만). Hermes가 종료를 기록하지 않는 경우가 많습니다.",
           "id": 3014,
           "links": [],
-          "title": "총 토큰",
+          "title": "방치 세션",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "#F59E0B"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "short",
+                  "noValue": "0"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "value",
+                "wideLayout": true,
+                "text": {
+                  "valueSize": 34
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-hermes-tokens": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT COALESCE(sum(input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens), 0)::double precision AS value\nFROM observability.hermes_usage_deltas\nWHERE $__timeFilter(sampled_at) AND profile ~ '${profile:regex}' AND model ~ '${model:regex}';",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "선택 기간에 늘어난 토큰(수집 샘플 간 증감). 수집 시작(2026-10-10) 이전 사용량은 포함되지 않습니다.",
+          "id": 3015,
+          "links": [],
+          "title": "기간 토큰",
           "vizConfig": {
             "group": "stat",
             "kind": "VizConfig",
@@ -8601,8 +6913,8 @@
                       }
                     ]
                   },
-                  "noValue": "-",
-                  "unit": "sishort"
+                  "unit": "sishort",
+                  "noValue": "0"
                 },
                 "overrides": []
               },
@@ -8631,7 +6943,7 @@
           }
         }
       },
-      "panel-hermes-3015": {
+      "panel-hermes-cache": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -8652,7 +6964,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "SELECT round((100.0 * sum(cache_read_tokens) / NULLIF(sum(input_tokens + cache_read_tokens + cache_write_tokens), 0))::numeric, 1)::double precision AS value\nFROM observability.hermes_runs\nWHERE $__timeFilter(started_at)\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}';",
+                        "rawSql": "SELECT round((100.0 * sum(cache_read_tokens) / NULLIF(sum(input_tokens + cache_read_tokens + cache_write_tokens), 0))::numeric, 1)::double precision AS value\nFROM observability.hermes_usage_deltas\nWHERE $__timeFilter(sampled_at) AND profile ~ '${profile:regex}' AND model ~ '${model:regex}';",
                         "sql": {
                           "columns": [
                             {
@@ -8681,8 +6993,8 @@
               "transformations": []
             }
           },
-          "description": "프롬프트 입력 중 캐시에서 읽은 비율. 입력이 없으면 -",
-          "id": 3015,
+          "description": "선택 기간 프롬프트 입력 중 캐시에서 읽은 비율",
+          "id": 3016,
           "links": [],
           "title": "캐시 적중률",
           "vizConfig": {
@@ -8711,8 +7023,8 @@
                       }
                     ]
                   },
-                  "noValue": "-",
-                  "unit": "percent"
+                  "unit": "percent",
+                  "noValue": "-"
                 },
                 "overrides": []
               },
@@ -8734,6 +7046,369 @@
                 "wideLayout": true,
                 "text": {
                   "valueSize": 34
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-hermes-toolcalls": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT count(*)::double precision AS value\nFROM observability.hermes_tool_events\nWHERE $__timeFilter(occurred_at) AND profile ~ '${profile:regex}';",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "선택 기간에 실행된 도구 호출 수",
+          "id": 3017,
+          "links": [],
+          "title": "도구 호출",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "#3B82F6"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "sishort",
+                  "noValue": "0"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "value",
+                "wideLayout": true,
+                "text": {
+                  "valueSize": 34
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-hermes-toolerrors": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT count(*) FILTER (WHERE outcome = 'error')::double precision AS value\nFROM observability.hermes_tool_events\nWHERE $__timeFilter(occurred_at) AND profile ~ '${profile:regex}';",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "도구 결과가 오류로 판정된 호출 수. 결과 형식을 알 수 없는 호출은 포함하지 않습니다(아래 표의 '판정 불가').",
+          "id": 3018,
+          "links": [],
+          "title": "도구 오류",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "#22C55E",
+                        "value": 0
+                      },
+                      {
+                        "color": "#EF4444",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  "unit": "short",
+                  "noValue": "0"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "value",
+                "wideLayout": true,
+                "text": {
+                  "valueSize": 34
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-hermes-state": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT CASE state WHEN 'active' THEN '활동 중' WHEN 'idle' THEN '방치' ELSE '종료' END AS metric,\n       count(*)::double precision AS value\nFROM observability.hermes_sessions_current\nWHERE $__timeFilter(last_activity_at) AND profile ~ '${profile:regex}' AND model ~ '${model:regex}'\nGROUP BY state\nORDER BY value DESC;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "선택 기간에 활동한 세션의 상태. 방치 = 종료 기록 없이 1시간 넘게 조용한 세션.",
+          "id": 3019,
+          "links": [],
+          "title": "세션 상태",
+          "vizConfig": {
+            "group": "piechart",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "fixedColor": "#73BF69",
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "활동 중"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#22C55E"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "방치"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#F59E0B"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "종료"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#6B7280"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "displayLabels": [
+                  "percent"
+                ],
+                "legend": {
+                  "displayMode": "table",
+                  "overflow": "ellipsis",
+                  "placement": "right",
+                  "showLegend": true,
+                  "values": [
+                    "value",
+                    "percent"
+                  ]
+                },
+                "pieType": "donut",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": true
+                },
+                "sort": "desc",
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "single",
+                  "sort": "none"
                 }
               }
             },
@@ -8763,7 +7438,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "SELECT\n  right(session_id, 8) AS \"세션\",\n  started_at AS \"시작\",\n  profile AS \"프로필\",\n  model AS \"모델\",\n  CASE status WHEN 'completed' THEN '완료' WHEN 'failed' THEN '실패' ELSE '진행 중' END AS \"상태\",\n  round((duration_ms / 1000.0)::numeric, 1) AS \"처리 시간\",\n  message_count AS \"메시지\",\n  tool_call_count AS \"도구 호출\",\n  api_call_count AS \"API 호출\",\n  (input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens) AS \"총 토큰\",\n  round((100.0 * cache_read_tokens / NULLIF(input_tokens + cache_read_tokens + cache_write_tokens, 0))::numeric, 1) AS \"캐시 적중률\",\n  session_id AS \"세션 ID\"\nFROM observability.hermes_runs\nWHERE $__timeFilter(started_at)\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}'\nORDER BY started_at DESC\nLIMIT 30;",
+                        "rawSql": "SELECT\n  right(session_hash, 8) AS \"세션\",\n  started_at AS \"시작\",\n  last_activity_at AS \"마지막 활동\",\n  profile AS \"프로필\",\n  source AS \"소스\",\n  model AS \"모델\",\n  CASE state WHEN 'active' THEN '활동 중' WHEN 'idle' THEN '방치' ELSE '종료' END AS \"상태\",\n  message_count AS \"메시지\",\n  tool_call_count AS \"도구 호출\",\n  api_call_count AS \"API 호출\",\n  total_tokens AS \"총 토큰\",\n  round((100.0 * cache_read_tokens / NULLIF(input_tokens + cache_read_tokens + cache_write_tokens, 0))::numeric, 1) AS \"캐시 적중률\",\n  session_hash AS \"세션 ID\"\nFROM observability.hermes_sessions_current\nWHERE $__timeFilter(last_activity_at) AND profile ~ '${profile:regex}' AND model ~ '${model:regex}'\nORDER BY last_activity_at DESC\nLIMIT 30;",
                         "sql": {
                           "columns": [
                             {
@@ -8792,10 +7467,10 @@
               "transformations": []
             }
           },
-          "description": "선택 기간의 Hermes 세션 최근 30건. 세션 ID를 누르면 아래 '선택한 세션 상세'가 그 세션으로 바뀝니다.",
-          "id": 3016,
+          "description": "선택 기간에 활동한 세션 최근 30건(토큰은 세션 시작부터의 누적). 세션을 누르면 아래 상세가 그 세션으로 바뀝니다.",
+          "id": 3020,
           "links": [],
-          "title": "세션별 사용량",
+          "title": "세션 목록",
           "vizConfig": {
             "group": "table",
             "kind": "VizConfig",
@@ -8804,17 +7479,6 @@
                 "defaults": {
                   "color": {
                     "mode": "thresholds"
-                  },
-                  "custom": {
-                    "align": "auto",
-                    "cellOptions": {
-                      "type": "auto"
-                    },
-                    "footer": {
-                      "reducers": []
-                    },
-                    "inspect": false,
-                    "wrapText": false
                   },
                   "thresholds": {
                     "mode": "absolute",
@@ -8825,7 +7489,18 @@
                       }
                     ]
                   },
-                  "noValue": "-"
+                  "noValue": "-",
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false,
+                    "wrapText": false
+                  }
                 },
                 "overrides": [
                   {
@@ -8835,10 +7510,6 @@
                       "scope": "series"
                     },
                     "properties": [
-                      {
-                        "id": "custom.minWidth",
-                        "value": 90
-                      },
                       {
                         "id": "links",
                         "value": [
@@ -8860,6 +7531,10 @@
                         "value": {
                           "type": "color-text"
                         }
+                      },
+                      {
+                        "id": "custom.minWidth",
+                        "value": 80
                       }
                     ]
                   },
@@ -8871,12 +7546,29 @@
                     },
                     "properties": [
                       {
-                        "id": "custom.minWidth",
-                        "value": 140
+                        "id": "unit",
+                        "value": "dateTimeAsLocal"
                       },
+                      {
+                        "id": "custom.minWidth",
+                        "value": 130
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "마지막 활동",
+                      "scope": "series"
+                    },
+                    "properties": [
                       {
                         "id": "unit",
                         "value": "dateTimeAsLocal"
+                      },
+                      {
+                        "id": "custom.minWidth",
+                        "value": 130
                       }
                     ]
                   },
@@ -8896,13 +7588,26 @@
                   {
                     "matcher": {
                       "id": "byName",
+                      "options": "소스",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.minWidth",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
                       "options": "모델",
                       "scope": "series"
                     },
                     "properties": [
                       {
                         "id": "custom.minWidth",
-                        "value": 140
+                        "value": 130
                       }
                     ]
                   },
@@ -8914,25 +7619,21 @@
                     },
                     "properties": [
                       {
-                        "id": "custom.align",
-                        "value": "center"
-                      },
-                      {
                         "id": "mappings",
                         "value": [
                           {
                             "type": "value",
                             "options": {
-                              "완료": {
+                              "활동 중": {
                                 "color": "#22C55E",
                                 "index": 0
                               },
-                              "실패": {
-                                "color": "#EF4444",
+                              "방치": {
+                                "color": "#F59E0B",
                                 "index": 1
                               },
-                              "진행 중": {
-                                "color": "#3B82F6",
+                              "종료": {
+                                "color": "#6B7280",
                                 "index": 2
                               }
                             }
@@ -8944,19 +7645,6 @@
                         "value": {
                           "type": "color-text"
                         }
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "처리 시간",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "s"
                       },
                       {
                         "id": "custom.align",
@@ -9058,22 +7746,6 @@
                         "value": "percent"
                       },
                       {
-                        "id": "custom.align",
-                        "value": "center"
-                      },
-                      {
-                        "id": "custom.cellOptions",
-                        "value": {
-                          "type": "color-text"
-                        }
-                      },
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "thresholds"
-                        }
-                      },
-                      {
                         "id": "thresholds",
                         "value": {
                           "mode": "absolute",
@@ -9092,6 +7764,22 @@
                             }
                           ]
                         }
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "thresholds"
+                        }
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "center"
                       }
                     ]
                   },
@@ -9120,7 +7808,7 @@
           }
         }
       },
-      "panel-hermes-session-summary": {
+      "panel-hermes-usage": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -9139,9 +7827,9 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "format": "table",
+                        "format": "time_series",
                         "rawQuery": true,
-                        "rawSql": "SELECT\n  (input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens)::double precision AS \"총 토큰\",\n  round((duration_ms / 1000.0)::numeric, 1)::double precision AS \"처리 시간\",\n  message_count::double precision AS \"메시지\",\n  api_call_count::double precision AS \"API 호출\",\n  tool_call_count::double precision AS \"도구 호출\",\n  round((100.0 * cache_read_tokens / NULLIF(input_tokens + cache_read_tokens + cache_write_tokens, 0))::numeric, 1)::double precision AS \"캐시 적중률\"\nFROM observability.hermes_runs\nWHERE session_id = ${hermes_session:sqlstring};",
+                        "rawSql": "SELECT\n  $__timeGroupAlias(sampled_at, $__interval),\n  sum(input_tokens)::double precision AS \"일반 입력\",\n  sum(cache_read_tokens)::double precision AS \"캐시 읽기\",\n  sum(cache_write_tokens)::double precision AS \"캐시 쓰기\",\n  sum(output_tokens + reasoning_tokens)::double precision AS \"출력·리즈닝\"\nFROM observability.hermes_usage_deltas\nWHERE $__timeFilter(sampled_at) AND profile ~ '${profile:regex}' AND model ~ '${model:regex}'\nGROUP BY 1\nORDER BY 1;",
                         "sql": {
                           "columns": [
                             {
@@ -9170,8 +7858,1032 @@
               "transformations": []
             }
           },
-          "description": "위에서 선택한 세션의 합계. 세션을 고르지 않았거나 없으면 -로 표시됩니다.",
-          "id": 3017,
+          "description": "수집 샘플 간 증감을 시간대별로 합산(쌓은 막대). 수집 시작 이전은 비어 있습니다.",
+          "id": 3021,
+          "links": [],
+          "title": "시간대별 토큰 사용량",
+          "vizConfig": {
+            "group": "timeseries",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.8,
+                    "drawStyle": "bars",
+                    "fillOpacity": 85,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 0,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "normal"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "sishort",
+                  "noValue": "-"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "일반 입력"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#3B82F6"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "캐시 읽기"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#22C55E"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "캐시 쓰기"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#F59E0B"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "출력·리즈닝"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#8B5CF6"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "enableFacetedFilter": false,
+                  "overflow": "ellipsis",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc",
+                  "hideZeros": false
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-hermes-bymodel": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "dataset": "timeseries",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT\n  profile AS \"프로필\",\n  model AS \"모델\",\n  count(DISTINCT session_hash) AS \"세션\",\n  COALESCE(sum(api_calls), 0) AS \"API 호출\",\n  COALESCE(sum(input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens), 0) AS \"토큰\",\n  round((100.0 * sum(cache_read_tokens) / NULLIF(sum(input_tokens + cache_read_tokens + cache_write_tokens), 0))::numeric, 1) AS \"캐시 적중률\"\nFROM observability.hermes_usage_deltas\nWHERE $__timeFilter(sampled_at) AND known AND profile ~ '${profile:regex}' AND model ~ '${model:regex}'\nGROUP BY profile, model\nHAVING COALESCE(sum(input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens), 0) \u003e 0\nORDER BY \"토큰\" DESC;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "선택 기간의 증감 합계. 세션 수는 이 기간에 사용량이 늘어난 세션입니다.",
+          "id": 3022,
+          "links": [],
+          "title": "프로필·모델별 사용량",
+          "vizConfig": {
+            "group": "table",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "noValue": "-",
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false,
+                    "wrapText": false
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "프로필",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.minWidth",
+                        "value": 100
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "모델",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.minWidth",
+                        "value": 140
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "세션",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "short"
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "center"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "API 호출",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "short"
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "center"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "토큰",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "sishort"
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "gauge",
+                          "mode": "gradient",
+                          "valueDisplayMode": "text"
+                        }
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "continuous-BlPu"
+                        }
+                      },
+                      {
+                        "id": "min",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "캐시 적중률",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "color": "#EF4444",
+                              "value": 0
+                            },
+                            {
+                              "color": "#F59E0B",
+                              "value": 50
+                            },
+                            {
+                              "color": "#22C55E",
+                              "value": 80
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "thresholds"
+                        }
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "center"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "desc": true,
+                    "displayName": "토큰"
+                  }
+                ]
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-hermes-tooltop": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT tool AS metric, count(*)::double precision AS value\nFROM observability.hermes_tool_events\nWHERE $__timeFilter(occurred_at) AND profile ~ '${profile:regex}'\nGROUP BY tool\nORDER BY value DESC\nLIMIT 10;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "도구 이름별 호출 횟수. 이름과 횟수만 수집하고 인자·결과는 수집하지 않습니다.",
+          "id": 3023,
+          "links": [],
+          "title": "도구별 호출 수 (상위 10)",
+          "vizConfig": {
+            "group": "bargauge",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "continuous-YlRd"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "blue",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "sishort",
+                  "noValue": "-",
+                  "min": 0
+                },
+                "overrides": []
+              },
+              "options": {
+                "displayMode": "gradient",
+                "maxVizHeight": 24,
+                "minVizHeight": 14,
+                "minVizWidth": 8,
+                "namePlacement": "top",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                  "calcs": [],
+                  "fields": "",
+                  "values": true
+                },
+                "showUnfilled": true,
+                "sizing": "manual",
+                "valueMode": "color",
+                "text": {
+                  "titleSize": 13,
+                  "valueSize": 15
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-hermes-toolresult": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "dataset": "timeseries",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT\n  tool AS \"도구\",\n  count(*) AS \"호출\",\n  count(*) FILTER (WHERE outcome = 'error') AS \"오류\",\n  count(*) FILTER (WHERE outcome = 'nonzero_exit') AS \"비정상 종료\",\n  count(*) FILTER (WHERE outcome = 'unknown') AS \"판정 불가\",\n  round((100.0 * count(*) FILTER (WHERE outcome = 'error') / NULLIF(count(*) FILTER (WHERE outcome \u003c\u003e 'unknown'), 0))::numeric, 1) AS \"오류율\"\nFROM observability.hermes_tool_events\nWHERE $__timeFilter(occurred_at) AND profile ~ '${profile:regex}'\nGROUP BY tool\nORDER BY \"호출\" DESC\nLIMIT 15;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "결과 형식으로 판정한 오류. '비정상 종료'는 명령이 0이 아닌 코드로 끝난 경우(예: grep의 일치 없음)라 반드시 실패는 아닙니다. '판정 불가'는 일반 텍스트 결과입니다.",
+          "id": 3024,
+          "links": [],
+          "title": "도구 결과",
+          "vizConfig": {
+            "group": "table",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "noValue": "-",
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false,
+                    "wrapText": false
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "도구",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.minWidth",
+                        "value": 150
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "호출",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "short"
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "gauge",
+                          "mode": "gradient",
+                          "valueDisplayMode": "text"
+                        }
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "continuous-BlPu"
+                        }
+                      },
+                      {
+                        "id": "min",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "오류",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "short"
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "color": "#22C55E",
+                              "value": 0
+                            },
+                            {
+                              "color": "#EF4444",
+                              "value": 1
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "thresholds"
+                        }
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "center"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "비정상 종료",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "short"
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "center"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "판정 불가",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "short"
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "center"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "오류율",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-background",
+                          "mode": "basic"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "color": "#22C55E",
+                              "value": 0
+                            },
+                            {
+                              "color": "#F59E0B",
+                              "value": 5
+                            },
+                            {
+                              "color": "#EF4444",
+                              "value": 20
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "thresholds"
+                        }
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "center"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "desc": true,
+                    "displayName": "호출"
+                  }
+                ]
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-hermes-tooltime": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "time_series",
+                        "rawQuery": true,
+                        "rawSql": "SELECT\n  $__timeGroupAlias(occurred_at, $__interval),\n  count(*) FILTER (WHERE outcome = 'ok')::double precision AS \"정상\",\n  count(*) FILTER (WHERE outcome = 'error')::double precision AS \"오류\",\n  count(*) FILTER (WHERE outcome = 'nonzero_exit')::double precision AS \"비정상 종료\",\n  count(*) FILTER (WHERE outcome = 'unknown')::double precision AS \"판정 불가\"\nFROM observability.hermes_tool_events\nWHERE $__timeFilter(occurred_at) AND profile ~ '${profile:regex}'\nGROUP BY 1\nORDER BY 1;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "결과 판정별로 쌓은 호출 수",
+          "id": 3025,
+          "links": [],
+          "title": "시간대별 도구 호출",
+          "vizConfig": {
+            "group": "timeseries",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.8,
+                    "drawStyle": "bars",
+                    "fillOpacity": 85,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 0,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "normal"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "short",
+                  "noValue": "-"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "정상"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#22C55E"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "오류"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#EF4444"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "비정상 종료"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#F59E0B"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "판정 불가"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#6B7280"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "enableFacetedFilter": false,
+                  "overflow": "ellipsis",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc",
+                  "hideZeros": false
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-hermes-sel-summary": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT\n  total_tokens::double precision AS \"총 토큰\",\n  message_count::double precision AS \"메시지\",\n  api_call_count::double precision AS \"API 호출\",\n  tool_call_count::double precision AS \"도구 호출\",\n  round((100.0 * cache_read_tokens / NULLIF(input_tokens + cache_read_tokens + cache_write_tokens, 0))::numeric, 1)::double precision AS \"캐시 적중률\",\n  round((extract(epoch FROM last_activity_at - started_at) / 60.0)::numeric, 1)::double precision AS \"활동 시간(분)\"\nFROM observability.hermes_sessions_current\nWHERE session_hash = ${hermes_session:sqlstring};",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "위에서 선택한 세션의 누적 합계. 세션을 고르지 않았거나 없으면 -로 표시됩니다.",
+          "id": 3026,
           "links": [],
           "title": "선택한 세션 요약",
           "vizConfig": {
@@ -9220,19 +8932,6 @@
                   {
                     "matcher": {
                       "id": "byName",
-                      "options": "처리 시간",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "s"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
                       "options": "캐시 적중률",
                       "scope": "series"
                     },
@@ -9268,6 +8967,19 @@
                         }
                       }
                     ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "활동 시간(분)",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "m"
+                      }
+                    ]
                   }
                 ]
               },
@@ -9297,7 +9009,7 @@
           }
         }
       },
-      "panel-hermes-session-tokens": {
+      "panel-hermes-sel-comp": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -9315,11 +9027,10 @@
                       "group": "grafana-postgresql-datasource",
                       "kind": "DataQuery",
                       "spec": {
-                        "dataset": "timeseries",
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "SELECT m.metric, m.value::double precision AS value\nFROM observability.hermes_runs r\nCROSS JOIN LATERAL (VALUES\n  ('일반 입력', r.input_tokens),\n  ('캐시 읽기', r.cache_read_tokens),\n  ('캐시 쓰기', r.cache_write_tokens),\n  ('출력', r.output_tokens),\n  ('리즈닝', r.reasoning_tokens)\n) AS m(metric, value)\nWHERE r.session_id = ${hermes_session:sqlstring}\nORDER BY m.value DESC;",
+                        "rawSql": "SELECT m.metric, m.value::double precision AS value\nFROM observability.hermes_sessions_current r\nCROSS JOIN LATERAL (VALUES\n  ('일반 입력', r.input_tokens), ('캐시 읽기', r.cache_read_tokens), ('캐시 쓰기', r.cache_write_tokens),\n  ('출력', r.output_tokens), ('리즈닝', r.reasoning_tokens)) AS m(metric, value)\nWHERE r.session_hash = ${hermes_session:sqlstring}\nORDER BY m.value DESC;",
                         "sql": {
                           "columns": [
                             {
@@ -9348,8 +9059,8 @@
               "transformations": []
             }
           },
-          "description": "입력·캐시·출력·리즈닝 토큰이 각각 얼마인지 보여 줍니다.",
-          "id": 3018,
+          "description": "입력·캐시·출력·리즈닝 토큰의 누적 크기",
+          "id": 3027,
           "links": [],
           "title": "선택한 세션 토큰 구성",
           "vizConfig": {
@@ -9401,7 +9112,7 @@
           }
         }
       },
-      "panel-hermes-session-tools": {
+      "panel-hermes-sel-tools": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -9419,11 +9130,10 @@
                       "group": "grafana-postgresql-datasource",
                       "kind": "DataQuery",
                       "spec": {
-                        "dataset": "timeseries",
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "SELECT tools.key AS metric, tools.value::double precision AS value\nFROM observability.hermes_runs AS runs\nCROSS JOIN LATERAL jsonb_each_text(runs.tool_usage) AS tools\nWHERE runs.session_id = ${hermes_session:sqlstring}\nORDER BY value DESC\nLIMIT 15;",
+                        "rawSql": "SELECT tool AS metric, count(*)::double precision AS value\nFROM observability.hermes_tool_events\nWHERE session_hash = ${hermes_session:sqlstring}\nGROUP BY tool\nORDER BY value DESC\nLIMIT 15;",
                         "sql": {
                           "columns": [
                             {
@@ -9452,8 +9162,8 @@
               "transformations": []
             }
           },
-          "description": "이 세션에서 호출한 도구와 횟수(이름과 횟수만 수집).",
-          "id": 3019,
+          "description": "이 세션에서 호출한 도구와 횟수",
+          "id": 3028,
           "links": [],
           "title": "선택한 세션 도구 사용",
           "vizConfig": {
@@ -9474,8 +9184,8 @@
                       }
                     ]
                   },
-                  "unit": "sishort",
-                  "noValue": "이 세션은 도구를 쓰지 않았습니다",
+                  "unit": "short",
+                  "noValue": "이 세션은 도구를 쓰지 않았거나 아직 수집되지 않았습니다",
                   "min": 0
                 },
                 "overrides": []
@@ -9498,6 +9208,176 @@
                 "text": {
                   "titleSize": 13,
                   "valueSize": 15
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-hermes-sel-time": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "time_series",
+                        "rawQuery": true,
+                        "rawSql": "SELECT\n  sampled_at AS time,\n  (input_tokens + cache_read_tokens + cache_write_tokens)::double precision AS \"입력(캐시 포함)\",\n  (output_tokens + reasoning_tokens)::double precision AS \"출력·리즈닝\"\nFROM observability.hermes_session_samples\nWHERE session_hash = ${hermes_session:sqlstring}\nORDER BY 1;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "수집 샘플별 누적 토큰(입력·출력은 쌓지 않고 따로 표시)",
+          "id": 3029,
+          "links": [],
+          "title": "선택한 세션 토큰 누적",
+          "vizConfig": {
+            "group": "timeseries",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.8,
+                    "drawStyle": "line",
+                    "fillOpacity": 20,
+                    "gradientMode": "opacity",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "smooth",
+                    "lineWidth": 2,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "sishort",
+                  "noValue": "-"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "입력(캐시 포함)"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#3B82F6"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "출력·리즈닝"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#8B5CF6"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "enableFacetedFilter": false,
+                  "overflow": "ellipsis",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc",
+                  "hideZeros": false
                 }
               }
             },
@@ -9981,35 +9861,9 @@
                                 "spec": {
                                   "element": {
                                     "kind": "ElementReference",
-                                    "name": "panel-3"
+                                    "name": "panel-hermes-active"
                                   },
                                   "x": 0,
-                                  "y": 0,
-                                  "width": 5,
-                                  "height": 4
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-6"
-                                  },
-                                  "x": 5,
-                                  "y": 0,
-                                  "width": 5,
-                                  "height": 4
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-hermes-3013"
-                                  },
-                                  "x": 10,
                                   "y": 0,
                                   "width": 4,
                                   "height": 4
@@ -10020,11 +9874,11 @@
                                 "spec": {
                                   "element": {
                                     "kind": "ElementReference",
-                                    "name": "panel-hermes-3014"
+                                    "name": "panel-hermes-idle"
                                   },
-                                  "x": 14,
+                                  "x": 4,
                                   "y": 0,
-                                  "width": 5,
+                                  "width": 4,
                                   "height": 4
                                 }
                               },
@@ -10033,11 +9887,50 @@
                                 "spec": {
                                   "element": {
                                     "kind": "ElementReference",
-                                    "name": "panel-hermes-3015"
+                                    "name": "panel-hermes-tokens"
                                   },
-                                  "x": 19,
+                                  "x": 8,
                                   "y": 0,
-                                  "width": 5,
+                                  "width": 4,
+                                  "height": 4
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-hermes-cache"
+                                  },
+                                  "x": 12,
+                                  "y": 0,
+                                  "width": 4,
+                                  "height": 4
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-hermes-toolcalls"
+                                  },
+                                  "x": 16,
+                                  "y": 0,
+                                  "width": 4,
+                                  "height": 4
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-hermes-toolerrors"
+                                  },
+                                  "x": 20,
+                                  "y": 0,
+                                  "width": 4,
                                   "height": 4
                                 }
                               }
@@ -10049,7 +9942,7 @@
                     {
                       "kind": "RowsLayoutRow",
                       "spec": {
-                        "title": "프로필·모델별 사용량",
+                        "title": "세션",
                         "collapse": false,
                         "layout": {
                           "kind": "GridLayout",
@@ -10060,54 +9953,14 @@
                                 "spec": {
                                   "element": {
                                     "kind": "ElementReference",
-                                    "name": "panel-2"
+                                    "name": "panel-hermes-state"
                                   },
                                   "x": 0,
                                   "y": 0,
-                                  "width": 24,
-                                  "height": 6
+                                  "width": 6,
+                                  "height": 9
                                 }
                               },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-8"
-                                  },
-                                  "x": 0,
-                                  "y": 6,
-                                  "width": 10,
-                                  "height": 7
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-19"
-                                  },
-                                  "x": 10,
-                                  "y": 6,
-                                  "width": 14,
-                                  "height": 7
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "kind": "RowsLayoutRow",
-                      "spec": {
-                        "title": "세션별 사용량",
-                        "collapse": false,
-                        "layout": {
-                          "kind": "GridLayout",
-                          "spec": {
-                            "items": [
                               {
                                 "kind": "GridLayoutItem",
                                 "spec": {
@@ -10115,9 +9968,102 @@
                                     "kind": "ElementReference",
                                     "name": "panel-hermes-sessions"
                                   },
+                                  "x": 6,
+                                  "y": 0,
+                                  "width": 18,
+                                  "height": 9
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "title": "사용량",
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-hermes-usage"
+                                  },
                                   "x": 0,
                                   "y": 0,
-                                  "width": 24,
+                                  "width": 14,
+                                  "height": 8
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-hermes-bymodel"
+                                  },
+                                  "x": 14,
+                                  "y": 0,
+                                  "width": 10,
+                                  "height": 8
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "title": "도구",
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-hermes-tooltop"
+                                  },
+                                  "x": 0,
+                                  "y": 0,
+                                  "width": 7,
+                                  "height": 8
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-hermes-toolresult"
+                                  },
+                                  "x": 7,
+                                  "y": 0,
+                                  "width": 10,
+                                  "height": 8
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-hermes-tooltime"
+                                  },
+                                  "x": 17,
+                                  "y": 0,
+                                  "width": 7,
                                   "height": 8
                                 }
                               }
@@ -10140,7 +10086,7 @@
                                 "spec": {
                                   "element": {
                                     "kind": "ElementReference",
-                                    "name": "panel-hermes-session-summary"
+                                    "name": "panel-hermes-sel-summary"
                                   },
                                   "x": 0,
                                   "y": 0,
@@ -10153,118 +10099,38 @@
                                 "spec": {
                                   "element": {
                                     "kind": "ElementReference",
-                                    "name": "panel-hermes-session-tokens"
+                                    "name": "panel-hermes-sel-comp"
                                   },
                                   "x": 0,
+                                  "y": 4,
+                                  "width": 7,
+                                  "height": 7
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-hermes-sel-tools"
+                                  },
+                                  "x": 7,
+                                  "y": 4,
+                                  "width": 7,
+                                  "height": 7
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-hermes-sel-time"
+                                  },
+                                  "x": 14,
                                   "y": 4,
                                   "width": 10,
                                   "height": 7
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-hermes-session-tools"
-                                  },
-                                  "x": 10,
-                                  "y": 4,
-                                  "width": 14,
-                                  "height": 7
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "kind": "RowsLayoutRow",
-                      "spec": {
-                        "title": "상태·도구·실패",
-                        "collapse": false,
-                        "layout": {
-                          "kind": "GridLayout",
-                          "spec": {
-                            "items": [
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-9"
-                                  },
-                                  "x": 0,
-                                  "y": 0,
-                                  "width": 8,
-                                  "height": 7
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-11"
-                                  },
-                                  "x": 8,
-                                  "y": 0,
-                                  "width": 16,
-                                  "height": 7
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-12"
-                                  },
-                                  "x": 0,
-                                  "y": 7,
-                                  "width": 24,
-                                  "height": 7
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "kind": "RowsLayoutRow",
-                      "spec": {
-                        "title": "추이",
-                        "collapse": false,
-                        "layout": {
-                          "kind": "GridLayout",
-                          "spec": {
-                            "items": [
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-10"
-                                  },
-                                  "x": 0,
-                                  "y": 0,
-                                  "width": 12,
-                                  "height": 8
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-7"
-                                  },
-                                  "x": 12,
-                                  "y": 0,
-                                  "width": 12,
-                                  "height": 8
                                 }
                               }
                             ]
@@ -10739,7 +10605,7 @@
               "$__all"
             ]
           },
-          "definition": "SELECT DISTINCT\r\n  profile AS __text,\r\n  profile AS __value\r\nFROM observability.hermes_runs\r\nORDER BY 1;",
+          "definition": "SELECT DISTINCT\n  profile AS __text,\n  profile AS __value\nFROM observability.hermes_session_samples\nORDER BY 1;",
           "description": "Hermes Agent에서 사용되는 프로필 모음",
           "hide": "dontHide",
           "includeAll": true,
@@ -10757,9 +10623,9 @@
               "dataset": "timeseries",
               "editorMode": "code",
               "format": "table",
-              "query": "SELECT DISTINCT\r\n  profile AS __text,\r\n  profile AS __value\r\nFROM observability.hermes_runs\r\nORDER BY 1;",
+              "query": "SELECT DISTINCT\n  profile AS __text,\n  profile AS __value\nFROM observability.hermes_session_samples\nORDER BY 1;",
               "rawQuery": true,
-              "rawSql": "SELECT DISTINCT\r\n  profile AS __text,\r\n  profile AS __value\r\nFROM observability.hermes_runs\r\nORDER BY 1;",
+              "rawSql": "SELECT DISTINCT\n  profile AS __text,\n  profile AS __value\nFROM observability.hermes_session_samples\nORDER BY 1;",
               "refId": "SQLVariableQueryEditor-VariableQuery",
               "sql": {
                 "columns": [
@@ -10799,7 +10665,7 @@
               "$__all"
             ]
           },
-          "definition": "SELECT DISTINCT\r\n  model AS __text,\r\n  model AS __value\r\nFROM observability.hermes_runs\r\nWHERE profile ~ '${profile:regex}'\r\nORDER BY 1;",
+          "definition": "SELECT DISTINCT\n  model AS __text,\n  model AS __value\nFROM observability.hermes_session_samples\nWHERE profile ~ '${profile:regex}'\nORDER BY 1;",
           "description": "Hermes Agent에서 사용중인 모델",
           "hide": "dontHide",
           "includeAll": true,
@@ -10817,9 +10683,9 @@
               "dataset": "timeseries",
               "editorMode": "code",
               "format": "table",
-              "query": "SELECT DISTINCT\r\n  model AS __text,\r\n  model AS __value\r\nFROM observability.hermes_runs\r\nWHERE profile ~ '${profile:regex}'\r\nORDER BY 1;",
+              "query": "SELECT DISTINCT\n  model AS __text,\n  model AS __value\nFROM observability.hermes_session_samples\nWHERE profile ~ '${profile:regex}'\nORDER BY 1;",
               "rawQuery": true,
-              "rawSql": "SELECT DISTINCT\r\n  model AS __text,\r\n  model AS __value\r\nFROM observability.hermes_runs\r\nWHERE profile ~ '${profile:regex}'\r\nORDER BY 1;",
+              "rawSql": "SELECT DISTINCT\n  model AS __text,\n  model AS __value\nFROM observability.hermes_session_samples\nWHERE profile ~ '${profile:regex}'\nORDER BY 1;",
               "refId": "SQLVariableQueryEditor-VariableQuery",
               "sql": {
                 "columns": [
@@ -10856,7 +10722,7 @@
             "text": "",
             "value": ""
           },
-          "definition": "SELECT __text, __value FROM (\n  (SELECT to_char(started_at AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') || ' · ' || profile || ' · ' || right(session_id, 8) AS __text,\n          session_id AS __value, started_at AS sort_key\n   FROM observability.hermes_runs\n   WHERE $__timeFilter(started_at)\n     AND profile ~ '${profile:regex}'\n     AND model ~ '${model:regex}'\n   ORDER BY started_at DESC LIMIT 50)\n  UNION ALL\n  SELECT '(세션 없음)', '', '-infinity'::timestamptz\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_runs WHERE $__timeFilter(started_at))\n) AS t\nORDER BY sort_key DESC;",
+          "definition": "SELECT __text, __value FROM (\n  (SELECT to_char(last_activity_at AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') || ' · ' || profile || ' · ' || right(session_hash, 8) AS __text,\n          session_hash AS __value, last_activity_at AS sort_key\n   FROM observability.hermes_sessions_current\n   WHERE $__timeFilter(last_activity_at)\n     AND profile ~ '${profile:regex}'\n     AND model ~ '${model:regex}'\n   ORDER BY last_activity_at DESC LIMIT 50)\n  UNION ALL\n  SELECT '(세션 없음)', '', '-infinity'::timestamptz\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_sessions_current WHERE $__timeFilter(last_activity_at))\n) AS t\nORDER BY sort_key DESC;",
           "description": "'선택한 세션 상세'에 표시할 Hermes 세션. 상단 프로필·모델 필터와 시간 범위를 따릅니다.",
           "hide": "dontHide",
           "includeAll": false,
@@ -10874,9 +10740,9 @@
               "dataset": "timeseries",
               "editorMode": "code",
               "format": "table",
-              "query": "SELECT __text, __value FROM (\n  (SELECT to_char(started_at AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') || ' · ' || profile || ' · ' || right(session_id, 8) AS __text,\n          session_id AS __value, started_at AS sort_key\n   FROM observability.hermes_runs\n   WHERE $__timeFilter(started_at)\n     AND profile ~ '${profile:regex}'\n     AND model ~ '${model:regex}'\n   ORDER BY started_at DESC LIMIT 50)\n  UNION ALL\n  SELECT '(세션 없음)', '', '-infinity'::timestamptz\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_runs WHERE $__timeFilter(started_at))\n) AS t\nORDER BY sort_key DESC;",
+              "query": "SELECT __text, __value FROM (\n  (SELECT to_char(last_activity_at AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') || ' · ' || profile || ' · ' || right(session_hash, 8) AS __text,\n          session_hash AS __value, last_activity_at AS sort_key\n   FROM observability.hermes_sessions_current\n   WHERE $__timeFilter(last_activity_at)\n     AND profile ~ '${profile:regex}'\n     AND model ~ '${model:regex}'\n   ORDER BY last_activity_at DESC LIMIT 50)\n  UNION ALL\n  SELECT '(세션 없음)', '', '-infinity'::timestamptz\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_sessions_current WHERE $__timeFilter(last_activity_at))\n) AS t\nORDER BY sort_key DESC;",
               "rawQuery": true,
-              "rawSql": "SELECT __text, __value FROM (\n  (SELECT to_char(started_at AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') || ' · ' || profile || ' · ' || right(session_id, 8) AS __text,\n          session_id AS __value, started_at AS sort_key\n   FROM observability.hermes_runs\n   WHERE $__timeFilter(started_at)\n     AND profile ~ '${profile:regex}'\n     AND model ~ '${model:regex}'\n   ORDER BY started_at DESC LIMIT 50)\n  UNION ALL\n  SELECT '(세션 없음)', '', '-infinity'::timestamptz\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_runs WHERE $__timeFilter(started_at))\n) AS t\nORDER BY sort_key DESC;",
+              "rawSql": "SELECT __text, __value FROM (\n  (SELECT to_char(last_activity_at AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') || ' · ' || profile || ' · ' || right(session_hash, 8) AS __text,\n          session_hash AS __value, last_activity_at AS sort_key\n   FROM observability.hermes_sessions_current\n   WHERE $__timeFilter(last_activity_at)\n     AND profile ~ '${profile:regex}'\n     AND model ~ '${model:regex}'\n   ORDER BY last_activity_at DESC LIMIT 50)\n  UNION ALL\n  SELECT '(세션 없음)', '', '-infinity'::timestamptz\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_sessions_current WHERE $__timeFilter(last_activity_at))\n) AS t\nORDER BY sort_key DESC;",
               "refId": "SQLVariableQueryEditor-VariableQuery",
               "sql": {
                 "columns": [
@@ -10903,105 +10769,6 @@
           "regexApplyTo": "value",
           "skipUrlSync": false,
           "sort": "disabled"
-        }
-      },
-      {
-        "kind": "QueryVariable",
-        "spec": {
-          "allowCustomValue": true,
-          "current": {
-            "text": "All",
-            "value": "$__all"
-          },
-          "definition": "SELECT __text, __value FROM (\nSELECT DISTINCT board AS __text, board AS __value\nFROM observability.hermes_kanban_tasks\n  UNION ALL\n  SELECT '(없음)', '(없음)'\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_kanban_tasks)\n) AS t\nORDER BY 1;",
-          "hide": "dontHide",
-          "includeAll": true,
-          "label": "보드",
-          "multi": true,
-          "name": "board",
-          "options": [],
-          "query": {
-            "datasource": {
-              "name": "ffskrzljzwr28b"
-            },
-            "group": "postgres",
-            "kind": "DataQuery",
-            "spec": {
-              "__legacyStringValue": "SELECT __text, __value FROM (\nSELECT DISTINCT board AS __text, board AS __value\nFROM observability.hermes_kanban_tasks\n  UNION ALL\n  SELECT '(없음)', '(없음)'\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_kanban_tasks)\n) AS t\nORDER BY 1;"
-            },
-            "version": "v0"
-          },
-          "refresh": "onDashboardLoad",
-          "regex": "",
-          "regexApplyTo": "value",
-          "skipUrlSync": false,
-          "sort": "alphabeticalAsc"
-        }
-      },
-      {
-        "kind": "QueryVariable",
-        "spec": {
-          "allowCustomValue": true,
-          "current": {
-            "text": "All",
-            "value": "$__all"
-          },
-          "definition": "SELECT __text, __value FROM (\nSELECT DISTINCT\n  CASE status\n    WHEN 'done' THEN '완료'\n    WHEN 'archived' THEN '보관'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'running' THEN '실행 중'\n    WHEN 'triage' THEN '검토'\n    ELSE status\n  END AS __text,\n  status AS __value\nFROM observability.hermes_kanban_tasks\n  UNION ALL\n  SELECT '(없음)', '(없음)'\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_kanban_tasks)\n) AS t\nORDER BY 1;",
-          "hide": "dontHide",
-          "includeAll": true,
-          "label": "상태",
-          "multi": true,
-          "name": "status",
-          "options": [],
-          "query": {
-            "datasource": {
-              "name": "ffskrzljzwr28b"
-            },
-            "group": "postgres",
-            "kind": "DataQuery",
-            "spec": {
-              "__legacyStringValue": "SELECT __text, __value FROM (\nSELECT DISTINCT\n  CASE status\n    WHEN 'done' THEN '완료'\n    WHEN 'archived' THEN '보관'\n    WHEN 'blocked' THEN '차단'\n    WHEN 'running' THEN '실행 중'\n    WHEN 'triage' THEN '검토'\n    ELSE status\n  END AS __text,\n  status AS __value\nFROM observability.hermes_kanban_tasks\n  UNION ALL\n  SELECT '(없음)', '(없음)'\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_kanban_tasks)\n) AS t\nORDER BY 1;"
-            },
-            "version": "v0"
-          },
-          "refresh": "onDashboardLoad",
-          "regex": "",
-          "regexApplyTo": "value",
-          "skipUrlSync": false,
-          "sort": "alphabeticalAsc"
-        }
-      },
-      {
-        "kind": "QueryVariable",
-        "spec": {
-          "allowCustomValue": true,
-          "current": {
-            "text": "All",
-            "value": "$__all"
-          },
-          "definition": "SELECT __text, __value FROM (\nSELECT DISTINCT COALESCE(assignee, 'unassigned') AS __text, COALESCE(assignee, 'unassigned') AS __value\nFROM observability.hermes_kanban_tasks\n  UNION ALL\n  SELECT '(없음)', '(없음)'\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_kanban_tasks)\n) AS t\nORDER BY 1;",
-          "hide": "dontHide",
-          "includeAll": true,
-          "label": "담당자",
-          "multi": true,
-          "name": "assignee",
-          "options": [],
-          "query": {
-            "datasource": {
-              "name": "ffskrzljzwr28b"
-            },
-            "group": "postgres",
-            "kind": "DataQuery",
-            "spec": {
-              "__legacyStringValue": "SELECT __text, __value FROM (\nSELECT DISTINCT COALESCE(assignee, 'unassigned') AS __text, COALESCE(assignee, 'unassigned') AS __value\nFROM observability.hermes_kanban_tasks\n  UNION ALL\n  SELECT '(없음)', '(없음)'\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_kanban_tasks)\n) AS t\nORDER BY 1;"
-            },
-            "version": "v0"
-          },
-          "refresh": "onDashboardLoad",
-          "regex": "",
-          "regexApplyTo": "value",
-          "skipUrlSync": false,
-          "sort": "alphabeticalAsc"
         }
       }
     ]
