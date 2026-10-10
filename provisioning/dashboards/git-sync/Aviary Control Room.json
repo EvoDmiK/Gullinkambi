@@ -510,7 +510,7 @@
                 ]
               },
               "options": {
-                "cellHeight": "md",
+                "cellHeight": "sm",
                 "showHeader": true,
                 "sortBy": [
                   {
@@ -766,7 +766,7 @@
                 ]
               },
               "options": {
-                "cellHeight": "md",
+                "cellHeight": "sm",
                 "showHeader": true,
                 "sortBy": [
                   {
@@ -1134,7 +1134,7 @@
                 ]
               },
               "options": {
-                "cellHeight": "md",
+                "cellHeight": "sm",
                 "showHeader": true,
                 "sortBy": [
                   {
@@ -2946,7 +2946,7 @@
                 ]
               },
               "options": {
-                "cellHeight": "md",
+                "cellHeight": "sm",
                 "showHeader": true,
                 "sortBy": [
                   {
@@ -4474,7 +4474,7 @@
                 ]
               },
               "options": {
-                "cellHeight": "md",
+                "cellHeight": "sm",
                 "showHeader": true,
                 "sortBy": [
                   {
@@ -9668,7 +9668,7 @@
                                   "x": 0,
                                   "y": 0,
                                   "width": 4,
-                                  "height": 5
+                                  "height": 4
                                 }
                               },
                               {
@@ -9681,7 +9681,7 @@
                                   "x": 4,
                                   "y": 0,
                                   "width": 4,
-                                  "height": 5
+                                  "height": 4
                                 }
                               },
                               {
@@ -9694,7 +9694,7 @@
                                   "x": 8,
                                   "y": 0,
                                   "width": 4,
-                                  "height": 5
+                                  "height": 4
                                 }
                               },
                               {
@@ -9707,7 +9707,7 @@
                                   "x": 12,
                                   "y": 0,
                                   "width": 4,
-                                  "height": 5
+                                  "height": 4
                                 }
                               },
                               {
@@ -9720,7 +9720,7 @@
                                   "x": 16,
                                   "y": 0,
                                   "width": 4,
-                                  "height": 5
+                                  "height": 4
                                 }
                               },
                               {
@@ -9733,47 +9733,7 @@
                                   "x": 20,
                                   "y": 0,
                                   "width": 4,
-                                  "height": 5
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "kind": "RowsLayoutRow",
-                      "spec": {
-                        "title": "추이",
-                        "collapse": false,
-                        "layout": {
-                          "kind": "GridLayout",
-                          "spec": {
-                            "items": [
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-10"
-                                  },
-                                  "x": 0,
-                                  "y": 0,
-                                  "width": 12,
-                                  "height": 9
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-7"
-                                  },
-                                  "x": 12,
-                                  "y": 0,
-                                  "width": 12,
-                                  "height": 9
+                                  "height": 4
                                 }
                               }
                             ]
@@ -9800,7 +9760,7 @@
                                   "x": 0,
                                   "y": 0,
                                   "width": 24,
-                                  "height": 8
+                                  "height": 6
                                 }
                               },
                               {
@@ -9811,9 +9771,9 @@
                                     "name": "panel-8"
                                   },
                                   "x": 0,
-                                  "y": 8,
+                                  "y": 6,
                                   "width": 10,
-                                  "height": 8
+                                  "height": 7
                                 }
                               },
                               {
@@ -9824,9 +9784,9 @@
                                     "name": "panel-19"
                                   },
                                   "x": 10,
-                                  "y": 8,
+                                  "y": 6,
                                   "width": 14,
-                                  "height": 8
+                                  "height": 7
                                 }
                               }
                             ]
@@ -9852,8 +9812,8 @@
                                   },
                                   "x": 0,
                                   "y": 0,
-                                  "width": 8,
-                                  "height": 9
+                                  "width": 7,
+                                  "height": 7
                                 }
                               },
                               {
@@ -9863,10 +9823,10 @@
                                     "kind": "ElementReference",
                                     "name": "panel-11"
                                   },
-                                  "x": 8,
+                                  "x": 7,
                                   "y": 0,
-                                  "width": 9,
-                                  "height": 9
+                                  "width": 8,
+                                  "height": 7
                                 }
                               },
                               {
@@ -9876,10 +9836,10 @@
                                     "kind": "ElementReference",
                                     "name": "panel-4"
                                   },
-                                  "x": 17,
+                                  "x": 15,
                                   "y": 0,
-                                  "width": 7,
-                                  "height": 9
+                                  "width": 9,
+                                  "height": 7
                                 }
                               },
                               {
@@ -9890,9 +9850,49 @@
                                     "name": "panel-12"
                                   },
                                   "x": 0,
-                                  "y": 9,
+                                  "y": 7,
                                   "width": 24,
-                                  "height": 9
+                                  "height": 7
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "title": "추이",
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-10"
+                                  },
+                                  "x": 0,
+                                  "y": 0,
+                                  "width": 12,
+                                  "height": 8
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-7"
+                                  },
+                                  "x": 12,
+                                  "y": 0,
+                                  "width": 12,
+                                  "height": 8
                                 }
                               }
                             ]
