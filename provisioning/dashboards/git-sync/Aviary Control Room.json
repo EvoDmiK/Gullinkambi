@@ -9186,6 +9186,770 @@
             "version": "13.2.1"
           }
         }
+      },
+      "panel-hermes-sessions": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "dataset": "timeseries",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT\n  right(session_id, 8) AS \"세션\",\n  started_at AS \"시작\",\n  profile AS \"프로필\",\n  model AS \"모델\",\n  CASE status WHEN 'completed' THEN '완료' WHEN 'failed' THEN '실패' ELSE '진행 중' END AS \"상태\",\n  round((duration_ms / 1000.0)::numeric, 1) AS \"처리 시간\",\n  message_count AS \"메시지\",\n  tool_call_count AS \"도구 호출\",\n  api_call_count AS \"API 호출\",\n  (input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens) AS \"총 토큰\",\n  round((100.0 * cache_read_tokens / NULLIF(input_tokens + cache_read_tokens + cache_write_tokens, 0))::numeric, 1) AS \"캐시 적중률\",\n  session_id AS \"세션 ID\"\nFROM observability.hermes_runs\nWHERE $__timeFilter(started_at)\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}'\nORDER BY started_at DESC\nLIMIT 30;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "선택 기간의 Hermes 세션 최근 30건. 세션 ID를 누르면 아래 '선택한 세션 상세'가 그 세션으로 바뀝니다.",
+          "id": 3016,
+          "links": [],
+          "title": "세션별 사용량",
+          "vizConfig": {
+            "group": "table",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false,
+                    "wrapText": false
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "noValue": "-"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "세션",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.minWidth",
+                        "value": 90
+                      },
+                      {
+                        "id": "links",
+                        "value": [
+                          {
+                            "title": "이 세션 자세히 보기",
+                            "url": "/d/${__dashboard.uid}?${__url_time_range}\u0026${profile:queryparam}\u0026${model:queryparam}\u0026var-hermes_session=${__data.fields[\"세션 ID\"]}"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#60A5FA"
+                        }
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "시작",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.minWidth",
+                        "value": 140
+                      },
+                      {
+                        "id": "unit",
+                        "value": "dateTimeAsLocal"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "프로필",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.minWidth",
+                        "value": 100
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "모델",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.minWidth",
+                        "value": 140
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "상태",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.align",
+                        "value": "center"
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "완료": {
+                                "color": "#22C55E",
+                                "index": 0
+                              },
+                              "실패": {
+                                "color": "#EF4444",
+                                "index": 1
+                              },
+                              "진행 중": {
+                                "color": "#3B82F6",
+                                "index": 2
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "처리 시간",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "s"
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "center"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "메시지",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "short"
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "center"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "도구 호출",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "short"
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "center"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "API 호출",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "short"
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "center"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "총 토큰",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "sishort"
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "gauge",
+                          "mode": "gradient",
+                          "valueDisplayMode": "text"
+                        }
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "continuous-BlPu"
+                        }
+                      },
+                      {
+                        "id": "min",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "캐시 적중률",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "center"
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "thresholds"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "color": "#EF4444",
+                              "value": 0
+                            },
+                            {
+                              "color": "#F59E0B",
+                              "value": 50
+                            },
+                            {
+                              "color": "#22C55E",
+                              "value": 80
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "세션 ID",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hidden",
+                        "value": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true,
+                "sortBy": []
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-hermes-session-summary": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT\n  (input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens)::double precision AS \"총 토큰\",\n  round((duration_ms / 1000.0)::numeric, 1)::double precision AS \"처리 시간\",\n  message_count::double precision AS \"메시지\",\n  api_call_count::double precision AS \"API 호출\",\n  tool_call_count::double precision AS \"도구 호출\",\n  round((100.0 * cache_read_tokens / NULLIF(input_tokens + cache_read_tokens + cache_write_tokens, 0))::numeric, 1)::double precision AS \"캐시 적중률\"\nFROM observability.hermes_runs\nWHERE session_id = ${hermes_session:sqlstring};",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "위에서 선택한 세션의 합계. 세션을 고르지 않았거나 없으면 -로 표시됩니다.",
+          "id": 3017,
+          "links": [],
+          "title": "선택한 세션 요약",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "#60A5FA"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "noValue": "-",
+                  "unit": "short"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "총 토큰",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "sishort"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#8B5CF6"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "처리 시간",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "s"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "캐시 적중률",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "thresholds"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "color": "#EF4444",
+                              "value": 0
+                            },
+                            {
+                              "color": "#F59E0B",
+                              "value": 50
+                            },
+                            {
+                              "color": "#22C55E",
+                              "value": 80
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "value",
+                "wideLayout": true,
+                "text": {
+                  "valueSize": 30,
+                  "titleSize": 13
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-hermes-session-tokens": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "dataset": "timeseries",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT m.metric, m.value::double precision AS value\nFROM observability.hermes_runs r\nCROSS JOIN LATERAL (VALUES\n  ('일반 입력', r.input_tokens),\n  ('캐시 읽기', r.cache_read_tokens),\n  ('캐시 쓰기', r.cache_write_tokens),\n  ('출력', r.output_tokens),\n  ('리즈닝', r.reasoning_tokens)\n) AS m(metric, value)\nWHERE r.session_id = ${hermes_session:sqlstring}\nORDER BY m.value DESC;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "입력·캐시·출력·리즈닝 토큰이 각각 얼마인지 보여 줍니다.",
+          "id": 3018,
+          "links": [],
+          "title": "선택한 세션 토큰 구성",
+          "vizConfig": {
+            "group": "bargauge",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "continuous-BlPu"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "blue",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "sishort",
+                  "noValue": "-",
+                  "min": 0
+                },
+                "overrides": []
+              },
+              "options": {
+                "displayMode": "gradient",
+                "maxVizHeight": 24,
+                "minVizHeight": 14,
+                "minVizWidth": 8,
+                "namePlacement": "top",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                  "calcs": [],
+                  "fields": "",
+                  "values": true
+                },
+                "showUnfilled": true,
+                "sizing": "manual",
+                "valueMode": "color",
+                "text": {
+                  "titleSize": 13,
+                  "valueSize": 15
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-hermes-session-tools": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "dataset": "timeseries",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT tools.key AS metric, tools.value::double precision AS value\nFROM observability.hermes_runs AS runs\nCROSS JOIN LATERAL jsonb_each_text(runs.tool_usage) AS tools\nWHERE runs.session_id = ${hermes_session:sqlstring}\nORDER BY value DESC\nLIMIT 15;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "이 세션에서 호출한 도구와 횟수(이름과 횟수만 수집).",
+          "id": 3019,
+          "links": [],
+          "title": "선택한 세션 도구 사용",
+          "vizConfig": {
+            "group": "bargauge",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "continuous-YlRd"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "blue",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "sishort",
+                  "noValue": "이 세션은 도구를 쓰지 않았습니다",
+                  "min": 0
+                },
+                "overrides": []
+              },
+              "options": {
+                "displayMode": "gradient",
+                "maxVizHeight": 24,
+                "minVizHeight": 14,
+                "minVizWidth": 8,
+                "namePlacement": "top",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                  "calcs": [],
+                  "fields": "",
+                  "values": true
+                },
+                "showUnfilled": true,
+                "sizing": "manual",
+                "valueMode": "color",
+                "text": {
+                  "titleSize": 13,
+                  "valueSize": 15
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
       }
     },
     "layout": {
@@ -9785,6 +10549,86 @@
                                   },
                                   "x": 10,
                                   "y": 6,
+                                  "width": 14,
+                                  "height": 7
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "title": "세션별 사용량",
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-hermes-sessions"
+                                  },
+                                  "x": 0,
+                                  "y": 0,
+                                  "width": 24,
+                                  "height": 8
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "title": "선택한 세션 상세",
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-hermes-session-summary"
+                                  },
+                                  "x": 0,
+                                  "y": 0,
+                                  "width": 24,
+                                  "height": 4
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-hermes-session-tokens"
+                                  },
+                                  "x": 0,
+                                  "y": 4,
+                                  "width": 10,
+                                  "height": 7
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-hermes-session-tools"
+                                  },
+                                  "x": 10,
+                                  "y": 4,
                                   "width": 14,
                                   "height": 7
                                 }
@@ -10470,6 +11314,63 @@
             "version": "v0"
           },
           "refresh": "onDashboardLoad",
+          "regex": "",
+          "regexApplyTo": "value",
+          "skipUrlSync": false,
+          "sort": "disabled"
+        }
+      },
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "allowCustomValue": true,
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "definition": "SELECT __text, __value FROM (\n  (SELECT to_char(started_at AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') || ' · ' || profile || ' · ' || right(session_id, 8) AS __text,\n          session_id AS __value, started_at AS sort_key\n   FROM observability.hermes_runs\n   WHERE $__timeFilter(started_at)\n     AND profile ~ '${profile:regex}'\n     AND model ~ '${model:regex}'\n   ORDER BY started_at DESC LIMIT 50)\n  UNION ALL\n  SELECT '(세션 없음)', '', '-infinity'::timestamptz\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_runs WHERE $__timeFilter(started_at))\n) AS t\nORDER BY sort_key DESC;",
+          "description": "'선택한 세션 상세'에 표시할 Hermes 세션. 상단 프로필·모델 필터와 시간 범위를 따릅니다.",
+          "hide": "dontHide",
+          "includeAll": false,
+          "label": "Hermes 세션 상세",
+          "multi": false,
+          "name": "hermes_session",
+          "options": [],
+          "query": {
+            "datasource": {
+              "name": "ffskrzljzwr28b"
+            },
+            "group": "grafana-postgresql-datasource",
+            "kind": "DataQuery",
+            "spec": {
+              "dataset": "timeseries",
+              "editorMode": "code",
+              "format": "table",
+              "query": "SELECT __text, __value FROM (\n  (SELECT to_char(started_at AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') || ' · ' || profile || ' · ' || right(session_id, 8) AS __text,\n          session_id AS __value, started_at AS sort_key\n   FROM observability.hermes_runs\n   WHERE $__timeFilter(started_at)\n     AND profile ~ '${profile:regex}'\n     AND model ~ '${model:regex}'\n   ORDER BY started_at DESC LIMIT 50)\n  UNION ALL\n  SELECT '(세션 없음)', '', '-infinity'::timestamptz\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_runs WHERE $__timeFilter(started_at))\n) AS t\nORDER BY sort_key DESC;",
+              "rawQuery": true,
+              "rawSql": "SELECT __text, __value FROM (\n  (SELECT to_char(started_at AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') || ' · ' || profile || ' · ' || right(session_id, 8) AS __text,\n          session_id AS __value, started_at AS sort_key\n   FROM observability.hermes_runs\n   WHERE $__timeFilter(started_at)\n     AND profile ~ '${profile:regex}'\n     AND model ~ '${model:regex}'\n   ORDER BY started_at DESC LIMIT 50)\n  UNION ALL\n  SELECT '(세션 없음)', '', '-infinity'::timestamptz\n  WHERE NOT EXISTS (SELECT 1 FROM observability.hermes_runs WHERE $__timeFilter(started_at))\n) AS t\nORDER BY sort_key DESC;",
+              "refId": "SQLVariableQueryEditor-VariableQuery",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            },
+            "version": "v0"
+          },
+          "refresh": "onTimeRangeChanged",
           "regex": "",
           "regexApplyTo": "value",
           "skipUrlSync": false,
