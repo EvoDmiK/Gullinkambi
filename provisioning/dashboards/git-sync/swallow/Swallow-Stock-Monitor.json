@@ -336,7 +336,7 @@
     ]
   },
   "timezone": "Asia/Seoul",
-  "title": "Swallow 관심종목 모니터링 & 피어 뉴스 대시보드",
+  "title": "Swallow 종목 모니터링",
   "version": 1,
   "uid": "swallow-stock-monitor-git"
 }
