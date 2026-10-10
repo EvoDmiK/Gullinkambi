@@ -3558,7 +3558,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "WITH skill_summary AS (\n  SELECT\n    d.agent,\n    d.thread_id,\n    string_agg(DISTINCT skill.value, ', ' ORDER BY skill.value) AS skill_names\n  FROM observability.orca_thread_usage_daily d\n  CROSS JOIN LATERAL jsonb_array_elements_text(d.skill_names) AS skill(value)\n  WHERE $__timeFilter(d.usage_date::timestamptz)\n  GROUP BY d.agent, d.thread_id\n)\nSELECT\n  u.agent AS \"에이전트\",\n  u.project_label AS \"프로젝트\",\n  COALESCE(NULLIF(max(u.thread_name), ''), u.thread_id) AS \"쓰레드\",\n  COALESCE(max(skill_summary.skill_names), '—') AS \"참조 스킬\",\n  u.model AS \"모델\",\n  sum(u.request_count) AS \"모델 호출 수\",\n  sum(u.input_tokens) AS \"입력 토큰\",\n  sum(u.cache_read_tokens) AS \"캐시 읽기\",\n  sum(u.cache_write_tokens) AS \"캐시 쓰기\",\n  sum(u.output_tokens) AS \"출력 토큰\",\n  sum(u.reasoning_tokens) AS \"리즈닝 토큰\",\n  sum(u.total_tokens) AS \"총 토큰\"\nFROM observability.orca_thread_usage_daily u\nLEFT JOIN skill_summary\n  ON skill_summary.agent = u.agent AND skill_summary.thread_id = u.thread_id\nWHERE $__timeFilter(u.usage_date::timestamptz)\nGROUP BY u.agent, u.project_label, u.thread_id, u.model\nORDER BY \"총 토큰\" DESC;",
+                        "rawSql": "WITH skill_summary AS (\n  SELECT\n    d.agent,\n    d.thread_id,\n    string_agg(DISTINCT skill.value, ', ' ORDER BY skill.value) AS skill_names\n  FROM observability.orca_thread_usage_daily d\n  CROSS JOIN LATERAL jsonb_array_elements_text(d.skill_names) AS skill(value)\n  WHERE $__timeFilter(d.usage_date::timestamptz)\n  GROUP BY d.agent, d.thread_id\n)\nSELECT\n  u.agent AS \"에이전트\",\n  u.project_label AS \"프로젝트\",\n  COALESCE(NULLIF(max(u.thread_name), ''), initcap(u.agent) || ' · ' || left(u.thread_id, 8)) AS \"쓰레드\",\n  COALESCE(max(skill_summary.skill_names), '—') AS \"참조 스킬\",\n  u.model AS \"모델\",\n  sum(u.request_count) AS \"모델 호출 수\",\n  sum(u.input_tokens) AS \"입력 토큰\",\n  sum(u.cache_read_tokens) AS \"캐시 읽기\",\n  sum(u.cache_write_tokens) AS \"캐시 쓰기\",\n  sum(u.output_tokens) AS \"출력 토큰\",\n  sum(u.reasoning_tokens) AS \"리즈닝 토큰\",\n  sum(u.total_tokens) AS \"총 토큰\"\nFROM observability.orca_thread_usage_daily u\nLEFT JOIN skill_summary\n  ON skill_summary.agent = u.agent AND skill_summary.thread_id = u.thread_id\nWHERE $__timeFilter(u.usage_date::timestamptz)\nGROUP BY u.agent, u.project_label, u.thread_id, u.model\nORDER BY \"총 토큰\" DESC;",
                         "sql": {
                           "columns": [
                             {
@@ -3587,7 +3587,7 @@
               "transformations": []
             }
           },
-          "description": "선택 기간의 Orca Codex/Claude 쓰레드별 사용량과 참조 스킬. 스킬은 세션에서 SKILL.md 읽기 또는 명시적 Skill 호출이 확인된 경우만 표시합니다. 이름이 없으면 세션 ID를 표시합니다.",
+          "description": "선택 기간의 Orca Codex/Claude 쓰레드별 사용량과 참조 스킬. 스킬은 세션에서 SKILL.md 읽기 또는 명시적 Skill 호출이 확인된 경우만 표시합니다. 이름이 없으면 에이전트와 세션 ID 앞 8자리를 표시합니다(Codex 쓰레드 이름은 로컬 Codex 상태 DB에서 가져옵니다).",
           "id": 46,
           "links": [],
           "title": "Orca 쓰레드별 사용량",
@@ -7620,10 +7620,10 @@
               },
               "options": {
                 "displayMode": "gradient",
-                "maxVizHeight": 300,
-                "minVizHeight": 18,
+                "maxVizHeight": 24,
+                "minVizHeight": 14,
                 "minVizWidth": 8,
-                "namePlacement": "left",
+                "namePlacement": "top",
                 "orientation": "horizontal",
                 "reduceOptions": {
                   "calcs": [],
@@ -7631,8 +7631,12 @@
                   "values": true
                 },
                 "showUnfilled": true,
-                "sizing": "auto",
-                "valueMode": "color"
+                "sizing": "manual",
+                "valueMode": "color",
+                "text": {
+                  "titleSize": 13,
+                  "valueSize": 15
+                }
               }
             },
             "version": "13.2.1"
@@ -8653,10 +8657,10 @@
               },
               "options": {
                 "displayMode": "gradient",
-                "maxVizHeight": 300,
-                "minVizHeight": 18,
+                "maxVizHeight": 24,
+                "minVizHeight": 14,
                 "minVizWidth": 8,
-                "namePlacement": "left",
+                "namePlacement": "top",
                 "orientation": "horizontal",
                 "reduceOptions": {
                   "calcs": [],
@@ -8664,8 +8668,12 @@
                   "values": true
                 },
                 "showUnfilled": true,
-                "sizing": "auto",
-                "valueMode": "color"
+                "sizing": "manual",
+                "valueMode": "color",
+                "text": {
+                  "titleSize": 13,
+                  "valueSize": 15
+                }
               }
             },
             "version": "13.2.1"
@@ -9313,7 +9321,7 @@
                         "height": 6,
                         "width": 8,
                         "x": 0,
-                        "y": 0
+                        "y": 4
                       }
                     },
                     {
@@ -9326,7 +9334,7 @@
                         "height": 6,
                         "width": 8,
                         "x": 8,
-                        "y": 0
+                        "y": 4
                       }
                     },
                     {
@@ -9339,7 +9347,7 @@
                         "height": 6,
                         "width": 8,
                         "x": 16,
-                        "y": 0
+                        "y": 4
                       }
                     },
                     {
@@ -9352,7 +9360,7 @@
                         "height": 10,
                         "width": 13,
                         "x": 0,
-                        "y": 6
+                        "y": 10
                       }
                     },
                     {
@@ -9365,7 +9373,7 @@
                         "height": 10,
                         "width": 11,
                         "x": 13,
-                        "y": 6
+                        "y": 10
                       }
                     },
                     {
@@ -9378,7 +9386,7 @@
                         "height": 12,
                         "width": 24,
                         "x": 0,
-                        "y": 16
+                        "y": 20
                       }
                     },
                     {
@@ -9391,7 +9399,7 @@
                         "height": 4,
                         "width": 4,
                         "x": 0,
-                        "y": 28
+                        "y": 0
                       }
                     },
                     {
@@ -9404,7 +9412,7 @@
                         "height": 4,
                         "width": 4,
                         "x": 4,
-                        "y": 28
+                        "y": 0
                       }
                     },
                     {
@@ -9417,7 +9425,7 @@
                         "height": 4,
                         "width": 4,
                         "x": 16,
-                        "y": 28
+                        "y": 0
                       }
                     },
                     {
@@ -9430,7 +9438,7 @@
                         "height": 4,
                         "width": 4,
                         "x": 20,
-                        "y": 28
+                        "y": 0
                       }
                     },
                     {
@@ -9495,7 +9503,7 @@
                         "height": 4,
                         "width": 4,
                         "x": 8,
-                        "y": 28
+                        "y": 0
                       }
                     },
                     {
@@ -9508,7 +9516,7 @@
                         "height": 4,
                         "width": 4,
                         "x": 12,
-                        "y": 28
+                        "y": 0
                       }
                     },
                     {
