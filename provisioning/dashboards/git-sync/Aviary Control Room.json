@@ -7800,7 +7800,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "WITH latest AS (\n  SELECT DISTINCT ON (task_id, attempt_id) task_id, attempt_id, revision, snapshot, created_at\n  FROM observability.orca_attempt_snapshots\n  ORDER BY task_id, attempt_id, revision DESC\n)\nSELECT\n  CASE WHEN l.snapshot-\u003e\u003e'origin' = 'auto' THEN 'auto' ELSE 'registered' END AS \"구분\",\n  CASE WHEN l.snapshot-\u003e\u003e'origin' = 'auto'\n       THEN CASE split_part(l.task_id, '-', 2) WHEN 'codex' THEN 'Codex' WHEN 'claude' THEN 'Claude' ELSE split_part(l.task_id, '-', 2) END || ' · ' || left(split_part(l.task_id, '-', 3), 6)\n       ELSE l.task_id END AS \"작업\",\n  l.snapshot-\u003e\u003e'reported_status' AS \"상태\",\n  l.snapshot-\u003e\u003e'verification_state' AS \"검증\",\n  (l.snapshot-\u003e\u003e'request_count')::bigint AS \"호출\",\n  (l.snapshot-\u003e'metrics'-\u003e\u003e'processed_total_tokens')::bigint AS \"처리 토큰\",\n  (l.snapshot-\u003e\u003e'cache_hit_rate_percent')::double precision AS \"캐시 적중률\",\n  r.run_id AS \"MLflow\",\n  to_char(l.created_at AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') AS \"갱신(KST)\"\nFROM latest l\nLEFT JOIN LATERAL (\n  SELECT run_id FROM observability.orca_mlflow_runs m\n  WHERE m.task_id = l.task_id AND m.attempt_id = l.attempt_id\n  ORDER BY m.updated_at DESC LIMIT 1\n) r ON true\nWHERE $__timeFilter(l.created_at)\nORDER BY COALESCE(l.snapshot-\u003e\u003e'origin', '') = 'auto' ASC, l.created_at DESC;",
+                        "rawSql": "WITH latest AS (\n  SELECT DISTINCT ON (task_id, attempt_id) task_id, attempt_id, revision, snapshot, created_at\n  FROM observability.orca_attempt_snapshots\n  ORDER BY task_id, attempt_id, revision DESC\n)\nSELECT\n  CASE WHEN l.snapshot-\u003e\u003e'origin' = 'auto' THEN 'auto' ELSE 'registered' END AS \"구분\",\n  CASE WHEN l.snapshot-\u003e\u003e'origin' = 'auto'\n       THEN CASE split_part(l.task_id, '-', 2) WHEN 'codex' THEN 'Codex' WHEN 'claude' THEN 'Claude' ELSE split_part(l.task_id, '-', 2) END || ' · ' || left(split_part(l.task_id, '-', 3), 6)\n       ELSE l.task_id END AS \"작업\",\n  l.snapshot-\u003e\u003e'reported_status' AS \"상태\",\n  l.snapshot-\u003e\u003e'verification_state' AS \"검증\",\n  (l.snapshot-\u003e\u003e'request_count')::bigint AS \"호출\",\n  (l.snapshot-\u003e'metrics'-\u003e\u003e'processed_total_tokens')::bigint AS \"처리 토큰\",\n  (l.snapshot-\u003e\u003e'cache_hit_rate_percent')::double precision AS \"캐시 적중률\",\n  CASE WHEN r.run_id IS NOT NULL THEN l.task_id || '/' || l.attempt_id END AS \"MLflow Run\",\n  to_char(l.created_at AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') AS \"갱신(KST)\"\nFROM latest l\nLEFT JOIN LATERAL (\n  SELECT run_id FROM observability.orca_mlflow_runs m\n  WHERE m.task_id = l.task_id AND m.attempt_id = l.attempt_id\n  ORDER BY m.updated_at DESC LIMIT 1\n) r ON true\nWHERE $__timeFilter(l.created_at)\nORDER BY COALESCE(l.snapshot-\u003e\u003e'origin', '') = 'auto' ASC, l.created_at DESC;",
                         "sql": {
                           "columns": [
                             {
@@ -8135,13 +8135,13 @@
                   {
                     "matcher": {
                       "id": "byName",
-                      "options": "MLflow",
+                      "options": "MLflow Run",
                       "scope": "series"
                     },
                     "properties": [
                       {
                         "id": "custom.width",
-                        "value": 290
+                        "value": 300
                       }
                     ]
                   },
