@@ -7800,7 +7800,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "WITH latest AS (\n  SELECT DISTINCT ON (task_id, attempt_id) task_id, attempt_id, revision, snapshot, created_at\n  FROM observability.orca_attempt_snapshots\n  ORDER BY task_id, attempt_id, revision DESC\n)\nSELECT\n  CASE WHEN l.snapshot-\u003e\u003e'origin' = 'auto' THEN 'auto' ELSE 'registered' END AS \"구분\",\n  CASE WHEN l.snapshot-\u003e\u003e'origin' = 'auto'\n       THEN CASE split_part(l.task_id, '-', 2) WHEN 'codex' THEN 'Codex' WHEN 'claude' THEN 'Claude' ELSE split_part(l.task_id, '-', 2) END || ' · ' || left(split_part(l.task_id, '-', 3), 6)\n       ELSE l.task_id END AS \"작업\",\n  l.snapshot-\u003e\u003e'reported_status' AS \"상태\",\n  l.snapshot-\u003e\u003e'verification_state' AS \"검증\",\n  (l.snapshot-\u003e\u003e'request_count')::bigint AS \"호출\",\n  (l.snapshot-\u003e'metrics'-\u003e\u003e'processed_total_tokens')::bigint AS \"처리 토큰\",\n  (l.snapshot-\u003e\u003e'cache_hit_rate_percent')::double precision AS \"캐시 적중률\",\n  CASE WHEN r.run_id IS NOT NULL THEN l.task_id || '/' || l.attempt_id END AS \"MLflow Run\",\n  to_char(l.created_at AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') AS \"갱신(KST)\"\nFROM latest l\nLEFT JOIN LATERAL (\n  SELECT run_id FROM observability.orca_mlflow_runs m\n  WHERE m.task_id = l.task_id AND m.attempt_id = l.attempt_id\n  ORDER BY m.updated_at DESC LIMIT 1\n) r ON true\nWHERE $__timeFilter(l.created_at)\nORDER BY COALESCE(l.snapshot-\u003e\u003e'origin', '') = 'auto' ASC, l.created_at DESC;",
+                        "rawSql": "WITH latest AS (\n  SELECT DISTINCT ON (task_id, attempt_id) task_id, attempt_id, revision, snapshot, created_at\n  FROM observability.orca_attempt_snapshots\n  ORDER BY task_id, attempt_id, revision DESC\n)\nSELECT\n  CASE WHEN l.snapshot-\u003e\u003e'origin' = 'auto' THEN 'auto' ELSE 'registered' END AS \"구분\",\n  CASE WHEN l.snapshot-\u003e\u003e'origin' = 'auto'\n       THEN CASE split_part(l.task_id, '-', 2) WHEN 'codex' THEN 'Codex' WHEN 'claude' THEN 'Claude' ELSE split_part(l.task_id, '-', 2) END || ' · ' || left(split_part(l.task_id, '-', 3), 6)\n       ELSE l.task_id END AS \"작업\",\n  l.snapshot-\u003e\u003e'reported_status' AS \"상태\",\n  l.snapshot-\u003e\u003e'verification_state' AS \"검증\",\n  (l.snapshot-\u003e\u003e'request_count')::bigint AS \"호출\",\n  (l.snapshot-\u003e'metrics'-\u003e\u003e'tool_calls_total')::bigint AS \"도구 호출\",\n  (l.snapshot-\u003e'metrics'-\u003e\u003e'tool_failures')::bigint AS \"도구 실패\",\n  (l.snapshot-\u003e'metrics'-\u003e\u003e'processed_total_tokens')::bigint AS \"처리 토큰\",\n  (l.snapshot-\u003e\u003e'cache_hit_rate_percent')::double precision AS \"캐시 적중률\",\n  CASE WHEN r.run_id IS NOT NULL THEN l.task_id || '/' || l.attempt_id END AS \"MLflow Run\",\n  to_char(l.created_at AT TIME ZONE 'Asia/Seoul', 'MM-DD HH24:MI') AS \"갱신(KST)\"\nFROM latest l\nLEFT JOIN LATERAL (\n  SELECT run_id FROM observability.orca_mlflow_runs m\n  WHERE m.task_id = l.task_id AND m.attempt_id = l.attempt_id\n  ORDER BY m.updated_at DESC LIMIT 1\n) r ON true\nWHERE $__timeFilter(l.created_at)\nORDER BY COALESCE(l.snapshot-\u003e\u003e'origin', '') = 'auto' ASC, l.created_at DESC;",
                         "sql": {
                           "columns": [
                             {
@@ -7829,7 +7829,7 @@
               "transformations": []
             }
           },
-          "description": "Run이 만들어진 작업(시도)의 최신 결과입니다. '등록'은 orca_task begin/end로 직접 표시한 작업이고, '자동'은 등록하지 않은 세션을 세션 하나당 하나로 자동으로 묶은 것입니다(상태·검증은 보고되지 않아 비어 있습니다). 검증은 verifier가 직접 실행해 서명한 증거가 있을 때만 '검증됨'입니다.",
+          "description": "Run이 만들어진 작업(시도)의 최신 결과입니다. '등록'은 orca_task begin/end로 직접 표시한 작업이고, '자동'은 등록하지 않은 세션을 세션 하나당 하나로 자동으로 묶은 것입니다(상태·검증은 보고되지 않아 비어 있습니다). 검증은 verifier가 직접 실행해 서명한 증거가 있을 때만 '검증됨'입니다. 도구 호출·실패는 Claude는 실패까지, Codex는 호출 수만 집계하며 알 수 없는 값은 N/A입니다.",
           "id": 3001,
           "links": [],
           "title": "작업/시도 결과",
@@ -8041,6 +8041,10 @@
                       {
                         "id": "unit",
                         "value": "short"
+                      },
+                      {
+                        "id": "noValue",
+                        "value": "N/A"
                       }
                     ]
                   },
@@ -8129,6 +8133,10 @@
                         "value": {
                           "type": "color-text"
                         }
+                      },
+                      {
+                        "id": "noValue",
+                        "value": "N/A"
                       }
                     ]
                   },
@@ -8142,6 +8150,10 @@
                       {
                         "id": "custom.width",
                         "value": 300
+                      },
+                      {
+                        "id": "noValue",
+                        "value": "—"
                       }
                     ]
                   },
@@ -8155,6 +8167,48 @@
                       {
                         "id": "custom.width",
                         "value": 120
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "도구 호출",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 90
+                      },
+                      {
+                        "id": "unit",
+                        "value": "short"
+                      },
+                      {
+                        "id": "noValue",
+                        "value": "N/A"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "도구 실패",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 90
+                      },
+                      {
+                        "id": "unit",
+                        "value": "short"
+                      },
+                      {
+                        "id": "noValue",
+                        "value": "N/A"
                       }
                     ]
                   }
@@ -8197,7 +8251,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "WITH calls AS (\n  SELECT * FROM observability.orca_call_events\n  WHERE source_kind = 'raw_call' AND $__timeFilter(occurred_at)\n), outbox AS (\n  SELECT count(*) FILTER (WHERE state = 'pending') AS pending,\n         count(*) FILTER (WHERE state = 'dead') AS dead,\n         COALESCE(round(extract(epoch FROM now() - min(updated_at) FILTER (WHERE state = 'pending')) / 60), 0) AS oldest_min\n  FROM observability.orca_mlflow_outbox\n)\nSELECT \"항목\", \"값\", \"설명\" FROM (\n  SELECT 1 AS ord, '호출 이벤트 (선택 기간)' AS \"항목\", count(*)::text AS \"값\",\n         '저장된 호출 단위 이벤트 수' AS \"설명\" FROM calls\n  UNION ALL SELECT 2, '마지막 호출 후 경과',\n         COALESCE(round(extract(epoch FROM now() - (SELECT max(occurred_at) FROM observability.orca_call_events)) / 60)::text || '분', 'N/A'),\n         '선택 기간과 무관한 전체 최신 호출 기준'\n  UNION ALL SELECT 3, '귀속 명시 / 자동 / 모호 / 미귀속',\n         count(*) FILTER (WHERE attribution_status = 'explicit') || ' / ' ||\n         count(*) FILTER (WHERE attribution_status = 'auto') || ' / ' ||\n         count(*) FILTER (WHERE attribution_status = 'ambiguous') || ' / ' ||\n         count(*) FILTER (WHERE attribution_status = 'unassigned'),\n         '명시 = 직접 등록, 자동 = 세션 단위 자동 묶음' FROM calls\n  UNION ALL SELECT 4, '캐시 제외 토큰 미확인 호출',\n         count(*) FILTER (WHERE non_cache_tokens IS NULL) || ' / ' || count(*),\n         '값이 없으면 0이 아니라 미확인입니다' FROM calls\n  UNION ALL SELECT 5, '미확정(partial) 호출', count(*) FILTER (WHERE event_status \u003c\u003e 'final')::text,\n         '스트리밍 중간 상태. 최종본이 오면 교체됩니다' FROM calls\n  UNION ALL SELECT 6, 'MLflow 전송 대기 / 가장 오래된 대기',\n         pending || '건 / ' || oldest_min::bigint || '분', '장애 중에도 DB 기록과 조회는 계속됩니다' FROM outbox\n  UNION ALL SELECT 7, 'MLflow 전송 실패(dead)', dead::text, '운영자 확인이 필요한 항목' FROM outbox\n) rows\nORDER BY ord;",
+                        "rawSql": "WITH calls AS (\n  SELECT * FROM observability.orca_call_events\n  WHERE source_kind = 'raw_call' AND $__timeFilter(occurred_at)\n), outbox AS (\n  SELECT count(*) FILTER (WHERE state = 'pending') AS pending,\n         count(*) FILTER (WHERE state = 'dead') AS dead,\n         COALESCE(round(extract(epoch FROM now() - min(updated_at) FILTER (WHERE state = 'pending')) / 60), 0) AS oldest_min\n  FROM observability.orca_mlflow_outbox\n)\nSELECT \"항목\", \"값\", \"설명\" FROM (\n  SELECT 1 AS ord, '호출 이벤트 (선택 기간)' AS \"항목\", count(*)::text AS \"값\",\n         '저장된 호출 단위 이벤트 수' AS \"설명\" FROM calls\n  UNION ALL SELECT 2, '마지막 호출 후 경과',\n         COALESCE(round(extract(epoch FROM now() - (SELECT max(occurred_at) FROM observability.orca_call_events)) / 60)::text || '분', 'N/A'),\n         '선택 기간과 무관한 전체 최신 호출 기준'\n  UNION ALL SELECT 3, '귀속 명시 / 자동 / 모호 / 미귀속',\n         count(*) FILTER (WHERE attribution_status = 'explicit') || ' / ' ||\n         count(*) FILTER (WHERE attribution_status = 'auto') || ' / ' ||\n         count(*) FILTER (WHERE attribution_status = 'ambiguous') || ' / ' ||\n         count(*) FILTER (WHERE attribution_status = 'unassigned'),\n         '명시 = 직접 등록, 자동 = 세션 단위 자동 묶음' FROM calls\n  UNION ALL SELECT 4, '캐시 제외 토큰 미확인 호출',\n         count(*) FILTER (WHERE non_cache_tokens IS NULL) || ' / ' || count(*),\n         '값이 없으면 0이 아니라 미확인입니다' FROM calls\n  UNION ALL SELECT 5, '미확정(partial) 호출', count(*) FILTER (WHERE event_status \u003c\u003e 'final')::text,\n         '스트리밍 중간 상태. 최종본이 오면 교체됩니다' FROM calls\n  UNION ALL SELECT 6, 'MLflow 전송 대기 / 가장 오래된 대기',\n         pending || '건 / ' || oldest_min::bigint || '분', '장애 중에도 DB 기록과 조회는 계속됩니다' FROM outbox\n  UNION ALL SELECT 7, 'MLflow 전송 실패(dead)', dead::text, '운영자 확인이 필요한 항목' FROM outbox\n  UNION ALL SELECT 8, '도구 정보가 있는 호출', count(*) FILTER (WHERE tool_calls IS NOT NULL) || ' / ' || count(*),\n         '도구 집계가 시작되기 전 기록은 도구 정보가 없습니다' FROM calls\n) rows\nORDER BY ord;",
                         "sql": {
                           "columns": [
                             {
@@ -8303,6 +8357,315 @@
                     "displayName": "총 토큰"
                   }
                 ]
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-orca-dev-10": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT COALESCE(sum(tool_calls_total), 0)::double precision AS value\nFROM observability.orca_call_events WHERE source_kind = 'raw_call' AND $__timeFilter(occurred_at) AND tool_calls IS NOT NULL;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "선택 기간 Codex·Claude가 호출한 도구 횟수입니다(도구 이름과 횟수만 집계하고 명령어·파일 경로·결과는 읽지 않습니다). 도구 정보가 기록된 호출만 합산하며, 비율은 아래 '수집 품질'에서 볼 수 있습니다.",
+          "id": 3010,
+          "links": [],
+          "title": "도구 호출",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "orange"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "short",
+                  "noValue": "N/A",
+                  "overrides": []
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-orca-dev-11": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT 100.0 * sum(tool_failures) / NULLIF(sum(tool_calls_total), 0) AS value\nFROM observability.orca_call_events WHERE source_kind = 'raw_call' AND $__timeFilter(occurred_at) AND tool_failures IS NOT NULL;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "도구 호출 중 실패로 표시된 비율입니다. Claude만 실패 여부를 기록하며(tool_result의 is_error), Codex는 신뢰할 수 있는 실패 신호가 없어 제외합니다.",
+          "id": 3011,
+          "links": [],
+          "title": "도구 실패율",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "orange",
+                        "value": 3
+                      },
+                      {
+                        "color": "red",
+                        "value": 8
+                      }
+                    ]
+                  },
+                  "unit": "percent",
+                  "noValue": "N/A",
+                  "overrides": [],
+                  "decimals": 1
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-orca-dev-12": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT t.key AS metric, sum(t.value::bigint)::double precision AS value\nFROM observability.orca_call_events e, jsonb_each_text(e.tool_calls) AS t\nWHERE e.source_kind = 'raw_call' AND e.tool_calls IS NOT NULL AND $__timeFilter(e.occurred_at)\nGROUP BY 1 ORDER BY value DESC LIMIT 10;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "선택 기간에 가장 많이 호출된 도구입니다. MCP 도구는 서버 이름까지만 보여줍니다(mcp:서버).",
+          "id": 3012,
+          "links": [],
+          "title": "도구별 호출 수 (상위 10)",
+          "vizConfig": {
+            "group": "bargauge",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "continuous-YlRd"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "blue",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "sishort",
+                  "noValue": "N/A",
+                  "min": 0
+                },
+                "overrides": []
+              },
+              "options": {
+                "displayMode": "gradient",
+                "maxVizHeight": 300,
+                "minVizHeight": 18,
+                "minVizWidth": 8,
+                "namePlacement": "left",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                  "calcs": [],
+                  "fields": "",
+                  "values": true
+                },
+                "showUnfilled": true,
+                "sizing": "auto",
+                "valueMode": "color"
               }
             },
             "version": "13.2.1"
@@ -9026,7 +9389,7 @@
                           "name": "panel-orca-dev-5"
                         },
                         "height": 4,
-                        "width": 6,
+                        "width": 4,
                         "x": 0,
                         "y": 28
                       }
@@ -9039,8 +9402,8 @@
                           "name": "panel-orca-dev-6"
                         },
                         "height": 4,
-                        "width": 6,
-                        "x": 6,
+                        "width": 4,
+                        "x": 4,
                         "y": 28
                       }
                     },
@@ -9052,8 +9415,8 @@
                           "name": "panel-orca-dev-7"
                         },
                         "height": 4,
-                        "width": 6,
-                        "x": 12,
+                        "width": 4,
+                        "x": 16,
                         "y": 28
                       }
                     },
@@ -9065,8 +9428,8 @@
                           "name": "panel-orca-dev-8"
                         },
                         "height": 4,
-                        "width": 6,
-                        "x": 18,
+                        "width": 4,
+                        "x": 20,
                         "y": 28
                       }
                     },
@@ -9078,7 +9441,7 @@
                           "name": "panel-orca-dev-9"
                         },
                         "height": 9,
-                        "width": 12,
+                        "width": 8,
                         "x": 0,
                         "y": 32
                       }
@@ -9091,8 +9454,8 @@
                           "name": "panel-orca-dev-2"
                         },
                         "height": 9,
-                        "width": 12,
-                        "x": 12,
+                        "width": 8,
+                        "x": 16,
                         "y": 32
                       }
                     },
@@ -9120,6 +9483,45 @@
                         "width": 24,
                         "x": 0,
                         "y": 52
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-orca-dev-10"
+                        },
+                        "height": 4,
+                        "width": 4,
+                        "x": 8,
+                        "y": 28
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-orca-dev-11"
+                        },
+                        "height": 4,
+                        "width": 4,
+                        "x": 12,
+                        "y": 28
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-orca-dev-12"
+                        },
+                        "height": 9,
+                        "width": 8,
+                        "x": 8,
+                        "y": 32
                       }
                     }
                   ]
