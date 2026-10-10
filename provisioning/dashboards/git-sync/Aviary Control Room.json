@@ -546,7 +546,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "WITH profile_model_usage AS (\n  SELECT\n    profile,\n    model,\n    count(*) AS run_count,\n    COALESCE(sum(\n      input_tokens + output_tokens + reasoning_tokens\n      + cache_read_tokens + cache_write_tokens\n    ), 0) AS total_tokens,\n    round(avg(\n      input_tokens + output_tokens + reasoning_tokens\n      + cache_read_tokens + cache_write_tokens\n    )::numeric, 0) AS avg_tokens_per_run,\n    round(COALESCE(\n      sum(duration_ms) FILTER (\n        WHERE status IN ('completed', 'failed')\n          AND duration_ms IS NOT NULL\n      ) / 1000.0,\n      0\n    )::numeric, 1) AS general_seconds,\n    round(COALESCE(\n      percentile_cont(0.95) WITHIN GROUP (ORDER BY duration_ms)\n        FILTER (\n          WHERE status IN ('completed', 'failed')\n            AND duration_ms IS NOT NULL\n        ) / 1000.0,\n      0\n    )::numeric, 1) AS p95_seconds\n  FROM observability.hermes_runs\n  WHERE $__timeFilter(started_at)\n    AND profile ~ '${profile:regex}'\n    AND model ~ '${model:regex}'\n  GROUP BY profile, model\n),\nkanban_usage AS (\n  SELECT\n    profile,\n    round(COALESCE(\n      sum(EXTRACT(EPOCH FROM ended_at - started_at)),\n      0\n    )::numeric, 1) AS kanban_seconds\n  FROM observability.hermes_kanban_task_runs\n  WHERE $__timeFilter(started_at)\n    AND ended_at IS NOT NULL\n    AND profile ~ '${profile:regex}'\n  GROUP BY profile\n)\nSELECT\n  p.profile AS \"프로필\",\n  p.model AS \"모델\",\n  p.run_count AS \"실행 수\",\n  p.total_tokens AS \"총 토큰\",\n  p.avg_tokens_per_run AS \"실행당 평균 토큰\",\n  p.general_seconds AS \"일반 작업(초)\",\n  COALESCE(k.kanban_seconds, 0) AS \"칸반 작업(초)\",\n  round((p.general_seconds + COALESCE(k.kanban_seconds, 0))::numeric, 1) AS \"전체 작업(초)\"\nFROM profile_model_usage p\nLEFT JOIN kanban_usage k ON k.profile = p.profile\nORDER BY p.profile, \"총 토큰\" DESC;",
+                        "rawSql": "SELECT\n  profile AS \"프로필\",\n  model AS \"모델\",\n  count(*) AS \"실행 수\",\n  COALESCE(sum(input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens), 0) AS \"총 토큰\",\n  round(avg(input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens)::numeric, 0) AS \"실행당 평균 토큰\",\n  round(COALESCE(sum(duration_ms) FILTER (WHERE status IN ('completed', 'failed') AND duration_ms IS NOT NULL) / 1000.0, 0)::numeric, 1) AS \"작업 시간\"\nFROM observability.hermes_runs\nWHERE $__timeFilter(started_at)\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}'\nGROUP BY profile, model\nORDER BY profile, \"총 토큰\" DESC;",
                         "sql": {
                           "columns": [
                             {
@@ -719,7 +719,7 @@
                   {
                     "matcher": {
                       "id": "byName",
-                      "options": "일반 작업(초)",
+                      "options": "작업 시간",
                       "scope": "series"
                     },
                     "properties": [
@@ -728,38 +728,8 @@
                         "value": "s"
                       },
                       {
-                        "id": "displayName",
-                        "value": "작업 시간"
-                      },
-                      {
                         "id": "custom.align",
                         "value": "center"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "칸반 작업(초)",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.hidden",
-                        "value": true
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "전체 작업(초)",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.hidden",
-                        "value": true
                       }
                     ]
                   }
@@ -802,7 +772,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "WITH general_usage AS (\n  SELECT\n    profile,\n    COALESCE(sum(input_tokens), 0) AS input_tokens,\n    COALESCE(sum(cache_read_tokens), 0) AS cache_read_tokens,\n    COALESCE(sum(output_tokens), 0) AS output_tokens,\n    COALESCE(sum(reasoning_tokens), 0) AS reasoning_tokens,\n    COALESCE(sum(\n      input_tokens + output_tokens + reasoning_tokens\n      + cache_read_tokens + cache_write_tokens\n    ), 0) AS total_tokens,\n    round(COALESCE(\n      100.0 * sum(cache_read_tokens)\n      / NULLIF(sum(input_tokens + cache_read_tokens + cache_write_tokens), 0),\n      0\n    ), 1) AS cache_hit_rate,\n    round(COALESCE(\n      sum(duration_ms) FILTER (\n        WHERE status IN ('completed', 'failed')\n          AND duration_ms IS NOT NULL\n      ) / 1000.0,\n      0\n    )::numeric, 1) AS general_seconds\n  FROM observability.hermes_runs\n  WHERE $__timeFilter(started_at)\n    AND profile ~ '${profile:regex}'\n    AND model ~ '${model:regex}'\n  GROUP BY profile\n),\nkanban_usage AS (\n  SELECT\n    profile,\n    round(COALESCE(\n      sum(EXTRACT(EPOCH FROM ended_at - started_at)),\n      0\n    )::numeric, 1) AS kanban_seconds\n  FROM observability.hermes_kanban_task_runs\n  WHERE $__timeFilter(started_at)\n    AND ended_at IS NOT NULL\n    AND profile ~ '${profile:regex}'\n  GROUP BY profile\n)\nSELECT\n  COALESCE(g.profile, k.profile) AS \"프로필\",\n  COALESCE(g.input_tokens, 0) AS \"일반 입력 토큰\",\n  COALESCE(g.cache_read_tokens, 0) AS \"캐시 읽기 토큰\",\n  COALESCE(g.output_tokens, 0) AS \"출력 토큰\",\n  COALESCE(g.reasoning_tokens, 0) AS \"리즈닝 토큰\",\n  COALESCE(g.total_tokens, 0) AS \"총 토큰\",\n  COALESCE(g.cache_hit_rate, 0) AS \"캐시 적중률\",\n  COALESCE(g.general_seconds, 0) AS \"일반 작업(초)\",\n  COALESCE(k.kanban_seconds, 0) AS \"칸반 작업(초)\",\n  round((\n    COALESCE(g.general_seconds, 0)\n    + COALESCE(k.kanban_seconds, 0)\n  )::numeric, 1) AS \"전체 작업(초)\"\nFROM general_usage g\nFULL OUTER JOIN kanban_usage k ON k.profile = g.profile\nORDER BY \"전체 작업(초)\" DESC, \"총 토큰\" DESC;",
+                        "rawSql": "SELECT\n  profile AS \"프로필\",\n  COALESCE(sum(input_tokens), 0) AS \"일반 입력 토큰\",\n  COALESCE(sum(cache_read_tokens), 0) AS \"캐시 읽기 토큰\",\n  COALESCE(sum(output_tokens), 0) AS \"출력 토큰\",\n  COALESCE(sum(reasoning_tokens), 0) AS \"리즈닝 토큰\",\n  COALESCE(sum(input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens), 0) AS \"총 토큰\",\n  round(COALESCE(100.0 * sum(cache_read_tokens) / NULLIF(sum(input_tokens + cache_read_tokens + cache_write_tokens), 0), 0), 1) AS \"캐시 적중률\",\n  round(COALESCE(sum(duration_ms) FILTER (WHERE status IN ('completed', 'failed') AND duration_ms IS NOT NULL) / 1000.0, 0)::numeric, 1) AS \"작업 시간\"\nFROM observability.hermes_runs\nWHERE $__timeFilter(started_at)\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}'\nGROUP BY profile\nORDER BY \"총 토큰\" DESC;",
                         "sql": {
                           "columns": [
                             {
@@ -1087,7 +1057,7 @@
                   {
                     "matcher": {
                       "id": "byName",
-                      "options": "일반 작업(초)",
+                      "options": "작업 시간",
                       "scope": "series"
                     },
                     "properties": [
@@ -1096,38 +1066,8 @@
                         "value": "s"
                       },
                       {
-                        "id": "displayName",
-                        "value": "작업 시간"
-                      },
-                      {
                         "id": "custom.align",
                         "value": "center"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "칸반 작업(초)",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.hidden",
-                        "value": true
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "전체 작업(초)",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.hidden",
-                        "value": true
                       }
                     ]
                   }
@@ -2714,252 +2654,6 @@
           }
         }
       },
-      "panel-4": {
-        "kind": "Panel",
-        "spec": {
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "ffskrzljzwr28b"
-                      },
-                      "group": "grafana-postgresql-datasource",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "dataset": "timeseries",
-                        "editorMode": "code",
-                        "format": "table",
-                        "rawQuery": true,
-                        "rawSql": "SELECT\n  profile AS \"프로필\",\n  count(*) FILTER (WHERE status = 'completed') AS \"완료\",\n  count(*) FILTER (WHERE status = 'open') AS \"미종료\",\n  count(*) FILTER (WHERE status = 'failed') AS \"실패\",\n  round(COALESCE(\n    100.0 * count(*) FILTER (WHERE status = 'failed')\n    / NULLIF(count(*) FILTER (WHERE status IN ('completed', 'failed')), 0),\n    0\n  )::numeric, 1) AS \"실패율\"\nFROM observability.hermes_runs\nWHERE $__timeFilter(started_at)\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}'\nGROUP BY profile\nORDER BY \"실패율\" DESC, \"실패\" DESC, profile;",
-                        "sql": {
-                          "columns": [
-                            {
-                              "parameters": [],
-                              "type": "function"
-                            }
-                          ],
-                          "groupBy": [
-                            {
-                              "property": {
-                                "type": "string"
-                              },
-                              "type": "groupBy"
-                            }
-                          ],
-                          "limit": 50
-                        }
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "A"
-                  }
-                }
-              ],
-              "queryOptions": {},
-              "transformations": []
-            }
-          },
-          "description": "실패율 = 실패 ÷ (완료+실패). 미종료는 분모에서 제외합니다.",
-          "id": 4,
-          "links": [],
-          "title": "프로필별 실패율",
-          "vizConfig": {
-            "group": "table",
-            "kind": "VizConfig",
-            "spec": {
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "custom": {
-                    "align": "auto",
-                    "cellOptions": {
-                      "type": "auto"
-                    },
-                    "footer": {
-                      "reducers": []
-                    },
-                    "inspect": false,
-                    "wrapText": false
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "green",
-                        "value": 0
-                      }
-                    ]
-                  },
-                  "noValue": "-"
-                },
-                "overrides": [
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "프로필",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.minWidth",
-                        "value": 110
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "완료",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "short"
-                      },
-                      {
-                        "id": "custom.align",
-                        "value": "center"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "미종료",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "short"
-                      },
-                      {
-                        "id": "custom.align",
-                        "value": "center"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "실패",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "short"
-                      },
-                      {
-                        "id": "thresholds",
-                        "value": {
-                          "mode": "absolute",
-                          "steps": [
-                            {
-                              "color": "#22C55E",
-                              "value": 0
-                            },
-                            {
-                              "color": "#EF4444",
-                              "value": 1
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "thresholds"
-                        }
-                      },
-                      {
-                        "id": "custom.cellOptions",
-                        "value": {
-                          "type": "color-text"
-                        }
-                      },
-                      {
-                        "id": "custom.align",
-                        "value": "center"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "실패율",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "percent"
-                      },
-                      {
-                        "id": "custom.cellOptions",
-                        "value": {
-                          "type": "color-background",
-                          "mode": "basic"
-                        }
-                      },
-                      {
-                        "id": "thresholds",
-                        "value": {
-                          "mode": "absolute",
-                          "steps": [
-                            {
-                              "color": "#22C55E",
-                              "value": 0
-                            },
-                            {
-                              "color": "#F59E0B",
-                              "value": 5
-                            },
-                            {
-                              "color": "#EF4444",
-                              "value": 15
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "thresholds"
-                        }
-                      },
-                      {
-                        "id": "custom.align",
-                        "value": "center"
-                      }
-                    ]
-                  }
-                ]
-              },
-              "options": {
-                "cellHeight": "sm",
-                "showHeader": true,
-                "sortBy": [
-                  {
-                    "desc": true,
-                    "displayName": "실패율"
-                  }
-                ]
-              }
-            },
-            "version": "13.2.1"
-          }
-        }
-      },
       "panel-41": {
         "kind": "Panel",
         "spec": {
@@ -3887,116 +3581,6 @@
           }
         }
       },
-      "panel-5": {
-        "kind": "Panel",
-        "spec": {
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "ffskrzljzwr28b"
-                      },
-                      "group": "grafana-postgresql-datasource",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "editorMode": "code",
-                        "format": "table",
-                        "rawQuery": true,
-                        "rawSql": "SELECT\n  percentile_cont(0.95)\n    WITHIN GROUP (ORDER BY duration_ms) / 1000.0 AS value\nFROM observability.hermes_runs\nWHERE $__timeFilter(ended_at)\n  AND status IN ('completed', 'failed')\n  AND duration_ms IS NOT NULL\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}';",
-                        "sql": {
-                          "columns": [
-                            {
-                              "parameters": [],
-                              "type": "function"
-                            }
-                          ],
-                          "groupBy": [
-                            {
-                              "property": {
-                                "type": "string"
-                              },
-                              "type": "groupBy"
-                            }
-                          ],
-                          "limit": 50
-                        }
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "A"
-                  }
-                }
-              ],
-              "queryOptions": {},
-              "transformations": []
-            }
-          },
-          "description": "완료·실패한 실행의 처리 시간 95번째 백분위수",
-          "id": 5,
-          "links": [],
-          "title": "p95 처리 시간",
-          "vizConfig": {
-            "group": "stat",
-            "kind": "VizConfig",
-            "spec": {
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "color": "#22C55E",
-                        "value": 0
-                      },
-                      {
-                        "color": "#F59E0B",
-                        "value": 60
-                      },
-                      {
-                        "color": "#EF4444",
-                        "value": 180
-                      }
-                    ]
-                  },
-                  "unit": "s",
-                  "noValue": "-"
-                },
-                "overrides": []
-              },
-              "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "justifyMode": "auto",
-                "orientation": "auto",
-                "percentChangeColorMode": "standard",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "textMode": "value",
-                "wideLayout": true,
-                "text": {
-                  "valueSize": 34
-                }
-              }
-            },
-            "version": "13.2.1"
-          }
-        }
-      },
       "panel-6": {
         "kind": "Panel",
         "spec": {
@@ -4267,7 +3851,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "WITH model_usage AS (\n  SELECT\n    model,\n    count(*) AS run_count,\n    COALESCE(sum(\n      input_tokens + output_tokens + reasoning_tokens\n      + cache_read_tokens + cache_write_tokens\n    ), 0) AS total_tokens,\n    round(avg(\n      input_tokens + output_tokens + reasoning_tokens\n      + cache_read_tokens + cache_write_tokens\n    )::numeric, 0) AS avg_tokens_per_run,\n    round(COALESCE(\n      sum(duration_ms) FILTER (\n        WHERE status IN ('completed', 'failed')\n          AND duration_ms IS NOT NULL\n      ) / 1000.0,\n      0\n    )::numeric, 1) AS general_seconds,\n    round(COALESCE(\n      percentile_cont(0.95) WITHIN GROUP (ORDER BY duration_ms)\n        FILTER (\n          WHERE status IN ('completed', 'failed')\n            AND duration_ms IS NOT NULL\n        ) / 1000.0,\n      0\n    )::numeric, 1) AS p95_seconds\n  FROM observability.hermes_runs\n  WHERE $__timeFilter(started_at)\n    AND profile ~ '${profile:regex}'\n    AND model ~ '${model:regex}'\n  GROUP BY model\n),\nkanban_usage AS (\n  SELECT\n    round(COALESCE(\n      sum(EXTRACT(EPOCH FROM ended_at - started_at)),\n      0\n    )::numeric, 1) AS kanban_seconds\n  FROM observability.hermes_kanban_task_runs\n  WHERE $__timeFilter(started_at)\n    AND ended_at IS NOT NULL\n    AND profile ~ '${profile:regex}'\n)\nSELECT\n  m.model AS \"모델\",\n  m.run_count AS \"실행 수\",\n  m.total_tokens AS \"총 토큰\",\n  m.avg_tokens_per_run AS \"실행당 평균 토큰\",\n  m.general_seconds AS \"일반 작업(초)\",\n  k.kanban_seconds AS \"칸반 작업(초)\",\n  round((m.general_seconds + k.kanban_seconds)::numeric, 1) AS \"전체 작업(초)\"\nFROM model_usage m\nCROSS JOIN kanban_usage k\nORDER BY \"총 토큰\" DESC;",
+                        "rawSql": "SELECT\n  model AS \"모델\",\n  count(*) AS \"실행 수\",\n  COALESCE(sum(input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens), 0) AS \"총 토큰\",\n  round(avg(input_tokens + output_tokens + reasoning_tokens + cache_read_tokens + cache_write_tokens)::numeric, 0) AS \"실행당 평균 토큰\",\n  round(COALESCE(sum(duration_ms) FILTER (WHERE status IN ('completed', 'failed') AND duration_ms IS NOT NULL) / 1000.0, 0)::numeric, 1) AS \"작업 시간\"\nFROM observability.hermes_runs\nWHERE $__timeFilter(started_at)\n  AND profile ~ '${profile:regex}'\n  AND model ~ '${model:regex}'\nGROUP BY model\nORDER BY \"총 토큰\" DESC;",
                         "sql": {
                           "columns": [
                             {
@@ -4427,7 +4011,7 @@
                   {
                     "matcher": {
                       "id": "byName",
-                      "options": "일반 작업(초)",
+                      "options": "작업 시간",
                       "scope": "series"
                     },
                     "properties": [
@@ -4436,38 +4020,8 @@
                         "value": "s"
                       },
                       {
-                        "id": "displayName",
-                        "value": "작업 시간"
-                      },
-                      {
                         "id": "custom.align",
                         "value": "center"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "칸반 작업(초)",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.hidden",
-                        "value": true
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "전체 작업(초)",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.hidden",
-                        "value": true
                       }
                     ]
                   }
@@ -10431,7 +9985,7 @@
                                   },
                                   "x": 0,
                                   "y": 0,
-                                  "width": 4,
+                                  "width": 5,
                                   "height": 4
                                 }
                               },
@@ -10442,9 +9996,9 @@
                                     "kind": "ElementReference",
                                     "name": "panel-6"
                                   },
-                                  "x": 4,
+                                  "x": 5,
                                   "y": 0,
-                                  "width": 4,
+                                  "width": 5,
                                   "height": 4
                                 }
                               },
@@ -10455,20 +10009,7 @@
                                     "kind": "ElementReference",
                                     "name": "panel-hermes-3013"
                                   },
-                                  "x": 8,
-                                  "y": 0,
-                                  "width": 4,
-                                  "height": 4
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-5"
-                                  },
-                                  "x": 12,
+                                  "x": 10,
                                   "y": 0,
                                   "width": 4,
                                   "height": 4
@@ -10481,9 +10022,9 @@
                                     "kind": "ElementReference",
                                     "name": "panel-hermes-3014"
                                   },
-                                  "x": 16,
+                                  "x": 14,
                                   "y": 0,
-                                  "width": 4,
+                                  "width": 5,
                                   "height": 4
                                 }
                               },
@@ -10494,9 +10035,9 @@
                                     "kind": "ElementReference",
                                     "name": "panel-hermes-3015"
                                   },
-                                  "x": 20,
+                                  "x": 19,
                                   "y": 0,
-                                  "width": 4,
+                                  "width": 5,
                                   "height": 4
                                 }
                               }
@@ -10656,7 +10197,7 @@
                                   },
                                   "x": 0,
                                   "y": 0,
-                                  "width": 7,
+                                  "width": 8,
                                   "height": 7
                                 }
                               },
@@ -10667,22 +10208,9 @@
                                     "kind": "ElementReference",
                                     "name": "panel-11"
                                   },
-                                  "x": 7,
+                                  "x": 8,
                                   "y": 0,
-                                  "width": 8,
-                                  "height": 7
-                                }
-                              },
-                              {
-                                "kind": "GridLayoutItem",
-                                "spec": {
-                                  "element": {
-                                    "kind": "ElementReference",
-                                    "name": "panel-4"
-                                  },
-                                  "x": 15,
-                                  "y": 0,
-                                  "width": 9,
+                                  "width": 16,
                                   "height": 7
                                 }
                               },
