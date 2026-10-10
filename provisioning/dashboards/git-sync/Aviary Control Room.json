@@ -6993,7 +6993,7 @@
               "transformations": []
             }
           },
-          "description": "선택 기간 프롬프트 입력 중 캐시에서 읽은 비율",
+          "description": "선택 기간 프롬프트 입력 중 캐시에서 읽은 비율. 세션 첫 호출과 몇 분 이상 쉰 뒤의 호출은 캐시가 비어 있어 짧은 세션일수록 낮게 나옵니다(긴 세션은 보통 90% 안팎).",
           "id": 3016,
           "links": [],
           "title": "캐시 적중률",
@@ -8332,10 +8332,10 @@
               },
               "options": {
                 "displayMode": "gradient",
-                "maxVizHeight": 24,
-                "minVizHeight": 14,
+                "maxVizHeight": 28,
+                "minVizHeight": 20,
                 "minVizWidth": 8,
-                "namePlacement": "top",
+                "namePlacement": "left",
                 "orientation": "horizontal",
                 "reduceOptions": {
                   "calcs": [],
@@ -8346,8 +8346,8 @@
                 "sizing": "manual",
                 "valueMode": "color",
                 "text": {
-                  "titleSize": 13,
-                  "valueSize": 15
+                  "titleSize": 12,
+                  "valueSize": 13
                 }
               }
             },
@@ -8978,6 +8978,61 @@
                       {
                         "id": "unit",
                         "value": "m"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#F59E0B"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "메시지",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#3B82F6"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "API 호출",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#06B6D4"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "도구 호출",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#14B8A6"
+                        }
                       }
                     ]
                   }
@@ -8997,11 +9052,11 @@
                   "values": false
                 },
                 "showPercentChange": false,
-                "textMode": "value",
+                "textMode": "value_and_name",
                 "wideLayout": true,
                 "text": {
-                  "valueSize": 30,
-                  "titleSize": 13
+                  "valueSize": 26,
+                  "titleSize": 12
                 }
               }
             },
@@ -9089,10 +9144,10 @@
               },
               "options": {
                 "displayMode": "gradient",
-                "maxVizHeight": 24,
-                "minVizHeight": 14,
+                "maxVizHeight": 28,
+                "minVizHeight": 20,
                 "minVizWidth": 8,
-                "namePlacement": "top",
+                "namePlacement": "left",
                 "orientation": "horizontal",
                 "reduceOptions": {
                   "calcs": [],
@@ -9103,8 +9158,8 @@
                 "sizing": "manual",
                 "valueMode": "color",
                 "text": {
-                  "titleSize": 13,
-                  "valueSize": 15
+                  "titleSize": 12,
+                  "valueSize": 13
                 }
               }
             },
@@ -9192,10 +9247,10 @@
               },
               "options": {
                 "displayMode": "gradient",
-                "maxVizHeight": 24,
-                "minVizHeight": 14,
+                "maxVizHeight": 28,
+                "minVizHeight": 20,
                 "minVizWidth": 8,
-                "namePlacement": "top",
+                "namePlacement": "left",
                 "orientation": "horizontal",
                 "reduceOptions": {
                   "calcs": [],
@@ -9206,8 +9261,8 @@
                 "sizing": "manual",
                 "valueMode": "color",
                 "text": {
-                  "titleSize": 13,
-                  "valueSize": 15
+                  "titleSize": 12,
+                  "valueSize": 13
                 }
               }
             },
@@ -10091,7 +10146,7 @@
                                   "x": 0,
                                   "y": 0,
                                   "width": 24,
-                                  "height": 4
+                                  "height": 5
                                 }
                               },
                               {
@@ -10102,7 +10157,7 @@
                                     "name": "panel-hermes-sel-comp"
                                   },
                                   "x": 0,
-                                  "y": 4,
+                                  "y": 5,
                                   "width": 7,
                                   "height": 7
                                 }
@@ -10115,7 +10170,7 @@
                                     "name": "panel-hermes-sel-tools"
                                   },
                                   "x": 7,
-                                  "y": 4,
+                                  "y": 5,
                                   "width": 7,
                                   "height": 7
                                 }
@@ -10128,7 +10183,7 @@
                                     "name": "panel-hermes-sel-time"
                                   },
                                   "x": 14,
-                                  "y": 4,
+                                  "y": 5,
                                   "width": 10,
                                   "height": 7
                                 }
