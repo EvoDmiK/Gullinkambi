@@ -7177,7 +7177,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "SELECT count(*) FILTER (WHERE outcome = 'error')::double precision AS value\nFROM observability.hermes_tool_events\nWHERE $__timeFilter(occurred_at) AND profile ~ '${profile:regex}';",
+                        "rawSql": "SELECT count(*)::double precision AS value\nFROM observability.hermes_tool_log_events\nWHERE status = 'error' AND $__timeFilter(occurred_at) AND profile ~ '${profile:regex}';",
                         "sql": {
                           "columns": [
                             {
@@ -7206,7 +7206,7 @@
               "transformations": []
             }
           },
-          "description": "도구 결과가 오류로 판정된 호출 수. 일반 텍스트·배열 결과(주로 MCP 도구)는 판정할 수 없어 포함되지 않습니다(도구 결과 표의 '판정 불가').",
+          "description": "Hermes 로그에 오류로 기록된 도구 호출 수(MCP 포함 모든 도구). 로그 보관 범위(약 일주일) 안의 값입니다.",
           "id": 3018,
           "links": [],
           "title": "도구 오류",
@@ -8377,7 +8377,7 @@
                         "editorMode": "code",
                         "format": "table",
                         "rawQuery": true,
-                        "rawSql": "SELECT\n  tool AS \"도구\",\n  count(*) AS \"호출\",\n  count(*) FILTER (WHERE outcome = 'error') AS \"오류\",\n  count(*) FILTER (WHERE outcome = 'nonzero_exit') AS \"비정상 종료\",\n  count(*) FILTER (WHERE outcome = 'unknown') AS \"판정 불가\",\n  round((100.0 * count(*) FILTER (WHERE outcome = 'error') / NULLIF(count(*) FILTER (WHERE outcome \u003c\u003e 'unknown'), 0))::numeric, 1) AS \"오류율\"\nFROM observability.hermes_tool_events\nWHERE $__timeFilter(occurred_at) AND profile ~ '${profile:regex}'\nGROUP BY tool\nORDER BY \"호출\" DESC\nLIMIT 15;",
+                        "rawSql": "WITH calls AS (\n  SELECT tool, count(*) AS n, count(*) FILTER (WHERE outcome = 'nonzero_exit') AS nonzero\n  FROM observability.hermes_tool_events WHERE $__timeFilter(occurred_at) AND profile ~ '${profile:regex}' GROUP BY tool\n), logged AS (\n  SELECT tool,\n         count(*) FILTER (WHERE status = 'error') AS errors,\n         round((avg(duration_ms) / 1000.0)::numeric, 2) AS avg_seconds\n  FROM observability.hermes_tool_log_events WHERE $__timeFilter(occurred_at) AND profile ~ '${profile:regex}' GROUP BY tool\n)\nSELECT\n  COALESCE(c.tool, l.tool) AS \"도구\",\n  COALESCE(c.n, 0) AS \"호출\",\n  COALESCE(l.errors, 0) AS \"오류\",\n  COALESCE(c.nonzero, 0) AS \"비정상 종료\",\n  l.avg_seconds AS \"평균 시간\",\n  round((100.0 * COALESCE(l.errors, 0) / NULLIF(c.n, 0))::numeric, 1) AS \"오류율\"\nFROM calls c FULL JOIN logged l ON l.tool = c.tool\nORDER BY \"호출\" DESC, \"오류\" DESC\nLIMIT 15;",
                         "sql": {
                           "columns": [
                             {
@@ -8406,10 +8406,10 @@
               "transformations": []
             }
           },
-          "description": "결과 형식으로 판정한 결과입니다(본문은 수집하지 않음). 오류 = error 값·success:false·실패 status. 비정상 종료 = 명령이 0이 아닌 코드로 끝남(예: grep의 일치 없음이라 실패가 아닐 수 있음). 판정 불가 = 일반 텍스트 결과(주로 MCP 도구), 잘린 결과, 그리고 Hermes가 컨텍스트를 줄이려고 이전 결과를 '[read_file] ...' 같은 요약문으로 바꿔 둔 경우(원래 결과가 남아 있지 않아 알 수 없음).",
+          "description": "호출 = Hermes DB의 도구 결과 수. 오류·평균 시간 = Hermes 로그 기준(모든 도구, MCP 포함. 성공 호출은 로그에 일부만 남아 평균 시간은 기록된 호출만 계산). 비정상 종료 = 명령이 0이 아닌 코드로 끝남(예: grep 일치 없음이라 실패가 아닐 수 있음).",
           "id": 3024,
           "links": [],
-          "title": "도구 결과",
+          "title": "도구별 호출·오류",
           "vizConfig": {
             "group": "table",
             "kind": "VizConfig",
@@ -8551,23 +8551,6 @@
                   {
                     "matcher": {
                       "id": "byName",
-                      "options": "판정 불가",
-                      "scope": "series"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "short"
-                      },
-                      {
-                        "id": "custom.align",
-                        "value": "center"
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
                       "options": "오류율",
                       "scope": "series"
                     },
@@ -8614,6 +8597,23 @@
                         "value": "center"
                       }
                     ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "평균 시간",
+                      "scope": "series"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "s"
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "center"
+                      }
+                    ]
                   }
                 ]
               },
@@ -8653,7 +8653,7 @@
                         "editorMode": "code",
                         "format": "time_series",
                         "rawQuery": true,
-                        "rawSql": "SELECT\n  $__timeGroupAlias(occurred_at, $__interval),\n  count(*) FILTER (WHERE outcome = 'ok')::double precision AS \"정상\",\n  count(*) FILTER (WHERE outcome = 'error')::double precision AS \"오류\",\n  count(*) FILTER (WHERE outcome = 'nonzero_exit')::double precision AS \"비정상 종료\",\n  count(*) FILTER (WHERE outcome = 'unknown')::double precision AS \"판정 불가\"\nFROM observability.hermes_tool_events\nWHERE $__timeFilter(occurred_at) AND profile ~ '${profile:regex}'\nGROUP BY 1\nORDER BY 1;",
+                        "rawSql": "SELECT\n  $__timeGroupAlias(occurred_at, $__interval),\n  count(*)::double precision AS \"호출\"\nFROM observability.hermes_tool_events\nWHERE $__timeFilter(occurred_at) AND profile ~ '${profile:regex}'\nGROUP BY 1\nORDER BY 1;",
                         "sql": {
                           "columns": [
                             {
@@ -8676,16 +8676,55 @@
                     },
                     "refId": "A"
                   }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "time_series",
+                        "rawQuery": true,
+                        "rawSql": "SELECT\n  $__timeGroupAlias(occurred_at, $__interval),\n  count(*)::double precision AS \"오류\"\nFROM observability.hermes_tool_log_events\nWHERE status = 'error' AND $__timeFilter(occurred_at) AND profile ~ '${profile:regex}'\nGROUP BY 1\nORDER BY 1;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        },
+                        "refId": "B"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
                 }
               ],
               "queryOptions": {},
               "transformations": []
             }
           },
-          "description": "결과 판정별로 쌓은 호출 수",
+          "description": "호출 = Hermes DB의 도구 결과 수, 오류 = Hermes 로그에 오류로 기록된 호출 수",
           "id": 3025,
           "links": [],
-          "title": "시간대별 도구 호출",
+          "title": "시간대별 도구 호출과 오류",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -8723,7 +8762,7 @@
                     "spanNulls": false,
                     "stacking": {
                       "group": "A",
-                      "mode": "normal"
+                      "mode": "none"
                     },
                     "thresholdsStyle": {
                       "mode": "off"
@@ -8749,14 +8788,14 @@
                   {
                     "matcher": {
                       "id": "byName",
-                      "options": "정상"
+                      "options": "호출"
                     },
                     "properties": [
                       {
                         "id": "color",
                         "value": {
                           "mode": "fixed",
-                          "fixedColor": "#22C55E"
+                          "fixedColor": "#3B82F6"
                         }
                       }
                     ]
@@ -8772,36 +8811,6 @@
                         "value": {
                           "mode": "fixed",
                           "fixedColor": "#EF4444"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "비정상 종료"
-                    },
-                    "properties": [
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#F59E0B"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "판정 불가"
-                    },
-                    "properties": [
-                      {
-                        "id": "color",
-                        "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#6B7280"
                         }
                       }
                     ]
