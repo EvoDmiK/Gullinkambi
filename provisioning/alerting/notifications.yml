@@ -6,9 +6,9 @@ templates:
     template: |
       {{ define "gullinkambi.discord.title" -}}
       {{- if gt (len .Alerts.Firing) 0 -}}
-      🚨 [FIRING] Gullinkambi Grafana 알림
+      🚨 [RAGNAROK IS COMING...] Gullinkambi Grafana 알림
       {{- else -}}
-      ✅ [RESOLVED] Gullinkambi Grafana 알림
+      ✅ [Ragnarok is over...] Gullinkambi Grafana 알림
       {{- end -}}
       {{- end }}
 
