@@ -100,7 +100,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 * (1 - node_memory_MemAvailable_bytes{job=\"macmini_node\",instance=\"$instance\"} / node_memory_MemTotal_bytes{job=\"macmini_node\",instance=\"$instance\"})",
+          "expr": "100 * macos_memory_used_bytes{instance=\"$instance\"} / macos_memory_total_bytes{instance=\"$instance\"}",
           "legendFormat": "RAM",
           "range": true,
           "refId": "A"
@@ -145,7 +145,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "max(100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/host/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/host/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)\"}))",
+          "expr": "max(100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"}))",
           "legendFormat": "Disk",
           "range": true,
           "refId": "A"
@@ -371,14 +371,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "node_memory_MemTotal_bytes{job=\"macmini_node\",instance=\"$instance\"} - node_memory_MemAvailable_bytes{job=\"macmini_node\",instance=\"$instance\"}",
+          "expr": "macos_memory_used_bytes{instance=\"$instance\"}",
           "legendFormat": "Used",
           "range": true,
           "refId": "A"
         },
         {
           "editorMode": "code",
-          "expr": "node_memory_MemAvailable_bytes{job=\"macmini_node\",instance=\"$instance\"}",
+          "expr": "macos_memory_total_bytes{instance=\"$instance\"} - macos_memory_used_bytes{instance=\"$instance\"}",
           "legendFormat": "Available",
           "range": true,
           "refId": "B"
@@ -424,7 +424,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/host/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/host/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)\"})",
+          "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"})",
           "legendFormat": "{{mountpoint}} ({{device}})",
           "range": true,
           "refId": "A"
@@ -473,14 +473,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(rate(node_network_receive_bytes_total{job=\"macmini_node\",instance=\"$instance\",device!~\"lo|veth.*|docker.*|br-.*\"}[5m]))",
+          "expr": "sum(rate(node_network_receive_bytes_total{job=\"macmini_node\",instance=\"$instance\",device=~\"en[0-9]+\"}[5m]))",
           "legendFormat": "RX",
           "range": true,
           "refId": "A"
         },
         {
           "editorMode": "code",
-          "expr": "-sum(rate(node_network_transmit_bytes_total{job=\"macmini_node\",instance=\"$instance\",device!~\"lo|veth.*|docker.*|br-.*\"}[5m]))",
+          "expr": "-sum(rate(node_network_transmit_bytes_total{job=\"macmini_node\",instance=\"$instance\",device=~\"en[0-9]+\"}[5m]))",
           "legendFormat": "TX",
           "range": true,
           "refId": "B"
@@ -529,14 +529,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "rate(node_disk_read_bytes_total{job=\"macmini_node\",instance=\"$instance\",device!~\"loop.*|ram.*\"}[5m])",
+          "expr": "rate(node_disk_read_bytes_total{job=\"macmini_node\",instance=\"$instance\",device=~\"disk[0-9]+\"}[5m])",
           "legendFormat": "{{device}} read",
           "range": true,
           "refId": "A"
         },
         {
           "editorMode": "code",
-          "expr": "rate(node_disk_written_bytes_total{job=\"macmini_node\",instance=\"$instance\",device!~\"loop.*|ram.*\"}[5m])",
+          "expr": "rate(node_disk_written_bytes_total{job=\"macmini_node\",instance=\"$instance\",device=~\"disk[0-9]+\"}[5m])",
           "legendFormat": "{{device}} write",
           "range": true,
           "refId": "B"

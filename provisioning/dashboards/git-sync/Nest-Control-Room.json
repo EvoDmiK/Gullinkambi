@@ -3483,7 +3483,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "sum(rate(node_network_receive_bytes_total{job=\"node_exporter\",instance=\"$nas_instance\",device!~\"lo|veth.*|docker.*|br-.*\"}[5m]))",
+                        "expr": "sum(rate(node_network_receive_bytes_total{job=\"node_exporter\",instance=\"$nas_instance\",device=~\"en[0-9]+\"}[5m]))",
                         "interval": "",
                         "legendFormat": "RX",
                         "range": true
@@ -3505,7 +3505,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "-sum(rate(node_network_transmit_bytes_total{job=\"node_exporter\",instance=\"$nas_instance\",device!~\"lo|veth.*|docker.*|br-.*\"}[5m]))",
+                        "expr": "-sum(rate(node_network_transmit_bytes_total{job=\"node_exporter\",instance=\"$nas_instance\",device=~\"en[0-9]+\"}[5m]))",
                         "interval": "",
                         "legendFormat": "TX",
                         "range": true
@@ -3629,7 +3629,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "rate(node_disk_read_bytes_total{job=\"node_exporter\",instance=\"$nas_instance\",device!~\"loop.*|ram.*\"}[5m])",
+                        "expr": "rate(node_disk_read_bytes_total{job=\"node_exporter\",instance=\"$nas_instance\",device=~\"disk[0-9]+\"}[5m])",
                         "interval": "",
                         "legendFormat": "{{device}} read",
                         "range": true
@@ -3651,7 +3651,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "rate(node_disk_written_bytes_total{job=\"node_exporter\",instance=\"$nas_instance\",device!~\"loop.*|ram.*\"}[5m])",
+                        "expr": "rate(node_disk_written_bytes_total{job=\"node_exporter\",instance=\"$nas_instance\",device=~\"disk[0-9]+\"}[5m])",
                         "interval": "",
                         "legendFormat": "{{device}} write",
                         "range": true
@@ -4032,7 +4032,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "100 * (1 - node_memory_MemAvailable_bytes{job=\"macmini_node\",instance=\"$macmini_instance\"} / node_memory_MemTotal_bytes{job=\"macmini_node\",instance=\"$macmini_instance\"})",
+                        "expr": "100 * macos_memory_used_bytes{instance=\"$macmini_instance\"} / macos_memory_total_bytes{instance=\"$macmini_instance\"}",
                         "instant": true,
                         "interval": "",
                         "legendFormat": "RAM",
@@ -4121,7 +4121,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max(100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/host/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/host/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)\"}))",
+                        "expr": "max(100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"}))",
                         "instant": true,
                         "interval": "",
                         "legendFormat": "Disk",
@@ -4591,7 +4591,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "node_memory_MemTotal_bytes{job=\"macmini_node\",instance=\"$macmini_instance\"} - node_memory_MemAvailable_bytes{job=\"macmini_node\",instance=\"$macmini_instance\"}",
+                        "expr": "macos_memory_used_bytes{instance=\"$macmini_instance\"}",
                         "interval": "",
                         "legendFormat": "Used",
                         "range": true
@@ -4613,7 +4613,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "node_memory_MemAvailable_bytes{job=\"macmini_node\",instance=\"$macmini_instance\"}",
+                        "expr": "macos_memory_total_bytes{instance=\"$macmini_instance\"} - macos_memory_used_bytes{instance=\"$macmini_instance\"}",
                         "interval": "",
                         "legendFormat": "Available",
                         "range": true
@@ -4737,7 +4737,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/host/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs\",mountpoint!~\"/host/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)\"})",
+                        "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"})",
                         "interval": "",
                         "legendFormat": "{{mountpoint}} ({{device}})",
                         "range": true
@@ -4861,7 +4861,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "sum(rate(node_network_receive_bytes_total{job=\"macmini_node\",instance=\"$macmini_instance\",device!~\"lo|veth.*|docker.*|br-.*\"}[5m]))",
+                        "expr": "sum(rate(node_network_receive_bytes_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"en[0-9]+\"}[5m]))",
                         "interval": "",
                         "legendFormat": "RX",
                         "range": true
@@ -4883,7 +4883,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "-sum(rate(node_network_transmit_bytes_total{job=\"macmini_node\",instance=\"$macmini_instance\",device!~\"lo|veth.*|docker.*|br-.*\"}[5m]))",
+                        "expr": "-sum(rate(node_network_transmit_bytes_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"en[0-9]+\"}[5m]))",
                         "interval": "",
                         "legendFormat": "TX",
                         "range": true
@@ -5007,7 +5007,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "rate(node_disk_read_bytes_total{job=\"macmini_node\",instance=\"$macmini_instance\",device!~\"loop.*|ram.*\"}[5m])",
+                        "expr": "rate(node_disk_read_bytes_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"disk[0-9]+\"}[5m])",
                         "interval": "",
                         "legendFormat": "{{device}} read",
                         "range": true
@@ -5029,7 +5029,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "rate(node_disk_written_bytes_total{job=\"macmini_node\",instance=\"$macmini_instance\",device!~\"loop.*|ram.*\"}[5m])",
+                        "expr": "rate(node_disk_written_bytes_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"disk[0-9]+\"}[5m])",
                         "interval": "",
                         "legendFormat": "{{device}} write",
                         "range": true
@@ -6598,7 +6598,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",mountpoint=~\"/opt/orbstack-guest/data|/mnt/mac\"} - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",mountpoint=~\"/opt/orbstack-guest/data|/mnt/mac\"}",
+                        "expr": "node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"}",
                         "format": "table",
                         "instant": true,
                         "interval": "",
@@ -6622,7 +6622,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",mountpoint=~\"/opt/orbstack-guest/data|/mnt/mac\"}",
+                        "expr": "node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"}",
                         "format": "table",
                         "instant": true,
                         "interval": "",
@@ -6646,7 +6646,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",mountpoint=~\"/opt/orbstack-guest/data|/mnt/mac\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",mountpoint=~\"/opt/orbstack-guest/data|/mnt/mac\"})",
+                        "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"})",
                         "format": "table",
                         "instant": true,
                         "interval": "",
@@ -6686,6 +6686,9 @@
                         "device": true,
                         "device 1": true,
                         "device 2": true,
+                        "device_error": true,
+                        "device_error 1": true,
+                        "device_error 2": true,
                         "fstype 1": true,
                         "fstype 2": true,
                         "host": true,
@@ -6718,7 +6721,7 @@
               ]
             }
           },
-          "description": "OrbStack 데이터 영역과 macOS 공유 마운트별 파일시스템과 사용량 / 전체 용량을 표시합니다. Mac 내부 SSD의 SMART 정보는 포함하지 않습니다.",
+          "description": "macOS 데이터 볼륨과 외장 볼륨별 파일시스템과 사용량 / 전체 용량을 표시합니다. Mac 내부 SSD의 SMART 정보는 포함하지 않습니다.",
           "id": 62,
           "links": [],
           "title": "Mac mini · 디스크 장치 정보",
@@ -6818,7 +6821,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "rate(node_disk_reads_completed_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"vd[a-z]+|nbd[0-9]+\"}[5m])",
+                        "expr": "rate(node_disk_reads_completed_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"disk[0-9]+\"}[5m])",
                         "interval": "",
                         "legendFormat": "{{device}} read",
                         "range": true
@@ -6840,7 +6843,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "rate(node_disk_writes_completed_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"vd[a-z]+|nbd[0-9]+\"}[5m])",
+                        "expr": "rate(node_disk_writes_completed_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"disk[0-9]+\"}[5m])",
                         "interval": "",
                         "legendFormat": "{{device}} write",
                         "range": true
@@ -6855,7 +6858,7 @@
               "transformations": []
             }
           },
-          "description": "OrbStack 장치별 초당 읽기·쓰기 작업 수입니다.",
+          "description": "Mac 디스크 장치별 초당 읽기·쓰기 작업 수입니다.",
           "id": 63,
           "links": [],
           "title": "Mac mini · 디스크 IOPS",
@@ -6964,7 +6967,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "clamp_max(rate(node_disk_io_time_seconds_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"vd[a-z]+|nbd[0-9]+\"}[5m]) * 100, 100)",
+                        "expr": "clamp_max((rate(node_disk_read_time_seconds_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"disk[0-9]+\"}[5m]) + rate(node_disk_write_time_seconds_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"disk[0-9]+\"}[5m])) * 100, 100)",
                         "interval": "",
                         "legendFormat": "{{device}}",
                         "range": true
@@ -6979,7 +6982,7 @@
               "transformations": []
             }
           },
-          "description": "OrbStack 장치가 I/O 처리에 사용된 시간의 비율입니다.",
+          "description": "Mac 디스크 장치의 읽기·쓰기 처리 시간 비율입니다. macOS에는 io_time 지표가 없어 읽기·쓰기 시간 합으로 근사하며 100%에서 자릅니다.",
           "id": 64,
           "links": [],
           "title": "Mac mini · 디스크 사용률",

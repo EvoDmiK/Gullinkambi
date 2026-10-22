@@ -189,12 +189,12 @@ GF_SERVER_ROOT_URL=https://monitoring.dove-nest.com/
 | Target | Prometheus job | Required metrics |
 | --- | --- | --- |
 | NAS system | `node_exporter` | `node_cpu_*`, `node_memory_*`, `node_filesystem_*`, `node_network_*`, `node_disk_*`, `node_load*`, `node_boot_time_seconds` |
-| Mac mini system | `macmini_node` | The same standard node exporter metrics as the NAS |
+| Mac mini system | `macmini_node`, `macmini_soc` | node exporter running natively on macOS (`brew services start node_exporter`, Darwin metrics such as `node_disk_*` on `diskN`), plus `macos_memory_*` for memory |
 | Mac mini M4 | `macmini_soc` | `macmon_cpu_*`, `macmon_gpu_*`, `macmon_ane_*`, `macmon_ram_*`, `macmon_sys_*` |
 
 The infrastructure dashboard automatically populates `NAS Instance` and `Mac mini Instance` variables. If your Prometheus job names differ, update `node_exporter`, `macmini_node`, and `macmini_soc` in the dashboard JSON to match the actual scrape jobs. The NAS `node_exporter` target must be running for the NAS system and disk panels to receive data.
 
-The current `macmini_node` target runs inside the OrbStack Linux VM, so its disk inventory, IOPS, and utilization describe OrbStack virtual block devices rather than the Mac's physical SSD. Native macOS disk/SMART monitoring requires a separate macOS collector or smartctl exporter. NAS RAID and SMART health are also outside the standard node exporter metric set and require dedicated exporters.
+The `macmini_node` target is node exporter running natively on macOS, so CPU, memory, disk, and network panels describe the Mac itself rather than the OrbStack VM (which is capped at 16 GB). macOS has no `node_disk_io_time_seconds_total`, so disk utilization is approximated from read and write time. SMART health still requires a smartctl exporter. NAS RAID and SMART health are also outside the standard node exporter metric set and require dedicated exporters.
 
 ### Nginx Proxy Manager collection requirements
 
