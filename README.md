@@ -108,6 +108,10 @@ Configure Grafana Git Sync with the following values:
 
 This path contains only the service and infrastructure monitoring dashboards. Do not point Git Sync at all of `provisioning/dashboards/` because it also contains standard dashboard JSON and provider YAML files.
 
+### NAS deployment (Jenkins)
+
+The NAS Jenkins job `Gullinkambi-NAS-Deploy` reads the root `Jenkinsfile`, polls `main` every 5 minutes, and runs on the `robingraph-nas-deploy` agent. It fast-forwards `/volume3/Gullinkambi` and restarts Grafana only when `provisioning/alerting/` changed, so no SSH step is needed after pushing to `main`.
+
 ### File provisioning
 
 Check out the repository on the Grafana host and mount the entire `provisioning/dashboards` directory read-only at the same path inside the container:

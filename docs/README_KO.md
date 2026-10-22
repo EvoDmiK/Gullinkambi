@@ -113,6 +113,10 @@ Grafana의 Git Sync 설정에서 다음 값을 지정합니다.
 
 이 경로에는 `서비스 모니터링`과 `인프라 모니터링`만 있습니다. `provisioning/dashboards/` 전체를 Git Sync 경로로 지정하면 일반 dashboard JSON과 provider YAML까지 섞이므로 사용하지 않습니다.
 
+### NAS 배포 (Jenkins)
+
+NAS Jenkins의 `Gullinkambi-NAS-Deploy` Job이 루트 `Jenkinsfile`을 읽어 `main`을 5분마다 확인하고 `robingraph-nas-deploy` 에이전트에서 실행됩니다. `/volume3/Gullinkambi`를 fast-forward로 갱신하고 `provisioning/alerting/`이 바뀐 경우에만 Grafana를 재시작하므로, `main`에 push한 뒤 SSH 작업이 필요 없습니다.
+
 ### File provisioning
 
 저장소를 Grafana 호스트에 체크아웃한 뒤 `provisioning/dashboards` 전체를 컨테이너의 같은 경로에 읽기 전용으로 마운트합니다. Docker Compose에서는 다음과 같이 구성할 수 있습니다.
