@@ -194,7 +194,7 @@ GF_SERVER_ROOT_URL=https://monitoring.dove-nest.com/
 | 대상 | Prometheus job | 필요한 메트릭 |
 | --- | --- | --- |
 | NAS 시스템 | `node_exporter` | `node_cpu_*`, `node_memory_*`, `node_filesystem_*`, `node_network_*`, `node_disk_*`, `node_load*`, `node_boot_time_seconds` |
-| Mac mini 시스템 | `macmini_node`, `macmini_soc` | macOS에서 직접 실행하는 node exporter(`brew services start node_exporter`, `diskN` 장치 등 Darwin 메트릭)와 메모리용 `macos_memory_*` |
+| Mac mini 시스템 | `macmini_node`, `macmini_soc` | macOS에서 직접 실행하는 node exporter(`brew services start node_exporter`, `diskN` 장치 등 Darwin 메트릭)와 메모리용 `macos_memory_*`, 앱별 footprint용 `macos_app_memory_bytes{app}`(상위 20개, Helper는 앱 번들 기준으로 합산) |
 | Mac mini M4 | `macmini_soc` | `macmon_cpu_*`, `macmon_gpu_*`, `macmon_ane_*`, `macmon_ram_*`, `macmon_sys_*` |
 
 인프라 대시보드는 `NAS 인스턴스`와 `Mac mini 인스턴스` 변수를 자동으로 생성합니다. Prometheus의 job 이름이 다르면 대시보드 JSON의 `node_exporter`, `macmini_node`, `macmini_soc`를 실제 scrape job 이름에 맞게 변경해야 합니다. NAS 시스템과 디스크 패널에 데이터가 들어오려면 NAS의 `node_exporter` 대상이 실행 중이어야 합니다.

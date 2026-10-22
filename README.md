@@ -189,7 +189,7 @@ GF_SERVER_ROOT_URL=https://monitoring.dove-nest.com/
 | Target | Prometheus job | Required metrics |
 | --- | --- | --- |
 | NAS system | `node_exporter` | `node_cpu_*`, `node_memory_*`, `node_filesystem_*`, `node_network_*`, `node_disk_*`, `node_load*`, `node_boot_time_seconds` |
-| Mac mini system | `macmini_node`, `macmini_soc` | node exporter running natively on macOS (`brew services start node_exporter`, Darwin metrics such as `node_disk_*` on `diskN`), plus `macos_memory_*` for memory |
+| Mac mini system | `macmini_node`, `macmini_soc` | node exporter running natively on macOS (`brew services start node_exporter`, Darwin metrics such as `node_disk_*` on `diskN`), plus `macos_memory_*` for memory and `macos_app_memory_bytes{app}` for per-app footprint (top 20, helpers grouped by app bundle) |
 | Mac mini M4 | `macmini_soc` | `macmon_cpu_*`, `macmon_gpu_*`, `macmon_ane_*`, `macmon_ram_*`, `macmon_sys_*` |
 
 The infrastructure dashboard automatically populates `NAS Instance` and `Mac mini Instance` variables. If your Prometheus job names differ, update `node_exporter`, `macmini_node`, and `macmini_soc` in the dashboard JSON to match the actual scrape jobs. The NAS `node_exporter` target must be running for the NAS system and disk panels to receive data.
