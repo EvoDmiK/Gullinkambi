@@ -171,6 +171,7 @@
                 },
                 "legend": {
                   "calcs": [
+                    "lastNotNull",
                     "mean",
                     "max"
                   ],
@@ -332,6 +333,7 @@
                 },
                 "legend": {
                   "calcs": [
+                    "lastNotNull",
                     "mean",
                     "max"
                   ],
@@ -517,6 +519,7 @@
                 },
                 "legend": {
                   "calcs": [
+                    "lastNotNull",
                     "mean",
                     "max"
                   ],
@@ -680,6 +683,7 @@
                 },
                 "legend": {
                   "calcs": [
+                    "lastNotNull",
                     "mean",
                     "max"
                   ],
@@ -847,6 +851,7 @@
                 },
                 "legend": {
                   "calcs": [
+                    "lastNotNull",
                     "mean",
                     "max"
                   ],
@@ -1209,6 +1214,7 @@
                 },
                 "legend": {
                   "calcs": [
+                    "lastNotNull",
                     "mean",
                     "max"
                   ],
@@ -1396,6 +1402,7 @@
                 },
                 "legend": {
                   "calcs": [
+                    "lastNotNull",
                     "mean",
                     "max"
                   ],
@@ -1559,6 +1566,7 @@
                 },
                 "legend": {
                   "calcs": [
+                    "lastNotNull",
                     "mean",
                     "max"
                   ],
@@ -1722,6 +1730,7 @@
                 },
                 "legend": {
                   "calcs": [
+                    "lastNotNull",
                     "mean",
                     "max"
                   ],
@@ -1883,6 +1892,7 @@
                 },
                 "legend": {
                   "calcs": [
+                    "lastNotNull",
                     "mean",
                     "max"
                   ],
