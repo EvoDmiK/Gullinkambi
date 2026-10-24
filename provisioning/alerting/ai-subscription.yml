@@ -184,3 +184,43 @@ groups:
                   query: {params: [C]}
                   reducer: {params: [], type: last}
                   type: query
+
+      - uid: gk_ai_antigravity_rejected
+        title: Antigravity request rejected by quota
+        condition: C
+        dashboardUid: dafsnnz67rw6ioc
+        panelId: 2022
+        noDataState: OK
+        execErrState: Alerting
+        for: 0s
+        annotations:
+          summary: 'Antigravity 요청 {{ $values.B.Value }}건이 할당량 초과(429)로 거부됐습니다.'
+          description: 작업이 실행되지 않았으니 할당량 초기화 뒤 다시 보내세요. Argon이면 Gemini 4 Argon 주간 할당량을 확인하세요.
+        labels: {severity: warning, service: ai-subscription, source: gullinkambi}
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              datasource: {type: prometheus, uid: PBFA97CFB590B2093}
+              editorMode: code
+              expr: 'sum(increase(ai_subscription_rejections_total{provider="antigravity"}[10m]))'
+              instant: true
+              intervalMs: 1000
+              legendFormat: rejections
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model: *reduce_last
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              <<: *threshold_lt_one
+              conditions:
+                - evaluator: {params: [0.5], type: gt}
+                  operator: {type: and}
+                  query: {params: [C]}
+                  reducer: {params: [], type: last}
+                  type: query
