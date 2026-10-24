@@ -2743,6 +2743,25 @@
                     },
                     "refId": "B"
                   }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "max(ai_subscription_quota_reset_timestamp_seconds{provider=\"antigravity\",pool=\"argon\",window=\"weekly\"} \u003e time()) * 1000",
+                        "legendFormat": "Argon 주간"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "C"
+                  }
                 }
               ],
               "queryOptions": {},
@@ -9448,6 +9467,404 @@
             "version": "13.2.1"
           }
         }
+      },
+      "panel-ai-subscription-20": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "max(ai_subscription_quota_used_percent{provider=\"antigravity\",pool=\"argon\",window=\"weekly\"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds \u003c= time()))",
+                        "legendFormat": ""
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "Gemini 4 Argon 전용 주간 할당량입니다. Pro 플랜에서는 일반 Gemini 할당량과 따로 소진되며, 다 쓰면 Argon 요청이 429로 거부됩니다.",
+          "id": 2020,
+          "links": [],
+          "title": "Antigravity Argon · 주간",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "decimals": 1,
+                  "max": 100,
+                  "min": 0,
+                  "noValue": "초기화됨 · 갱신 대기",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "light-yellow",
+                        "value": 60
+                      },
+                      {
+                        "color": "red",
+                        "value": 85
+                      },
+                      {
+                        "color": "dark-red",
+                        "value": 90
+                      }
+                    ]
+                  },
+                  "unit": "percent"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-ai-subscription-21": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "ffskrzljzwr28b"
+                      },
+                      "group": "grafana-postgresql-datasource",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "dataset": "timeseries",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "WITH days AS (\n  SELECT d::date AS day\n  FROM generate_series(now()::date - 6, now()::date, interval '1 day') AS d\n),\nusage AS (\n  SELECT usage_date AS day,\n         CASE WHEN collector_id = 'macmini-16' THEN 'orca16' ELSE 'orca32' END AS source,\n         sum(total_tokens)::double precision AS tokens\n  FROM observability.orca_usage_daily\n  WHERE agent = 'antigravity'\n    AND usage_date BETWEEN (SELECT min(day) FROM days) AND (SELECT max(day) FROM days)\n  GROUP BY 1, 2\n  UNION ALL\n  SELECT (u.sampled_at AT TIME ZONE 'Asia/Seoul')::date,\n         'hermes',\n         sum(COALESCE(u.input_tokens, 0) + COALESCE(u.output_tokens, 0))::double precision\n  FROM observability.hermes_usage_deltas u\n  JOIN observability.hermes_sessions_current s USING (session_hash)\n  WHERE s.provider LIKE 'antigravity%'\n    AND u.sampled_at \u003e= (SELECT min(day) FROM days)\n  GROUP BY 1, 2\n)\nSELECT\n  (ARRAY['월','화','수','목','금','토','일'])[extract(isodow FROM d.day)::int] || ' ' || to_char(d.day, 'MM-DD') AS \"요일\",\n  COALESCE(sum(u.tokens) FILTER (WHERE u.source = 'hermes'), 0) AS \"Hermes researcher\",\n  COALESCE(sum(u.tokens) FILTER (WHERE u.source = 'orca32'), 0) AS \"Orca · Mac mini 32\",\n  COALESCE(sum(u.tokens) FILTER (WHERE u.source = 'orca16'), 0) AS \"Orca · Mac mini 16\"\nFROM days d\nLEFT JOIN usage u ON u.day = d.day\nGROUP BY d.day\nORDER BY d.day;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "같은 Antigravity 구독을 쓰는 곳별 입력+출력 토큰입니다. Hermes는 Antigravity provider 세션의 샘플 간 증가분이라, 수집 전에 끝난 세션의 첫 샘플은 빠집니다.",
+          "id": 2021,
+          "links": [],
+          "title": "Antigravity 출처별 토큰 사용량 (최근 7일)",
+          "vizConfig": {
+            "group": "barchart",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "fillOpacity": 80,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineWidth": 1,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "sishort"
+                },
+                "overrides": []
+              },
+              "options": {
+                "barRadius": 0,
+                "barWidth": 0.83,
+                "fullHighlight": false,
+                "groupWidth": 0.7,
+                "legend": {
+                  "calcs": [
+                    "sum"
+                  ],
+                  "displayMode": "list",
+                  "overflow": "ellipsis",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "orientation": "vertical",
+                "showValue": "never",
+                "stacking": "normal",
+                "tooltip": {
+                  "hideZeros": true,
+                  "mode": "multi",
+                  "sort": "desc"
+                },
+                "xTickLabelRotation": 0,
+                "xTickLabelSpacing": 0
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-ai-subscription-22": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "sum(increase(ai_subscription_rejections_total{provider=\"antigravity\"}[$__range]))",
+                        "legendFormat": ""
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "선택 기간 동안 Mac mini 32의 agy CLI가 할당량 초과(RESOURCE_EXHAUSTED, 429)로 거부된 요청 수입니다. exporter가 시작된 뒤 새로 기록된 로그만 셉니다.",
+          "id": 2022,
+          "links": [],
+          "title": "Antigravity 할당량 거부 (429)",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "decimals": 0,
+                  "noValue": "초기화됨 · 갱신 대기",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  "unit": "none"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-ai-subscription-23": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "max(ai_subscription_last_rejection_timestamp_seconds{provider=\"antigravity\"}) * 1000",
+                        "legendFormat": "거부 시각"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "가장 최근에 Antigravity 요청이 할당량 초과로 거부된 시각입니다.",
+          "id": 2023,
+          "links": [],
+          "title": "마지막 할당량 거부",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "decimals": 0,
+                  "noValue": "exporter 시작 이후 없음",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "red",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "dateTimeAsLocal"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "horizontal",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 14,
+                  "valueSize": 28
+                },
+                "textMode": "value_and_name",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
       }
     },
     "layout": {
@@ -9516,7 +9933,7 @@
                                     "name": "panel-ai-subscription-13"
                                   },
                                   "height": 6,
-                                  "width": 12,
+                                  "width": 8,
                                   "x": 0,
                                   "y": 6
                                 }
@@ -9529,8 +9946,21 @@
                                     "name": "panel-ai-subscription-14"
                                   },
                                   "height": 6,
-                                  "width": 12,
-                                  "x": 12,
+                                  "width": 8,
+                                  "x": 8,
+                                  "y": 6
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-ai-subscription-20"
+                                  },
+                                  "height": 6,
+                                  "width": 8,
+                                  "x": 16,
                                   "y": 6
                                 }
                               }
@@ -9591,6 +10021,59 @@
                           }
                         },
                         "title": "사용 추이"
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-ai-subscription-21"
+                                  },
+                                  "height": 9,
+                                  "width": 12,
+                                  "x": 0,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-ai-subscription-22"
+                                  },
+                                  "height": 9,
+                                  "width": 6,
+                                  "x": 12,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-ai-subscription-23"
+                                  },
+                                  "height": 9,
+                                  "width": 6,
+                                  "x": 18,
+                                  "y": 0
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "title": "Antigravity 사용처와 할당량 거부"
                       }
                     },
                     {

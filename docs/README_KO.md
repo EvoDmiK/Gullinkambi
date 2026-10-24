@@ -154,8 +154,10 @@ provider 설정은 각 하위 디렉터리만 읽으며 60초마다 변경을 �
 | `ai_subscription_sessions_total` | `provider` | 단조 증가하는 세션 누적값 |
 | `ai_subscription_collector_up` | `provider`, 선택 `pool` | 최근 수집 성공은 `1`, 실패는 `0` |
 | `ai_subscription_last_success_timestamp_seconds` | `provider`, 선택 `pool` | 마지막 성공 수집 시각의 Unix timestamp(초) |
+| `ai_subscription_rejections_total` | `provider` | exporter 시작 이후 할당량 초과(HTTP 429)로 거부된 Antigravity 요청 수. agy CLI 로그에서 셉니다 |
+| `ai_subscription_last_rejection_timestamp_seconds` | `provider` | 가장 최근 할당량 거부 시각의 Unix timestamp(초) |
 
-`provider`는 `codex`, `claude`, `antigravity`, `window`는 `session`과 `weekly`를 사용합니다. Antigravity는 `pool="gemini"` 또는 `pool="third_party"`를 추가하며, 대시보드와 알림은 `gemini` pool만 다룹니다. 배포 수집기는 Codex rate limit, Claude Code OAuth 사용량 endpoint의 계정 전체 사용률(실패 시 Claude Code status line 제한), Antigravity CLI `/usage` JSON을 이 스키마로 정규화합니다. 수집기와 macOS LaunchAgent installer는 `Birds-Nest/docker-compose/monitoring/ai-subscription-exporter`에 있으며, Mac mini Prometheus가 `host.docker.internal:9819`를 scrape하고 NAS Prometheus가 federation으로 정규화 지표를 가져옵니다. 수집기는 신뢰할 수 있는 모니터링 네트워크에서만 사용하고 저장된 로그인 자격 증명을 Grafana에 노출하지 마세요.
+`provider`는 `codex`, `claude`, `antigravity`, `window`는 `session`과 `weekly`를 사용합니다. Antigravity는 `pool="gemini"`, `pool="third_party"`, `pool="argon"`(Gemini 4 Argon 전용 주간 할당량, 플랜에 있을 때만)을 추가하며, 대시보드와 알림은 `third_party`를 제외한 pool을 다룹니다. 배포 수집기는 Codex rate limit, Claude Code OAuth 사용량 endpoint의 계정 전체 사용률(실패 시 Claude Code status line 제한), Antigravity CLI `/usage` JSON을 이 스키마로 정규화합니다. 수집기와 macOS LaunchAgent installer는 `Birds-Nest/docker-compose/monitoring/ai-subscription-exporter`에 있으며, Mac mini Prometheus가 `host.docker.internal:9819`를 scrape하고 NAS Prometheus가 federation으로 정규화 지표를 가져옵니다. 수집기는 신뢰할 수 있는 모니터링 네트워크에서만 사용하고 저장된 로그인 자격 증명을 Grafana에 노출하지 마세요.
 
 수집기는 Claude Code가 macOS 키체인에 저장한 access token으로 Claude 사용량 endpoint를 5분마다(`CLAUDE_USAGE_INTERVAL_SECONDS`) 조회합니다. 토큰은 읽기만 하고 갱신하지 않으며(갱신하면 Claude Code 로그인 세션이 바뀔 수 있습니다), 로그와 지표에는 출력하지 않습니다. 이 endpoint는 공식 문서화된 API가 아니므로 조회에 실패하면 아래의 status line 캐시로 되돌아갑니다. 계정 전체 값이라 VS Code 확장 등 다른 기기·클라이언트의 사용량도 Mac mini에서 Claude Code가 실행되기를 기다리지 않고 반영됩니다.
 
@@ -173,8 +175,9 @@ AI 구독 관련 규칙은 다음과 같습니다.
 | --- | --- | --- |
 | AI subscription collector down | Codex, Claude 또는 Antigravity Gemini의 `ai_subscription_collector_up < 1` | 5분 |
 | Codex subscription data stale | Codex 마지막 성공 수집이 15분 이상 지연 | 5분 |
-| AI weekly quota high | Codex, Claude 또는 Antigravity Gemini의 주간 사용률이 50%, 70%, 85%, 95%를 넘을 때마다 주간 구간당 한 번씩 알림 | 10분 |
+| AI weekly quota high | Codex, Claude, Antigravity Gemini 또는 Argon의 주간 사용률이 50%, 70%, 85%, 95%를 넘을 때마다 주간 구간당 한 번씩 알림 | 10분 |
 | AI 5-hour quota high | Claude 또는 Antigravity Gemini의 5시간 사용률 80% 초과 (Codex는 5시간 한도 없음) | 2분 |
+| Antigravity request rejected by quota | 최근 10분 사이 `ai_subscription_rejections_total` 증가 (작업이 실행되지 않음) | 즉시 |
 
 Claude에는 아직 15분 stale 규칙을 적용하지 않습니다. 사용량 endpoint를 쓸 수 없으면 Claude Code가 메시지를 처리할 때만 갱신되는 status line 캐시로 되돌아가기 때문입니다. 이 경우 마지막 유효 스냅샷과 24시간 캐시 만료로 collector 상태를 판단합니다. Discord는 `alertname`, `service`, `severity`로 알람을 묶고 최초 알림은 30초 대기하며, 그룹 갱신은 5분, 미복구 반복 알림은 4시간 간격으로 전송합니다(주간 사용률 구간 알림은 반복하지 않음). resolved 알림도 활성화되어 있습니다. Provisioning된 Discord 전용 템플릿은 같은 그룹의 alert instance를 한 개의 색상 embed 카드로 합치고, 발생·복구 요약과 Source·Silence·Dashboard·Panel 링크만 간결하게 표시합니다.
 
