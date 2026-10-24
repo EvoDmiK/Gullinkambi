@@ -85,19 +85,13 @@ n8n과 Hermes 에이전트의 실행 상태, Hermes Kanban 작업, OpenViking, N
 │       ├── hermes-kanban/         # Hermes Kanban file provisioning JSON
 │       ├── macmini/               # Mac mini file provisioning JSON
 │       ├── openviking/            # OpenViking file provisioning JSON
-│       ├── hermes-kanban.yml      # Grafana provider 정의
-│       ├── macmini.yml
-│       └── openviking.yml
+│       └── dashboards.yml         # Grafana provider 정의
 ├── docs/                           # 프로젝트 문서
 │   └── README_KO.md                 # 한국어 README
-├── source/                         # 편집 이력 보존용 원본과 UI spec
-├── hermes-kanban-panels.sql        # Hermes Kanban 패널 쿼리 참고본
 └── README.md
 ```
 
 `provisioning/dashboards/git-sync/`의 파일은 `dashboard.grafana.app/v2` 리소스입니다. 나머지 세 디렉터리의 파일은 Grafana의 일반 dashboard JSON 형식입니다. 두 형식은 서로 바꾸어 가져올 수 없습니다.
-
-`source/`는 배포 경로가 아닙니다. `source/Nest-Control-Room.json`은 현재 Git Sync 배포본과 같지만, `source/Aviary Control Room.json`은 이전 편집 참고본입니다. 운영 대시보드를 수정할 때는 `provisioning/dashboards/` 아래의 파일을 기준으로 사용합니다.
 
 ## 적용 방법
 

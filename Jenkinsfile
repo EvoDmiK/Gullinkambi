@@ -1,4 +1,4 @@
-// NAS deploy: pull /volume3/Gullinkambi and restart Grafana only when alert provisioning changed.
+// NAS deploy: pull /volume3/Gullinkambi and restart Grafana only when alerting or dashboard provider yml changed.
 // Dashboards need no restart (file providers rescan every 60s; Nest-Control-Room uses Git Sync).
 pipeline {
     agent { label 'robingraph-nas-deploy' }
@@ -21,7 +21,7 @@ pipeline {
                     git pull --ff-only origin main
                     new=$(git rev-parse HEAD)
                     echo "Gullinkambi ${old} -> ${new}"
-                    if git diff --name-only "$old" "$new" -- provisioning/alerting | grep -q .; then
+                    if git diff --name-only "$old" "$new" -- provisioning/alerting 'provisioning/dashboards/*.yml' | grep -q .; then
                         docker restart grafana
                     fi
                 '''

@@ -80,19 +80,13 @@ The project is named after Gullinkambi, the rooster from Norse mythology. In the
 │       ├── hermes-kanban/         # Hermes Kanban file-provisioned dashboard JSON
 │       ├── macmini/               # Mac mini file-provisioned dashboard JSON
 │       ├── openviking/            # OpenViking file-provisioned dashboard JSON
-│       ├── hermes-kanban.yml      # Grafana provider definition
-│       ├── macmini.yml
-│       └── openviking.yml
+│       └── dashboards.yml         # Grafana provider definition
 ├── docs/                           # Project documentation
 │   └── README_KO.md               # Korean README
-├── source/                         # Original files and UI specs retained for editing history
-├── hermes-kanban-panels.sql        # Reference queries for Hermes Kanban panels
 └── README.md
 ~~~
 
 Files under `provisioning/dashboards/git-sync/` use the `dashboard.grafana.app/v2` resource format. The other three directories use Grafana's standard dashboard JSON format. These formats are not interchangeable.
-
-`source/` is not a deployment path. `source/Nest-Control-Room.json` mirrors the current Git Sync resource, while `source/Aviary Control Room.json` is retained as an earlier editing reference. Make production dashboard changes under `provisioning/dashboards/`.
 
 ## Deployment
 
