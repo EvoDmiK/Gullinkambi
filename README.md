@@ -27,6 +27,7 @@ The project is named after Gullinkambi, the rooster from Norse mythology. In the
 
 - Shows recent and active runs, success rate, failure trends, and P50/P95 execution times at a glance.
 - Includes workflow-level success rates, recent failures, collection health, and external API errors for investigating automation issues.
+- The n8n tab also includes a workflow error log row: error count and trend, structured Error Observer events, and n8n container logs from Loki. The n8n workflow filter applies to Error Observer panels; container logs remain unfiltered.
 
 #### 1-2. Hermes Agent monitoring
 
