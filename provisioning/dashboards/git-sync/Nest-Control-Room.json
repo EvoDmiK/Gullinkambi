@@ -4307,7 +4307,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max({__name__=~\"macmon_(cpu|gpu)_temp_celsius\",job=\"macmini_soc\"})",
+                        "expr": "max({__name__=~\"macmon_(cpu|gpu)_temp_celsius\",job=\"macmini_soc\",instance=\"$macmini_instance\"})",
                         "interval": "",
                         "legendFormat": "Temperature",
                         "range": true
@@ -4395,7 +4395,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_gpu_scaled_ratio{job=\"macmini_soc\"} * 100",
+                        "expr": "macmon_gpu_scaled_ratio{job=\"macmini_soc\",instance=\"$macmini_instance\"} * 100",
                         "interval": "",
                         "legendFormat": "GPU",
                         "range": true
@@ -5343,7 +5343,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_cpu_power_watts{job=\"macmini_soc\"}",
+                        "expr": "macmon_cpu_power_watts{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
                         "interval": "",
                         "legendFormat": "CPU",
                         "range": true
@@ -5365,7 +5365,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_gpu_power_watts{job=\"macmini_soc\"}",
+                        "expr": "macmon_gpu_power_watts{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
                         "interval": "",
                         "legendFormat": "GPU",
                         "range": true
@@ -5387,7 +5387,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_ane_power_watts{job=\"macmini_soc\"}",
+                        "expr": "macmon_ane_power_watts{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
                         "interval": "",
                         "legendFormat": "ANE",
                         "range": true
@@ -5409,7 +5409,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_ram_power_watts{job=\"macmini_soc\"}",
+                        "expr": "macmon_ram_power_watts{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
                         "interval": "",
                         "legendFormat": "RAM",
                         "range": true
@@ -5431,7 +5431,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_sys_power_watts{job=\"macmini_soc\"}",
+                        "expr": "macmon_sys_power_watts{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
                         "interval": "",
                         "legendFormat": "System",
                         "range": true
@@ -5556,7 +5556,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_ecpu_freq_mhz{job=\"macmini_soc\"}",
+                        "expr": "macmon_ecpu_freq_mhz{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
                         "interval": "",
                         "legendFormat": "E-core",
                         "range": true
@@ -5578,7 +5578,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_pcpu_freq_mhz{job=\"macmini_soc\"}",
+                        "expr": "macmon_pcpu_freq_mhz{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
                         "interval": "",
                         "legendFormat": "P-core",
                         "range": true
@@ -5600,7 +5600,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_gpu_freq_mhz{job=\"macmini_soc\"}",
+                        "expr": "macmon_gpu_freq_mhz{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
                         "interval": "",
                         "legendFormat": "GPU",
                         "range": true
@@ -5725,7 +5725,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_cpu_scaled_ratio{job=\"macmini_soc\"} * 100",
+                        "expr": "macmon_cpu_scaled_ratio{job=\"macmini_soc\",instance=\"$macmini_instance\"} * 100",
                         "interval": "",
                         "legendFormat": "CPU total",
                         "range": true
@@ -5747,7 +5747,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_ecpu_scaled_ratio{job=\"macmini_soc\"} * 100",
+                        "expr": "macmon_ecpu_scaled_ratio{job=\"macmini_soc\",instance=\"$macmini_instance\"} * 100",
                         "interval": "",
                         "legendFormat": "E-core",
                         "range": true
@@ -5769,7 +5769,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_pcpu_scaled_ratio{job=\"macmini_soc\"} * 100",
+                        "expr": "macmon_pcpu_scaled_ratio{job=\"macmini_soc\",instance=\"$macmini_instance\"} * 100",
                         "interval": "",
                         "legendFormat": "P-core",
                         "range": true
@@ -5791,7 +5791,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_gpu_scaled_ratio{job=\"macmini_soc\"} * 100",
+                        "expr": "macmon_gpu_scaled_ratio{job=\"macmini_soc\",instance=\"$macmini_instance\"} * 100",
                         "interval": "",
                         "legendFormat": "GPU",
                         "range": true
@@ -5916,7 +5916,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_cpu_temp_celsius{job=\"macmini_soc\"}",
+                        "expr": "macmon_cpu_temp_celsius{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
                         "interval": "",
                         "legendFormat": "CPU",
                         "range": true
@@ -5938,7 +5938,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_gpu_temp_celsius{job=\"macmini_soc\"}",
+                        "expr": "macmon_gpu_temp_celsius{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
                         "interval": "",
                         "legendFormat": "GPU",
                         "range": true

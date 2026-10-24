@@ -310,7 +310,7 @@ groups:
         execErrState: Alerting
         for: 3m
         annotations:
-          summary: Mac mini CPU 또는 GPU 온도가 95°C를 초과했습니다.
+          summary: "{{ $labels.instance }} CPU 또는 GPU 온도가 95°C를 초과했습니다."
           description: 냉각 상태와 고부하 프로세스를 확인하세요.
         labels: {severity: critical, service: macmini-thermal, source: gullinkambi}
         data:
@@ -320,7 +320,7 @@ groups:
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
               editorMode: code
-              expr: 'max({__name__=~"macmon_(cpu|gpu)_temp_celsius",job="macmini_soc"})'
+              expr: 'max by (instance) ({__name__=~"macmon_(cpu|gpu)_temp_celsius",job="macmini_soc"})'
               instant: true
               intervalMs: 1000
               legendFormat: temperature

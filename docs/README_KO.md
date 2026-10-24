@@ -195,7 +195,7 @@ GF_SERVER_ROOT_URL=https://monitoring.dove-nest.com/
 | Mac mini 시스템 | `macmini_node`, `macmini_soc` | macOS에서 직접 실행하는 node exporter(`brew services start node_exporter`, `diskN` 장치 등 Darwin 메트릭)와 메모리용 `macos_memory_*`, 앱별 footprint용 `macos_app_memory_bytes{app}`(상위 20개, Helper는 앱 번들 기준으로 합산) |
 | Mac mini M4 | `macmini_soc` | `macmon_cpu_*`, `macmon_gpu_*`, `macmon_ane_*`, `macmon_ram_*`, `macmon_sys_*` |
 
-인프라 대시보드는 `NAS 인스턴스`와 `Mac mini 인스턴스` 변수를 자동으로 생성합니다. Prometheus의 job 이름이 다르면 대시보드 JSON의 `node_exporter`, `macmini_node`, `macmini_soc`를 실제 scrape job 이름에 맞게 변경해야 합니다. NAS 시스템과 디스크 패널에 데이터가 들어오려면 NAS의 `node_exporter` 대상이 실행 중이어야 합니다.
+인프라 대시보드는 `NAS 인스턴스`와 `Mac mini 인스턴스` 변수를 자동으로 생성합니다. Prometheus의 job 이름이 다르면 대시보드 JSON의 `node_exporter`, `macmini_node`, `macmini_soc`를 실제 scrape job 이름에 맞게 변경해야 합니다. Mac mini 16(`macmini-16`)도 같은 exporter 세 개를 실행하므로 `Mac mini 인스턴스`에서 선택할 수 있습니다. Docker 패널은 cAdvisor가 있는 Mac mini 32만 표시합니다. NAS 시스템과 디스크 패널에 데이터가 들어오려면 NAS의 `node_exporter` 대상이 실행 중이어야 합니다.
 
 `macmini_node` 대상은 macOS에서 직접 실행하는 node exporter이므로 CPU, 메모리, 디스크, 네트워크 패널은 16GB로 제한된 OrbStack VM이 아니라 Mac 본체를 나타냅니다. macOS에는 `node_disk_io_time_seconds_total`이 없어 디스크 사용률은 읽기·쓰기 시간으로 근사합니다. SMART 상태는 여전히 smartctl exporter가 필요합니다. NAS의 RAID·SMART 상태도 표준 node exporter 범위에 포함되지 않으므로 전용 exporter가 필요합니다.
 
