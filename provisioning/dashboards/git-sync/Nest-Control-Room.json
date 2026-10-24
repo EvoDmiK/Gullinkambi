@@ -3959,7 +3959,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "clamp_max(clamp_min(100 * (1 - avg(rate(node_cpu_seconds_total{job=\"macmini_node\",instance=\"$macmini_instance\",mode=\"idle\"}[5m]))), 0), 100)",
+                        "expr": "clamp_max(clamp_min(100 * (1 - avg(rate(node_cpu_seconds_total{job=\"macmini_node\",instance=\"macmini\",mode=\"idle\"}[5m]))), 0), 100)",
                         "instant": true,
                         "interval": "",
                         "legendFormat": "CPU",
@@ -3978,7 +3978,7 @@
           "description": "최근 5분 평균 CPU 사용률입니다.",
           "id": 43,
           "links": [],
-          "title": "Mac mini · CPU 사용률",
+          "title": "Mac mini 32 · CPU 사용률",
           "vizConfig": {
             "group": "stat",
             "kind": "VizConfig",
@@ -4048,7 +4048,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "100 * macos_memory_used_bytes{instance=\"$macmini_instance\"} / macos_memory_total_bytes{instance=\"$macmini_instance\"}",
+                        "expr": "100 * macos_memory_used_bytes{instance=\"macmini\"} / macos_memory_total_bytes{instance=\"macmini\"}",
                         "instant": true,
                         "interval": "",
                         "legendFormat": "RAM",
@@ -4067,7 +4067,7 @@
           "description": "사용 가능한 메모리를 기준으로 계산한 RAM 사용률입니다.",
           "id": 44,
           "links": [],
-          "title": "Mac mini · RAM 사용률",
+          "title": "Mac mini 32 · RAM 사용률",
           "vizConfig": {
             "group": "stat",
             "kind": "VizConfig",
@@ -4137,7 +4137,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max(100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"}))",
+                        "expr": "max(100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"macmini\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"macmini\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"}))",
                         "instant": true,
                         "interval": "",
                         "legendFormat": "Disk",
@@ -4156,7 +4156,7 @@
           "description": "임시·컨테이너 파일시스템을 제외한 마운트 지점 중 가장 높은 사용률입니다.",
           "id": 45,
           "links": [],
-          "title": "Mac mini · 디스크 최대 사용률",
+          "title": "Mac mini 32 · 디스크 최대 사용률",
           "vizConfig": {
             "group": "stat",
             "kind": "VizConfig",
@@ -4226,7 +4226,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "time() - node_boot_time_seconds{job=\"macmini_node\",instance=\"$macmini_instance\"}",
+                        "expr": "time() - node_boot_time_seconds{job=\"macmini_node\",instance=\"macmini\"}",
                         "instant": true,
                         "interval": "",
                         "legendFormat": "Uptime",
@@ -4245,7 +4245,7 @@
           "description": "Mac mini가 마지막으로 부팅된 이후의 경과 시간입니다.",
           "id": 46,
           "links": [],
-          "title": "Mac mini · 업타임",
+          "title": "Mac mini 32 · 업타임",
           "vizConfig": {
             "group": "stat",
             "kind": "VizConfig",
@@ -4307,7 +4307,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max({__name__=~\"macmon_(cpu|gpu)_temp_celsius\",job=\"macmini_soc\",instance=\"$macmini_instance\"})",
+                        "expr": "max({__name__=~\"macmon_(cpu|gpu)_temp_celsius\",job=\"macmini_soc\",instance=\"macmini\"})",
                         "interval": "",
                         "legendFormat": "Temperature",
                         "range": true
@@ -4325,7 +4325,7 @@
           "description": "macmon이 수집한 CPU·GPU 온도 중 최댓값입니다.",
           "id": 47,
           "links": [],
-          "title": "Mac mini · 최고 온도",
+          "title": "Mac mini 32 · 최고 온도",
           "vizConfig": {
             "group": "stat",
             "kind": "VizConfig",
@@ -4395,7 +4395,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_gpu_scaled_ratio{job=\"macmini_soc\",instance=\"$macmini_instance\"} * 100",
+                        "expr": "macmon_gpu_scaled_ratio{job=\"macmini_soc\",instance=\"macmini\"} * 100",
                         "interval": "",
                         "legendFormat": "GPU",
                         "range": true
@@ -4413,7 +4413,7 @@
           "description": "macmon이 수집한 Apple GPU 사용률입니다.",
           "id": 48,
           "links": [],
-          "title": "Mac mini · Apple GPU 사용률",
+          "title": "Mac mini 32 · Apple GPU 사용률",
           "vizConfig": {
             "group": "stat",
             "kind": "VizConfig",
@@ -4483,7 +4483,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "clamp_max(clamp_min(avg by (mode) (rate(node_cpu_seconds_total{job=\"macmini_node\",instance=\"$macmini_instance\",mode!=\"idle\"}[5m])) * 100, 0), 100)",
+                        "expr": "clamp_max(clamp_min(avg by (mode) (rate(node_cpu_seconds_total{job=\"macmini_node\",instance=\"macmini\",mode!=\"idle\"}[5m])) * 100, 0), 100)",
                         "interval": "",
                         "legendFormat": "{{mode}}",
                         "range": true
@@ -4501,7 +4501,7 @@
           "description": "idle을 제외한 CPU 사용률을 모드별로 표시합니다.",
           "id": 49,
           "links": [],
-          "title": "Mac mini · CPU 모드별 사용률",
+          "title": "Mac mini 32 · CPU 모드별 사용률",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -4608,7 +4608,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macos_memory_used_bytes{instance=\"$macmini_instance\"}",
+                        "expr": "macos_memory_used_bytes{instance=\"macmini\"}",
                         "interval": "",
                         "legendFormat": "Used",
                         "range": true
@@ -4630,7 +4630,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macos_memory_total_bytes{instance=\"$macmini_instance\"} - macos_memory_used_bytes{instance=\"$macmini_instance\"}",
+                        "expr": "macos_memory_total_bytes{instance=\"macmini\"} - macos_memory_used_bytes{instance=\"macmini\"}",
                         "interval": "",
                         "legendFormat": "Available",
                         "range": true
@@ -4648,7 +4648,7 @@
           "description": "사용 중인 메모리와 사용 가능한 메모리입니다.",
           "id": 50,
           "links": [],
-          "title": "Mac mini · 메모리",
+          "title": "Mac mini 32 · 메모리",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -4755,7 +4755,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"})",
+                        "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"macmini\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"macmini\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"})",
                         "interval": "",
                         "legendFormat": "{{mountpoint}} ({{device}})",
                         "range": true
@@ -4773,7 +4773,7 @@
           "description": "임시·컨테이너 파일시스템을 제외한 마운트 지점별 사용률입니다.",
           "id": 51,
           "links": [],
-          "title": "Mac mini · 파일시스템 사용률",
+          "title": "Mac mini 32 · 파일시스템 사용률",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -4880,7 +4880,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "sum(rate(node_network_receive_bytes_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"en[0-9]+\"}[5m]))",
+                        "expr": "sum(rate(node_network_receive_bytes_total{job=\"macmini_node\",instance=\"macmini\",device=~\"en[0-9]+\"}[5m]))",
                         "interval": "",
                         "legendFormat": "RX",
                         "range": true
@@ -4902,7 +4902,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "-sum(rate(node_network_transmit_bytes_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"en[0-9]+\"}[5m]))",
+                        "expr": "-sum(rate(node_network_transmit_bytes_total{job=\"macmini_node\",instance=\"macmini\",device=~\"en[0-9]+\"}[5m]))",
                         "interval": "",
                         "legendFormat": "TX",
                         "range": true
@@ -4920,7 +4920,7 @@
           "description": "루프백과 컨테이너 가상 인터페이스를 제외한 네트워크 송수신량입니다.",
           "id": 52,
           "links": [],
-          "title": "Mac mini · 네트워크 트래픽",
+          "title": "Mac mini 32 · 네트워크 트래픽",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -5027,7 +5027,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "rate(node_disk_read_bytes_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"disk[0-9]+\"}[5m])",
+                        "expr": "rate(node_disk_read_bytes_total{job=\"macmini_node\",instance=\"macmini\",device=~\"disk[0-9]+\"}[5m])",
                         "interval": "",
                         "legendFormat": "{{device}} read",
                         "range": true
@@ -5049,7 +5049,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "rate(node_disk_written_bytes_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"disk[0-9]+\"}[5m])",
+                        "expr": "rate(node_disk_written_bytes_total{job=\"macmini_node\",instance=\"macmini\",device=~\"disk[0-9]+\"}[5m])",
                         "interval": "",
                         "legendFormat": "{{device}} write",
                         "range": true
@@ -5067,7 +5067,7 @@
           "description": "장치별 읽기·쓰기 처리량입니다.",
           "id": 53,
           "links": [],
-          "title": "Mac mini · 디스크 I/O",
+          "title": "Mac mini 32 · 디스크 I/O",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -5174,7 +5174,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "node_load1{job=\"macmini_node\",instance=\"$macmini_instance\"}",
+                        "expr": "node_load1{job=\"macmini_node\",instance=\"macmini\"}",
                         "interval": "",
                         "legendFormat": "1m",
                         "range": true
@@ -5196,7 +5196,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "node_load5{job=\"macmini_node\",instance=\"$macmini_instance\"}",
+                        "expr": "node_load5{job=\"macmini_node\",instance=\"macmini\"}",
                         "interval": "",
                         "legendFormat": "5m",
                         "range": true
@@ -5218,7 +5218,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "node_load15{job=\"macmini_node\",instance=\"$macmini_instance\"}",
+                        "expr": "node_load15{job=\"macmini_node\",instance=\"macmini\"}",
                         "interval": "",
                         "legendFormat": "15m",
                         "range": true
@@ -5236,7 +5236,7 @@
           "description": "1분·5분·15분 시스템 부하 평균입니다.",
           "id": 54,
           "links": [],
-          "title": "Mac mini · 시스템 Load Average",
+          "title": "Mac mini 32 · 시스템 Load Average",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -5343,7 +5343,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_cpu_power_watts{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
+                        "expr": "macmon_cpu_power_watts{job=\"macmini_soc\",instance=\"macmini\"}",
                         "interval": "",
                         "legendFormat": "CPU",
                         "range": true
@@ -5365,7 +5365,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_gpu_power_watts{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
+                        "expr": "macmon_gpu_power_watts{job=\"macmini_soc\",instance=\"macmini\"}",
                         "interval": "",
                         "legendFormat": "GPU",
                         "range": true
@@ -5387,7 +5387,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_ane_power_watts{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
+                        "expr": "macmon_ane_power_watts{job=\"macmini_soc\",instance=\"macmini\"}",
                         "interval": "",
                         "legendFormat": "ANE",
                         "range": true
@@ -5409,7 +5409,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_ram_power_watts{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
+                        "expr": "macmon_ram_power_watts{job=\"macmini_soc\",instance=\"macmini\"}",
                         "interval": "",
                         "legendFormat": "RAM",
                         "range": true
@@ -5431,7 +5431,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_sys_power_watts{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
+                        "expr": "macmon_sys_power_watts{job=\"macmini_soc\",instance=\"macmini\"}",
                         "interval": "",
                         "legendFormat": "System",
                         "range": true
@@ -5449,7 +5449,7 @@
           "description": "CPU·GPU·ANE·RAM 및 시스템 전력 사용량입니다.",
           "id": 55,
           "links": [],
-          "title": "Mac mini · M4 전력 사용량",
+          "title": "Mac mini 32 · M4 전력 사용량",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -5556,7 +5556,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_ecpu_freq_mhz{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
+                        "expr": "macmon_ecpu_freq_mhz{job=\"macmini_soc\",instance=\"macmini\"}",
                         "interval": "",
                         "legendFormat": "E-core",
                         "range": true
@@ -5578,7 +5578,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_pcpu_freq_mhz{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
+                        "expr": "macmon_pcpu_freq_mhz{job=\"macmini_soc\",instance=\"macmini\"}",
                         "interval": "",
                         "legendFormat": "P-core",
                         "range": true
@@ -5600,7 +5600,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_gpu_freq_mhz{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
+                        "expr": "macmon_gpu_freq_mhz{job=\"macmini_soc\",instance=\"macmini\"}",
                         "interval": "",
                         "legendFormat": "GPU",
                         "range": true
@@ -5618,7 +5618,7 @@
           "description": "E-core·P-core 및 GPU 동작 주파수입니다.",
           "id": 56,
           "links": [],
-          "title": "Mac mini · M4 동작 주파수",
+          "title": "Mac mini 32 · M4 동작 주파수",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -5725,7 +5725,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_cpu_scaled_ratio{job=\"macmini_soc\",instance=\"$macmini_instance\"} * 100",
+                        "expr": "macmon_cpu_scaled_ratio{job=\"macmini_soc\",instance=\"macmini\"} * 100",
                         "interval": "",
                         "legendFormat": "CPU total",
                         "range": true
@@ -5747,7 +5747,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_ecpu_scaled_ratio{job=\"macmini_soc\",instance=\"$macmini_instance\"} * 100",
+                        "expr": "macmon_ecpu_scaled_ratio{job=\"macmini_soc\",instance=\"macmini\"} * 100",
                         "interval": "",
                         "legendFormat": "E-core",
                         "range": true
@@ -5769,7 +5769,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_pcpu_scaled_ratio{job=\"macmini_soc\",instance=\"$macmini_instance\"} * 100",
+                        "expr": "macmon_pcpu_scaled_ratio{job=\"macmini_soc\",instance=\"macmini\"} * 100",
                         "interval": "",
                         "legendFormat": "P-core",
                         "range": true
@@ -5791,7 +5791,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_gpu_scaled_ratio{job=\"macmini_soc\",instance=\"$macmini_instance\"} * 100",
+                        "expr": "macmon_gpu_scaled_ratio{job=\"macmini_soc\",instance=\"macmini\"} * 100",
                         "interval": "",
                         "legendFormat": "GPU",
                         "range": true
@@ -5809,7 +5809,7 @@
           "description": "M4 CPU·E-core·P-core 및 GPU 사용률입니다.",
           "id": 57,
           "links": [],
-          "title": "Mac mini · M4 CPU / GPU 사용률",
+          "title": "Mac mini 32 · M4 CPU / GPU 사용률",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -5916,7 +5916,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_cpu_temp_celsius{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
+                        "expr": "macmon_cpu_temp_celsius{job=\"macmini_soc\",instance=\"macmini\"}",
                         "interval": "",
                         "legendFormat": "CPU",
                         "range": true
@@ -5938,7 +5938,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "macmon_gpu_temp_celsius{job=\"macmini_soc\",instance=\"$macmini_instance\"}",
+                        "expr": "macmon_gpu_temp_celsius{job=\"macmini_soc\",instance=\"macmini\"}",
                         "interval": "",
                         "legendFormat": "GPU",
                         "range": true
@@ -5956,7 +5956,7 @@
           "description": "M4 CPU와 GPU 온도입니다.",
           "id": 58,
           "links": [],
-          "title": "Mac mini · M4 CPU / GPU 온도",
+          "title": "Mac mini 32 · M4 CPU / GPU 온도",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -6626,7 +6626,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"}",
+                        "expr": "node_filesystem_size_bytes{job=\"macmini_node\",instance=\"macmini\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"macmini\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"}",
                         "format": "table",
                         "instant": true,
                         "interval": "",
@@ -6650,7 +6650,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"}",
+                        "expr": "node_filesystem_size_bytes{job=\"macmini_node\",instance=\"macmini\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"}",
                         "format": "table",
                         "instant": true,
                         "interval": "",
@@ -6674,7 +6674,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"$macmini_instance\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"})",
+                        "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"macmini\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"macmini\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"})",
                         "format": "table",
                         "instant": true,
                         "interval": "",
@@ -6752,7 +6752,7 @@
           "description": "macOS 데이터 볼륨과 외장 볼륨별 파일시스템과 사용량 / 전체 용량을 표시합니다. Mac 내부 SSD의 SMART 정보는 포함하지 않습니다.",
           "id": 62,
           "links": [],
-          "title": "Mac mini · 디스크 장치 정보",
+          "title": "Mac mini 32 · 디스크 장치 정보",
           "vizConfig": {
             "group": "table",
             "kind": "VizConfig",
@@ -6849,7 +6849,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "rate(node_disk_reads_completed_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"disk[0-9]+\"}[5m])",
+                        "expr": "rate(node_disk_reads_completed_total{job=\"macmini_node\",instance=\"macmini\",device=~\"disk[0-9]+\"}[5m])",
                         "interval": "",
                         "legendFormat": "{{device}} read",
                         "range": true
@@ -6871,7 +6871,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "rate(node_disk_writes_completed_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"disk[0-9]+\"}[5m])",
+                        "expr": "rate(node_disk_writes_completed_total{job=\"macmini_node\",instance=\"macmini\",device=~\"disk[0-9]+\"}[5m])",
                         "interval": "",
                         "legendFormat": "{{device}} write",
                         "range": true
@@ -6889,7 +6889,7 @@
           "description": "Mac 디스크 장치별 초당 읽기·쓰기 작업 수입니다.",
           "id": 63,
           "links": [],
-          "title": "Mac mini · 디스크 IOPS",
+          "title": "Mac mini 32 · 디스크 IOPS",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -6996,7 +6996,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "clamp_max((rate(node_disk_read_time_seconds_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"disk[0-9]+\"}[5m]) + rate(node_disk_write_time_seconds_total{job=\"macmini_node\",instance=\"$macmini_instance\",device=~\"disk[0-9]+\"}[5m])) * 100, 100)",
+                        "expr": "clamp_max((rate(node_disk_read_time_seconds_total{job=\"macmini_node\",instance=\"macmini\",device=~\"disk[0-9]+\"}[5m]) + rate(node_disk_write_time_seconds_total{job=\"macmini_node\",instance=\"macmini\",device=~\"disk[0-9]+\"}[5m])) * 100, 100)",
                         "interval": "",
                         "legendFormat": "{{device}}",
                         "range": true
@@ -7014,7 +7014,7 @@
           "description": "Mac 디스크 장치의 읽기·쓰기 처리 시간 비율입니다. macOS에는 io_time 지표가 없어 읽기·쓰기 시간 합으로 근사하며 100%에서 자릅니다.",
           "id": 64,
           "links": [],
-          "title": "Mac mini · 디스크 사용률",
+          "title": "Mac mini 32 · 디스크 사용률",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -9479,7 +9479,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "sort_desc(topk(15, macos_app_memory_bytes{instance=\"$macmini_instance\",app!=\"other\"}))",
+                        "expr": "sort_desc(topk(15, macos_app_memory_bytes{instance=\"macmini\",app!=\"other\"}))",
                         "legendFormat": "{{app}}",
                         "instant": true
                       },
@@ -9496,7 +9496,7 @@
           "description": "Activity Monitor와 같은 기준(물리 footprint)으로 앱별 현재 메모리 사용량 상위 15개를 표시합니다. Helper 프로세스는 소속 앱으로 합칩니다. OrbStack에는 Docker 컨테이너 전체가 포함됩니다.",
           "id": 87,
           "links": [],
-          "title": "Mac mini · 앱별 메모리 (현재)",
+          "title": "Mac mini 32 · 앱별 메모리 (현재)",
           "vizConfig": {
             "group": "bargauge",
             "kind": "VizConfig",
@@ -9566,7 +9566,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "topk(10, macos_app_memory_bytes{instance=\"$macmini_instance\",app!=\"other\"})",
+                        "expr": "topk(10, macos_app_memory_bytes{instance=\"macmini\",app!=\"other\"})",
                         "legendFormat": "{{app}}",
                         "range": true
                       },
@@ -9583,7 +9583,7 @@
           "description": "앱별 메모리 사용량 추이입니다. 각 시점의 상위 10개 앱을 쌓아서 표시합니다.",
           "id": 88,
           "links": [],
-          "title": "Mac mini · 앱별 메모리 추이",
+          "title": "Mac mini 32 · 앱별 메모리 추이",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -9664,6 +9664,2816 @@
                   "hideZeros": false,
                   "mode": "multi",
                   "sort": "desc"
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-89": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "clamp_max(clamp_min(100 * (1 - avg(rate(node_cpu_seconds_total{job=\"macmini_node\",instance=\"macmini-16\",mode=\"idle\"}[5m]))), 0), 100)",
+                        "instant": true,
+                        "interval": "",
+                        "legendFormat": "CPU",
+                        "range": false
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "최근 5분 평균 CPU 사용률입니다.",
+          "id": 89,
+          "links": [],
+          "title": "Mac mini 16 · CPU 사용률",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "orange",
+                        "value": 75
+                      },
+                      {
+                        "color": "red",
+                        "value": 90
+                      }
+                    ]
+                  },
+                  "unit": "percent"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "value_and_name",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-90": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "100 * macos_memory_used_bytes{instance=\"macmini-16\"} / macos_memory_total_bytes{instance=\"macmini-16\"}",
+                        "instant": true,
+                        "interval": "",
+                        "legendFormat": "RAM",
+                        "range": false
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "사용 가능한 메모리를 기준으로 계산한 RAM 사용률입니다.",
+          "id": 90,
+          "links": [],
+          "title": "Mac mini 16 · RAM 사용률",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "orange",
+                        "value": 80
+                      },
+                      {
+                        "color": "red",
+                        "value": 90
+                      }
+                    ]
+                  },
+                  "unit": "percent"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "value_and_name",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-91": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max(100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"macmini-16\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"macmini-16\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"}))",
+                        "instant": true,
+                        "interval": "",
+                        "legendFormat": "Disk",
+                        "range": false
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "임시·컨테이너 파일시스템을 제외한 마운트 지점 중 가장 높은 사용률입니다.",
+          "id": 91,
+          "links": [],
+          "title": "Mac mini 16 · 디스크 최대 사용률",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "orange",
+                        "value": 80
+                      },
+                      {
+                        "color": "red",
+                        "value": 90
+                      }
+                    ]
+                  },
+                  "unit": "percent"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "value_and_name",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-92": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "time() - node_boot_time_seconds{job=\"macmini_node\",instance=\"macmini-16\"}",
+                        "instant": true,
+                        "interval": "",
+                        "legendFormat": "Uptime",
+                        "range": false
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "Mac mini가 마지막으로 부팅된 이후의 경과 시간입니다.",
+          "id": 92,
+          "links": [],
+          "title": "Mac mini 16 · 업타임",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "s"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "value_and_name",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-93": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max({__name__=~\"macmon_(cpu|gpu)_temp_celsius\",job=\"macmini_soc\",instance=\"macmini-16\"})",
+                        "interval": "",
+                        "legendFormat": "Temperature",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "macmon이 수집한 CPU·GPU 온도 중 최댓값입니다.",
+          "id": 93,
+          "links": [],
+          "title": "Mac mini 16 · 최고 온도",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "orange",
+                        "value": 80
+                      },
+                      {
+                        "color": "red",
+                        "value": 95
+                      }
+                    ]
+                  },
+                  "unit": "celsius"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "value_and_name",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-94": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "macmon_gpu_scaled_ratio{job=\"macmini_soc\",instance=\"macmini-16\"} * 100",
+                        "interval": "",
+                        "legendFormat": "GPU",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "macmon이 수집한 Apple GPU 사용률입니다.",
+          "id": 94,
+          "links": [],
+          "title": "Mac mini 16 · Apple GPU 사용률",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "orange",
+                        "value": 80
+                      },
+                      {
+                        "color": "red",
+                        "value": 95
+                      }
+                    ]
+                  },
+                  "unit": "percent"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "value_and_name",
+                "wideLayout": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-95": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "clamp_max(clamp_min(avg by (mode) (rate(node_cpu_seconds_total{job=\"macmini_node\",instance=\"macmini-16\",mode!=\"idle\"}[5m])) * 100, 0), 100)",
+                        "interval": "",
+                        "legendFormat": "{{mode}}",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "idle을 제외한 CPU 사용률을 모드별로 표시합니다.",
+          "id": 95,
+          "links": [],
+          "title": "Mac mini 16 · CPU 모드별 사용률",
+          "vizConfig": {
+            "group": "timeseries",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "percent"
+                },
+                "overrides": []
+              },
+              "options": {
+                "alertThreshold": true,
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "enableFacetedFilter": false,
+                  "overflow": "ellipsis",
+                  "placement": "right",
+                  "showLegend": true,
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-96": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "macos_memory_used_bytes{instance=\"macmini-16\"}",
+                        "interval": "",
+                        "legendFormat": "Used",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "macos_memory_total_bytes{instance=\"macmini-16\"} - macos_memory_used_bytes{instance=\"macmini-16\"}",
+                        "interval": "",
+                        "legendFormat": "Available",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "사용 중인 메모리와 사용 가능한 메모리입니다.",
+          "id": 96,
+          "links": [],
+          "title": "Mac mini 16 · 메모리",
+          "vizConfig": {
+            "group": "timeseries",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "bytes"
+                },
+                "overrides": []
+              },
+              "options": {
+                "alertThreshold": true,
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "enableFacetedFilter": false,
+                  "overflow": "ellipsis",
+                  "placement": "right",
+                  "showLegend": true,
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-97": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sort_desc(topk(15, macos_app_memory_bytes{instance=\"macmini-16\",app!=\"other\"}))",
+                        "legendFormat": "{{app}}",
+                        "instant": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "Activity Monitor와 같은 기준(물리 footprint)으로 앱별 현재 메모리 사용량 상위 15개를 표시합니다. Helper 프로세스는 소속 앱으로 합칩니다. OrbStack에는 Docker 컨테이너 전체가 포함됩니다.",
+          "id": 97,
+          "links": [],
+          "title": "Mac mini 16 · 앱별 메모리 (현재)",
+          "vizConfig": {
+            "group": "bargauge",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "continuous-YlRd"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "blue",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "bytes",
+                  "min": 0
+                },
+                "overrides": []
+              },
+              "options": {
+                "displayMode": "gradient",
+                "maxVizHeight": 28,
+                "minVizHeight": 20,
+                "minVizWidth": 8,
+                "namePlacement": "left",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showUnfilled": true,
+                "sizing": "manual",
+                "valueMode": "color",
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 13
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-98": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "topk(10, macos_app_memory_bytes{instance=\"macmini-16\",app!=\"other\"})",
+                        "legendFormat": "{{app}}",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "앱별 메모리 사용량 추이입니다. 각 시점의 상위 10개 앱을 쌓아서 표시합니다.",
+          "id": 98,
+          "links": [],
+          "title": "Mac mini 16 · 앱별 메모리 추이",
+          "vizConfig": {
+            "group": "timeseries",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 40,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "normal"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "bytes"
+                },
+                "overrides": []
+              },
+              "options": {
+                "alertThreshold": true,
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "enableFacetedFilter": false,
+                  "overflow": "ellipsis",
+                  "placement": "right",
+                  "showLegend": true,
+                  "sortBy": "Last *",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-99": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"macmini-16\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"macmini-16\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"})",
+                        "interval": "",
+                        "legendFormat": "{{mountpoint}} ({{device}})",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "임시·컨테이너 파일시스템을 제외한 마운트 지점별 사용률입니다.",
+          "id": 99,
+          "links": [],
+          "title": "Mac mini 16 · 파일시스템 사용률",
+          "vizConfig": {
+            "group": "timeseries",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "percent"
+                },
+                "overrides": []
+              },
+              "options": {
+                "alertThreshold": true,
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "enableFacetedFilter": false,
+                  "overflow": "ellipsis",
+                  "placement": "right",
+                  "showLegend": true,
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-100": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(rate(node_network_receive_bytes_total{job=\"macmini_node\",instance=\"macmini-16\",device=~\"en[0-9]+\"}[5m]))",
+                        "interval": "",
+                        "legendFormat": "RX",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "-sum(rate(node_network_transmit_bytes_total{job=\"macmini_node\",instance=\"macmini-16\",device=~\"en[0-9]+\"}[5m]))",
+                        "interval": "",
+                        "legendFormat": "TX",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "루프백과 컨테이너 가상 인터페이스를 제외한 네트워크 송수신량입니다.",
+          "id": 100,
+          "links": [],
+          "title": "Mac mini 16 · 네트워크 트래픽",
+          "vizConfig": {
+            "group": "timeseries",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "Bps"
+                },
+                "overrides": []
+              },
+              "options": {
+                "alertThreshold": true,
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "enableFacetedFilter": false,
+                  "overflow": "ellipsis",
+                  "placement": "right",
+                  "showLegend": true,
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-101": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "rate(node_disk_read_bytes_total{job=\"macmini_node\",instance=\"macmini-16\",device=~\"disk[0-9]+\"}[5m])",
+                        "interval": "",
+                        "legendFormat": "{{device}} read",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "rate(node_disk_written_bytes_total{job=\"macmini_node\",instance=\"macmini-16\",device=~\"disk[0-9]+\"}[5m])",
+                        "interval": "",
+                        "legendFormat": "{{device}} write",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "장치별 읽기·쓰기 처리량입니다.",
+          "id": 101,
+          "links": [],
+          "title": "Mac mini 16 · 디스크 I/O",
+          "vizConfig": {
+            "group": "timeseries",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "Bps"
+                },
+                "overrides": []
+              },
+              "options": {
+                "alertThreshold": true,
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "enableFacetedFilter": false,
+                  "overflow": "ellipsis",
+                  "placement": "right",
+                  "showLegend": true,
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-102": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "node_load1{job=\"macmini_node\",instance=\"macmini-16\"}",
+                        "interval": "",
+                        "legendFormat": "1m",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "node_load5{job=\"macmini_node\",instance=\"macmini-16\"}",
+                        "interval": "",
+                        "legendFormat": "5m",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "node_load15{job=\"macmini_node\",instance=\"macmini-16\"}",
+                        "interval": "",
+                        "legendFormat": "15m",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "C"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "1분·5분·15분 시스템 부하 평균입니다.",
+          "id": 102,
+          "links": [],
+          "title": "Mac mini 16 · 시스템 Load Average",
+          "vizConfig": {
+            "group": "timeseries",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "short"
+                },
+                "overrides": []
+              },
+              "options": {
+                "alertThreshold": true,
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "enableFacetedFilter": false,
+                  "overflow": "ellipsis",
+                  "placement": "right",
+                  "showLegend": true,
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-103": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "macmon_cpu_power_watts{job=\"macmini_soc\",instance=\"macmini-16\"}",
+                        "interval": "",
+                        "legendFormat": "CPU",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "macmon_gpu_power_watts{job=\"macmini_soc\",instance=\"macmini-16\"}",
+                        "interval": "",
+                        "legendFormat": "GPU",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "macmon_ane_power_watts{job=\"macmini_soc\",instance=\"macmini-16\"}",
+                        "interval": "",
+                        "legendFormat": "ANE",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "C"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "macmon_ram_power_watts{job=\"macmini_soc\",instance=\"macmini-16\"}",
+                        "interval": "",
+                        "legendFormat": "RAM",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "D"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "macmon_sys_power_watts{job=\"macmini_soc\",instance=\"macmini-16\"}",
+                        "interval": "",
+                        "legendFormat": "System",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "E"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "CPU·GPU·ANE·RAM 및 시스템 전력 사용량입니다.",
+          "id": 103,
+          "links": [],
+          "title": "Mac mini 16 · M4 전력 사용량",
+          "vizConfig": {
+            "group": "timeseries",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "watt"
+                },
+                "overrides": []
+              },
+              "options": {
+                "alertThreshold": true,
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "enableFacetedFilter": false,
+                  "overflow": "ellipsis",
+                  "placement": "right",
+                  "showLegend": true,
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-104": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "macmon_ecpu_freq_mhz{job=\"macmini_soc\",instance=\"macmini-16\"}",
+                        "interval": "",
+                        "legendFormat": "E-core",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "macmon_pcpu_freq_mhz{job=\"macmini_soc\",instance=\"macmini-16\"}",
+                        "interval": "",
+                        "legendFormat": "P-core",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "macmon_gpu_freq_mhz{job=\"macmini_soc\",instance=\"macmini-16\"}",
+                        "interval": "",
+                        "legendFormat": "GPU",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "C"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "E-core·P-core 및 GPU 동작 주파수입니다.",
+          "id": 104,
+          "links": [],
+          "title": "Mac mini 16 · M4 동작 주파수",
+          "vizConfig": {
+            "group": "timeseries",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "MHz"
+                },
+                "overrides": []
+              },
+              "options": {
+                "alertThreshold": true,
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "enableFacetedFilter": false,
+                  "overflow": "ellipsis",
+                  "placement": "right",
+                  "showLegend": true,
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-105": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "macmon_cpu_scaled_ratio{job=\"macmini_soc\",instance=\"macmini-16\"} * 100",
+                        "interval": "",
+                        "legendFormat": "CPU total",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "macmon_ecpu_scaled_ratio{job=\"macmini_soc\",instance=\"macmini-16\"} * 100",
+                        "interval": "",
+                        "legendFormat": "E-core",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "macmon_pcpu_scaled_ratio{job=\"macmini_soc\",instance=\"macmini-16\"} * 100",
+                        "interval": "",
+                        "legendFormat": "P-core",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "C"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "macmon_gpu_scaled_ratio{job=\"macmini_soc\",instance=\"macmini-16\"} * 100",
+                        "interval": "",
+                        "legendFormat": "GPU",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "D"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "M4 CPU·E-core·P-core 및 GPU 사용률입니다.",
+          "id": 105,
+          "links": [],
+          "title": "Mac mini 16 · M4 CPU / GPU 사용률",
+          "vizConfig": {
+            "group": "timeseries",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "percent"
+                },
+                "overrides": []
+              },
+              "options": {
+                "alertThreshold": true,
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "enableFacetedFilter": false,
+                  "overflow": "ellipsis",
+                  "placement": "right",
+                  "showLegend": true,
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-106": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "macmon_cpu_temp_celsius{job=\"macmini_soc\",instance=\"macmini-16\"}",
+                        "interval": "",
+                        "legendFormat": "CPU",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "macmon_gpu_temp_celsius{job=\"macmini_soc\",instance=\"macmini-16\"}",
+                        "interval": "",
+                        "legendFormat": "GPU",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "M4 CPU와 GPU 온도입니다.",
+          "id": 106,
+          "links": [],
+          "title": "Mac mini 16 · M4 CPU / GPU 온도",
+          "vizConfig": {
+            "group": "timeseries",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "celsius"
+                },
+                "overrides": []
+              },
+              "options": {
+                "alertThreshold": true,
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "enableFacetedFilter": false,
+                  "overflow": "ellipsis",
+                  "placement": "right",
+                  "showLegend": true,
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-107": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "node_filesystem_size_bytes{job=\"macmini_node\",instance=\"macmini-16\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"macmini-16\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"}",
+                        "format": "table",
+                        "instant": true,
+                        "interval": "",
+                        "legendFormat": "사용량",
+                        "range": false
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "node_filesystem_size_bytes{job=\"macmini_node\",instance=\"macmini-16\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"}",
+                        "format": "table",
+                        "instant": true,
+                        "interval": "",
+                        "legendFormat": "전체",
+                        "range": false
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"macmini_node\",instance=\"macmini-16\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"} / node_filesystem_size_bytes{job=\"macmini_node\",instance=\"macmini-16\",fstype=\"apfs\",mountpoint=~\"/System/Volumes/Data|/Volumes/[^/]+\"})",
+                        "format": "table",
+                        "instant": true,
+                        "interval": "",
+                        "legendFormat": "사용률",
+                        "range": false
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "C"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": [
+                {
+                  "group": "joinByField",
+                  "kind": "Transformation",
+                  "spec": {
+                    "options": {
+                      "byField": "mountpoint",
+                      "mode": "outerTabular"
+                    }
+                  }
+                },
+                {
+                  "group": "organize",
+                  "kind": "Transformation",
+                  "spec": {
+                    "options": {
+                      "excludeByName": {
+                        "Time": true,
+                        "Time 1": true,
+                        "Time 2": true,
+                        "__name__": true,
+                        "__name__ 1": true,
+                        "__name__ 2": true,
+                        "device": true,
+                        "device 1": true,
+                        "device 2": true,
+                        "device_error": true,
+                        "device_error 1": true,
+                        "device_error 2": true,
+                        "fstype 1": true,
+                        "fstype 2": true,
+                        "host": true,
+                        "host 1": true,
+                        "host 2": true,
+                        "instance": true,
+                        "instance 1": true,
+                        "instance 2": true,
+                        "job": true,
+                        "job 1": true,
+                        "job 2": true
+                      },
+                      "indexByName": {
+                        "Value #A": 2,
+                        "Value #B": 3,
+                        "Value #C": 4,
+                        "fstype": 1,
+                        "mountpoint": 0
+                      },
+                      "renameByName": {
+                        "Value #A": "사용량",
+                        "Value #B": "전체",
+                        "Value #C": "사용률",
+                        "fstype": "파일시스템",
+                        "mountpoint": "마운트"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "description": "macOS 데이터 볼륨과 외장 볼륨별 파일시스템과 사용량 / 전체 용량을 표시합니다. Mac 내부 SSD의 SMART 정보는 포함하지 않습니다.",
+          "id": 107,
+          "links": [],
+          "title": "Mac mini 16 · 디스크 장치 정보",
+          "vizConfig": {
+            "group": "table",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": "/^(사용량|전체|Value #A|Value #B)$/"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "bytes"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": "/^(사용률|Value #C)$/"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-108": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "rate(node_disk_reads_completed_total{job=\"macmini_node\",instance=\"macmini-16\",device=~\"disk[0-9]+\"}[5m])",
+                        "interval": "",
+                        "legendFormat": "{{device}} read",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "rate(node_disk_writes_completed_total{job=\"macmini_node\",instance=\"macmini-16\",device=~\"disk[0-9]+\"}[5m])",
+                        "interval": "",
+                        "legendFormat": "{{device}} write",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "Mac 디스크 장치별 초당 읽기·쓰기 작업 수입니다.",
+          "id": 108,
+          "links": [],
+          "title": "Mac mini 16 · 디스크 IOPS",
+          "vizConfig": {
+            "group": "timeseries",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "ops"
+                },
+                "overrides": []
+              },
+              "options": {
+                "alertThreshold": true,
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "enableFacetedFilter": false,
+                  "overflow": "ellipsis",
+                  "placement": "right",
+                  "showLegend": true,
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              }
+            },
+            "version": "13.2.1"
+          }
+        }
+      },
+      "panel-109": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "PBFA97CFB590B2093"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "clamp_max((rate(node_disk_read_time_seconds_total{job=\"macmini_node\",instance=\"macmini-16\",device=~\"disk[0-9]+\"}[5m]) + rate(node_disk_write_time_seconds_total{job=\"macmini_node\",instance=\"macmini-16\",device=~\"disk[0-9]+\"}[5m])) * 100, 100)",
+                        "interval": "",
+                        "legendFormat": "{{device}}",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "Mac 디스크 장치의 읽기·쓰기 처리 시간 비율입니다. macOS에는 io_time 지표가 없어 읽기·쓰기 시간 합으로 근사하며 100%에서 자릅니다.",
+          "id": 109,
+          "links": [],
+          "title": "Mac mini 16 · 디스크 사용률",
+          "vizConfig": {
+            "group": "timeseries",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "percent"
+                },
+                "overrides": []
+              },
+              "options": {
+                "alertThreshold": true,
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "enableFacetedFilter": false,
+                  "overflow": "ellipsis",
+                  "placement": "right",
+                  "showLegend": true,
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "none"
                 }
               }
             },
@@ -10337,7 +13147,7 @@
                   ]
                 }
               },
-              "title": "Mac mini Docker"
+              "title": "Mac mini 32 Docker"
             }
           },
           {
@@ -10987,7 +13797,405 @@
                   ]
                 }
               },
-              "title": "Mac mini 시스템"
+              "title": "Mac mini 32 시스템"
+            }
+          },
+          {
+            "kind": "TabsLayoutTab",
+            "spec": {
+              "layout": {
+                "kind": "RowsLayout",
+                "spec": {
+                  "rows": [
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-89"
+                                  },
+                                  "height": 4,
+                                  "width": 4,
+                                  "x": 0,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-90"
+                                  },
+                                  "height": 4,
+                                  "width": 4,
+                                  "x": 4,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-91"
+                                  },
+                                  "height": 4,
+                                  "width": 4,
+                                  "x": 8,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-92"
+                                  },
+                                  "height": 4,
+                                  "width": 4,
+                                  "x": 12,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-93"
+                                  },
+                                  "height": 4,
+                                  "width": 4,
+                                  "x": 16,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-94"
+                                  },
+                                  "height": 4,
+                                  "width": 4,
+                                  "x": 20,
+                                  "y": 0
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "title": "시스템 요약"
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-95"
+                                  },
+                                  "height": 8,
+                                  "width": 12,
+                                  "x": 0,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-96"
+                                  },
+                                  "height": 8,
+                                  "width": 12,
+                                  "x": 12,
+                                  "y": 0
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "title": "CPU와 메모리"
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-97"
+                                  },
+                                  "height": 12,
+                                  "width": 12,
+                                  "x": 0,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-98"
+                                  },
+                                  "height": 12,
+                                  "width": 12,
+                                  "x": 12,
+                                  "y": 0
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "title": "앱별 메모리"
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-99"
+                                  },
+                                  "height": 8,
+                                  "width": 12,
+                                  "x": 0,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-100"
+                                  },
+                                  "height": 8,
+                                  "width": 12,
+                                  "x": 12,
+                                  "y": 0
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "title": "파일시스템과 네트워크"
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-101"
+                                  },
+                                  "height": 8,
+                                  "width": 12,
+                                  "x": 0,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-102"
+                                  },
+                                  "height": 8,
+                                  "width": 12,
+                                  "x": 12,
+                                  "y": 0
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "title": "디스크와 시스템 부하"
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-103"
+                                  },
+                                  "height": 8,
+                                  "width": 12,
+                                  "x": 0,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-104"
+                                  },
+                                  "height": 8,
+                                  "width": 12,
+                                  "x": 12,
+                                  "y": 0
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "title": "M4 전력과 주파수"
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-105"
+                                  },
+                                  "height": 8,
+                                  "width": 12,
+                                  "x": 0,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-106"
+                                  },
+                                  "height": 8,
+                                  "width": 12,
+                                  "x": 12,
+                                  "y": 0
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "title": "M4 사용률과 온도"
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "collapse": false,
+                        "layout": {
+                          "kind": "GridLayout",
+                          "spec": {
+                            "items": [
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-107"
+                                  },
+                                  "height": 8,
+                                  "width": 8,
+                                  "x": 0,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-108"
+                                  },
+                                  "height": 8,
+                                  "width": 8,
+                                  "x": 8,
+                                  "y": 0
+                                }
+                              },
+                              {
+                                "kind": "GridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-109"
+                                  },
+                                  "height": 8,
+                                  "width": 8,
+                                  "x": 16,
+                                  "y": 0
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "title": "디스크 상세"
+                      }
+                    }
+                  ]
+                }
+              },
+              "title": "Mac mini 16 시스템"
             }
           },
           {
@@ -11283,42 +14491,6 @@
             "spec": {
               "query": "label_values(node_uname_info{job=\"node_exporter\"}, instance)",
               "refId": "Prometheus-nas_instance-Variable-Query"
-            },
-            "version": "v0"
-          },
-          "refresh": "onDashboardLoad",
-          "regex": "",
-          "regexApplyTo": "value",
-          "skipUrlSync": false,
-          "sort": "alphabeticalAsc"
-        }
-      },
-      {
-        "kind": "QueryVariable",
-        "spec": {
-          "allValue": ".*",
-          "allowCustomValue": true,
-          "current": {
-            "text": "macmini",
-            "value": "macmini"
-          },
-          "definition": "label_values(node_uname_info{job=\"macmini_node\"}, instance)",
-          "description": "Prometheus의 macmini_node job에서 수집되는 Mac mini node exporter 인스턴스입니다.",
-          "hide": "dontHide",
-          "includeAll": false,
-          "label": "Mac mini 인스턴스",
-          "multi": false,
-          "name": "macmini_instance",
-          "options": [],
-          "query": {
-            "datasource": {
-              "name": "Prometheus"
-            },
-            "group": "prometheus",
-            "kind": "DataQuery",
-            "spec": {
-              "query": "label_values(node_uname_info{job=\"macmini_node\"}, instance)",
-              "refId": "Prometheus-macmini_instance-Variable-Query"
             },
             "version": "v0"
           },
