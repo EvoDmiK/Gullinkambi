@@ -1,8 +1,7 @@
 apiVersion: 1
 
 groups:
-  - orgId: 1
-    name: Gullinkambi AI subscription
+  - name: Gullinkambi AI subscription
     folder: Gullinkambi Alerts
     interval: 1m
     rules:
@@ -24,13 +23,9 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: &prom_instant {editorMode: code, instant: true, range: false}
               expr: 'max by (provider, pool) (ai_subscription_collector_up{pool!="third_party"})'
-              instant: true
-              intervalMs: 1000
               legendFormat: '{{provider}} {{pool}}'
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
@@ -38,8 +33,6 @@ groups:
               conditions: []
               datasource: {type: __expr__, uid: __expr__}
               expression: A
-              intervalMs: 1000
-              maxDataPoints: 43200
               reducer: last
               refId: B
               settings: {mode: dropNN}
@@ -55,8 +48,6 @@ groups:
                   type: query
               datasource: {type: __expr__, uid: __expr__}
               expression: B
-              intervalMs: 1000
-              maxDataPoints: 43200
               refId: C
               type: threshold
 
@@ -78,13 +69,9 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: *prom_instant
               expr: 'time() - max(ai_subscription_last_success_timestamp_seconds{provider="codex"})'
-              instant: true
-              intervalMs: 1000
               legendFormat: codex
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
@@ -118,18 +105,14 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: *prom_instant
               # One instance per crossed tier, so each of 50/70/85/95% notifies once per weekly window.
               expr: >-
                 label_replace(max by (provider, pool) (ai_subscription_quota_used_percent{window="weekly", pool!="third_party"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds <= time())) >= 50, "tier", "50", "", "")
                 or label_replace(max by (provider, pool) (ai_subscription_quota_used_percent{window="weekly", pool!="third_party"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds <= time())) >= 70, "tier", "70", "", "")
                 or label_replace(max by (provider, pool) (ai_subscription_quota_used_percent{window="weekly", pool!="third_party"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds <= time())) >= 85, "tier", "85", "", "")
                 or label_replace(max by (provider, pool) (ai_subscription_quota_used_percent{window="weekly", pool!="third_party"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds <= time())) >= 95, "tier", "95", "", "")
-              instant: true
-              intervalMs: 1000
               legendFormat: '{{provider}} {{pool}}'
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
@@ -163,13 +146,9 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: *prom_instant
               expr: 'max by (provider, pool) (ai_subscription_quota_used_percent{window="session", provider=~"claude|antigravity", pool!="third_party"} unless on (provider, pool, window) (ai_subscription_quota_reset_timestamp_seconds <= time()))'
-              instant: true
-              intervalMs: 1000
               legendFormat: '{{provider}} {{pool}}'
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
@@ -203,13 +182,9 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: *prom_instant
               expr: 'sum(increase(ai_subscription_rejections_total{provider="antigravity"}[10m]))'
-              instant: true
-              intervalMs: 1000
               legendFormat: rejections
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
