@@ -137,7 +137,7 @@ provider 설정은 각 하위 디렉터리만 읽으며 60초마다 변경을 �
 
 대시보드가 참조하는 데이터 소스는 Grafana에 미리 등록되어 있어야 합니다.
 
-- Git Sync 대시보드는 Prometheus UID `PBFA97CFB590B2093`과 PostgreSQL UID `ffskrzljzwr28b`, `cfrgthsaa3ev4b`를 참조합니다.
+- Git Sync 대시보드는 Prometheus UID `PBFA97CFB590B2093`과 PostgreSQL UID `ffskrzljzwr28b`(`observability` 스키마), `cfrgthsaa3ev4b`(n8n DB, `execution_entity`)를 참조합니다.
 - Hermes Kanban은 PostgreSQL/TimescaleDB UID `ffskrzljzwr28b`와 `observability` 스키마의 Kanban 테이블을 사용합니다.
 - 독립 Mac mini 대시보드는 `Prometheus` 데이터 소스 변수와 `macmini_node` job의 node exporter 메트릭을 사용합니다.
 - OpenViking 대시보드는 이름이 `Prometheus`인 데이터 소스와 OpenViking exporter·컨테이너 메트릭을 사용합니다.

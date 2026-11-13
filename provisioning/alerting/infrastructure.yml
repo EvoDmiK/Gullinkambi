@@ -1,8 +1,7 @@
 apiVersion: 1
 
 groups:
-  - orgId: 1
-    name: Gullinkambi infrastructure availability
+  - name: Gullinkambi infrastructure availability
     folder: Gullinkambi Alerts
     interval: 1m
     rules:
@@ -25,13 +24,9 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: &prom_instant {editorMode: code, instant: true, range: false}
               expr: 'up{job="node_exporter"}'
-              instant: true
-              intervalMs: 1000
               legendFormat: '{{instance}}'
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
@@ -39,8 +34,6 @@ groups:
               conditions: []
               datasource: {type: __expr__, uid: __expr__}
               expression: A
-              intervalMs: 1000
-              maxDataPoints: 43200
               reducer: last
               refId: B
               settings: {mode: dropNN}
@@ -56,8 +49,6 @@ groups:
                   type: query
               datasource: {type: __expr__, uid: __expr__}
               expression: B
-              intervalMs: 1000
-              maxDataPoints: 43200
               refId: C
               type: threshold
 
@@ -77,13 +68,9 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: *prom_instant
               expr: 'up{job="cadvisor"}'
-              instant: true
-              intervalMs: 1000
               legendFormat: '{{instance}}'
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
@@ -108,13 +95,9 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: *prom_instant
               expr: 'up{job="postgres_exporter"}'
-              instant: true
-              intervalMs: 1000
               legendFormat: '{{instance}}'
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
@@ -139,13 +122,9 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: *prom_instant
               expr: 'up{job="macmini_container_federate"}'
-              instant: true
-              intervalMs: 1000
               legendFormat: '{{instance}}'
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
@@ -170,13 +149,9 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: *prom_instant
               expr: 'up{job="macmini_node"}'
-              instant: true
-              intervalMs: 1000
               legendFormat: '{{instance}}'
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
@@ -201,13 +176,9 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: *prom_instant
               expr: 'up{job="macmini_soc"}'
-              instant: true
-              intervalMs: 1000
               legendFormat: '{{instance}}'
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
@@ -216,8 +187,7 @@ groups:
             datasourceUid: __expr__
             model: *threshold_lt_one
 
-  - orgId: 1
-    name: Gullinkambi infrastructure capacity
+  - name: Gullinkambi infrastructure capacity
     folder: Gullinkambi Alerts
     interval: 1m
     rules:
@@ -239,13 +209,9 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: *prom_instant
               expr: '100 * (1 - node_filesystem_avail_bytes{job="node_exporter",mountpoint=~"/volume[0-9]+"} / node_filesystem_size_bytes{job="node_exporter",mountpoint=~"/volume[0-9]+"})'
-              instant: true
-              intervalMs: 1000
               legendFormat: '{{mountpoint}}'
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
@@ -279,13 +245,9 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: *prom_instant
               expr: '100 * (1 - node_filesystem_avail_bytes{job="macmini_node",fstype="apfs",mountpoint=~"/System/Volumes/Data|/Volumes/[^/]+"} / node_filesystem_size_bytes{job="macmini_node",fstype="apfs",mountpoint=~"/System/Volumes/Data|/Volumes/[^/]+"})'
-              instant: true
-              intervalMs: 1000
               legendFormat: '{{mountpoint}}'
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
@@ -319,13 +281,9 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: *prom_instant
               expr: 'max by (instance) ({__name__=~"macmon_(cpu|gpu)_temp_celsius",job="macmini_soc"})'
-              instant: true
-              intervalMs: 1000
               legendFormat: temperature
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__

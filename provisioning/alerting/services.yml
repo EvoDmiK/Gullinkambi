@@ -1,8 +1,7 @@
 apiVersion: 1
 
 groups:
-  - orgId: 1
-    name: Gullinkambi workflow services
+  - name: Gullinkambi workflow services
     folder: Gullinkambi Alerts
     interval: 1m
     rules:
@@ -24,36 +23,26 @@ groups:
             datasourceUid: cfrgthsaa3ev4b
             model:
               datasource: {type: grafana-postgresql-datasource, uid: cfrgthsaa3ev4b}
-              editorMode: code
-              format: table
-              intervalMs: 1000
-              maxDataPoints: 43200
-              rawQuery: true
+              <<: &pg_raw {editorMode: code, format: table, rawQuery: true}
               rawSql: >-
                 SELECT count(*)::double precision AS value
                 FROM execution_entity
                 WHERE status IN ('error', 'failed')
                   AND "stoppedAt" > now() - interval '15 minutes';
               refId: A
-              sql:
-                columns: [{parameters: [], type: function}]
-                groupBy: [{property: {type: string}, type: groupBy}]
-                limit: 50
           - refId: B
             datasourceUid: __expr__
             model: &reduce_last
               conditions: []
               datasource: {type: __expr__, uid: __expr__}
               expression: A
-              intervalMs: 1000
-              maxDataPoints: 43200
               reducer: last
               refId: B
               settings: {mode: dropNN}
               type: reduce
           - refId: C
             datasourceUid: __expr__
-            model: &threshold_gt_zero
+            model: &threshold_gt_two
               conditions:
                 - evaluator: {params: [2], type: gt}
                   operator: {type: and}
@@ -62,8 +51,6 @@ groups:
                   type: query
               datasource: {type: __expr__, uid: __expr__}
               expression: B
-              intervalMs: 1000
-              maxDataPoints: 43200
               refId: C
               type: threshold
 
@@ -85,28 +72,20 @@ groups:
             datasourceUid: cfrgthsaa3ev4b
             model:
               datasource: {type: grafana-postgresql-datasource, uid: cfrgthsaa3ev4b}
-              editorMode: code
-              format: table
-              intervalMs: 1000
-              maxDataPoints: 43200
-              rawQuery: true
+              <<: *pg_raw
               rawSql: >-
                 SELECT count(*)::double precision AS value
                 FROM execution_entity
                 WHERE status = 'running'
                   AND "startedAt" < now() - interval '30 minutes';
               refId: A
-              sql:
-                columns: [{parameters: [], type: function}]
-                groupBy: [{property: {type: string}, type: groupBy}]
-                limit: 50
           - refId: B
             datasourceUid: __expr__
             model: *reduce_last
           - refId: C
             datasourceUid: __expr__
             model:
-              <<: *threshold_gt_zero
+              <<: *threshold_gt_two
               conditions:
                 - evaluator: {params: [0], type: gt}
                   operator: {type: and}
@@ -132,11 +111,7 @@ groups:
             datasourceUid: ffskrzljzwr28b
             model:
               datasource: {type: grafana-postgresql-datasource, uid: ffskrzljzwr28b}
-              editorMode: code
-              format: table
-              intervalMs: 1000
-              maxDataPoints: 43200
-              rawQuery: true
+              <<: *pg_raw
               rawSql: >-
                 SELECT count(*)::double precision AS value
                 FROM observability.hermes_kanban_tasks
@@ -145,17 +120,13 @@ groups:
                   AND (last_heartbeat_at IS NULL
                        OR last_heartbeat_at < now() - interval '10 minutes');
               refId: A
-              sql:
-                columns: [{parameters: [], type: function}]
-                groupBy: [{property: {type: string}, type: groupBy}]
-                limit: 50
           - refId: B
             datasourceUid: __expr__
             model: *reduce_last
           - refId: C
             datasourceUid: __expr__
             model:
-              <<: *threshold_gt_zero
+              <<: *threshold_gt_two
               conditions:
                 - evaluator: {params: [0], type: gt}
                   operator: {type: and}
@@ -181,26 +152,18 @@ groups:
             datasourceUid: ffskrzljzwr28b
             model:
               datasource: {type: grafana-postgresql-datasource, uid: ffskrzljzwr28b}
-              editorMode: code
-              format: table
-              intervalMs: 1000
-              maxDataPoints: 43200
-              rawQuery: true
+              <<: *pg_raw
               rawSql: >-
                 SELECT COALESCE(current_date - max(usage_date), 999)::double precision AS value
                 FROM observability.orca_usage_daily;
               refId: A
-              sql:
-                columns: [{parameters: [], type: function}]
-                groupBy: [{property: {type: string}, type: groupBy}]
-                limit: 50
           - refId: B
             datasourceUid: __expr__
             model: *reduce_last
           - refId: C
             datasourceUid: __expr__
             model:
-              <<: *threshold_gt_zero
+              <<: *threshold_gt_two
               conditions:
                 - evaluator: {params: [1], type: gt}
                   operator: {type: and}
@@ -208,8 +171,7 @@ groups:
                   reducer: {params: [], type: last}
                   type: query
 
-  - orgId: 1
-    name: Gullinkambi OpenViking
+  - name: Gullinkambi OpenViking
     folder: Gullinkambi Alerts
     interval: 1m
     rules:
@@ -231,13 +193,9 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: &prom_instant {editorMode: code, instant: true, range: false}
               expr: openviking_exporter_up
-              instant: true
-              intervalMs: 1000
               legendFormat: exporter
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
@@ -245,7 +203,7 @@ groups:
           - refId: C
             datasourceUid: __expr__
             model:
-              <<: *threshold_gt_zero
+              <<: *threshold_gt_two
               conditions:
                 - evaluator: {params: [1], type: lt}
                   operator: {type: and}
@@ -271,23 +229,18 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: *prom_instant
               expr: openviking_request_errors_last_hour
-              instant: true
-              intervalMs: 1000
               legendFormat: errors
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
             model: *reduce_last
           - refId: C
             datasourceUid: __expr__
-            model: *threshold_gt_zero
+            model: *threshold_gt_two
 
-  - orgId: 1
-    name: Gullinkambi Nginx Proxy Manager
+  - name: Gullinkambi Nginx Proxy Manager
     folder: Gullinkambi Alerts
     interval: 1m
     rules:
@@ -309,13 +262,9 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: *prom_instant
               expr: '(max(container_last_seen{instance="nas",name="nginx-proxy-manager"}) > bool (time() - 120)) or vector(0)'
-              instant: true
-              intervalMs: 1000
               legendFormat: nginx-proxy-manager
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
@@ -323,7 +272,7 @@ groups:
           - refId: C
             datasourceUid: __expr__
             model:
-              <<: *threshold_gt_zero
+              <<: *threshold_gt_two
               conditions:
                 - evaluator: {params: [1], type: lt}
                   operator: {type: and}
@@ -349,16 +298,12 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: *prom_instant
               expr: >-
                 sum by (host) (rate(npm_http_requests_total{status=~"5.."}[5m]))
                 / sum by (host) (rate(npm_http_requests_total[5m])) * 100
                 and sum by (host) (rate(npm_http_requests_total[5m])) > 0.05
-              instant: true
-              intervalMs: 1000
               legendFormat: '{{host}}'
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
@@ -366,7 +311,7 @@ groups:
           - refId: C
             datasourceUid: __expr__
             model:
-              <<: *threshold_gt_zero
+              <<: *threshold_gt_two
               conditions:
                 - evaluator: {params: [5], type: gt}
                   operator: {type: and}
@@ -392,13 +337,9 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: *prom_instant
               expr: (npm_certificate_expiry_timestamp_seconds - time()) / 86400
-              instant: true
-              intervalMs: 1000
               legendFormat: '{{domain}}'
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
@@ -406,7 +347,7 @@ groups:
           - refId: C
             datasourceUid: __expr__
             model:
-              <<: *threshold_gt_zero
+              <<: *threshold_gt_two
               conditions:
                 - evaluator: {params: [14], type: lt}
                   operator: {type: and}
@@ -432,13 +373,9 @@ groups:
             datasourceUid: PBFA97CFB590B2093
             model:
               datasource: {type: prometheus, uid: PBFA97CFB590B2093}
-              editorMode: code
+              <<: *prom_instant
               expr: time() - max(npm_collector_last_success_timestamp_seconds)
-              instant: true
-              intervalMs: 1000
               legendFormat: collector
-              maxDataPoints: 43200
-              range: false
               refId: A
           - refId: B
             datasourceUid: __expr__
@@ -446,7 +383,7 @@ groups:
           - refId: C
             datasourceUid: __expr__
             model:
-              <<: *threshold_gt_zero
+              <<: *threshold_gt_two
               conditions:
                 - evaluator: {params: [900], type: gt}
                   operator: {type: and}

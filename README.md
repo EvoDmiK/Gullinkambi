@@ -132,7 +132,7 @@ Avoid mounting another Birds-Nest dashboard provisioning directory over the same
 
 The referenced data sources must already be registered in Grafana.
 
-- Git Sync dashboards reference Prometheus UID `PBFA97CFB590B2093` and PostgreSQL UIDs `ffskrzljzwr28b` and `cfrgthsaa3ev4b`.
+- Git Sync dashboards reference Prometheus UID `PBFA97CFB590B2093` and PostgreSQL UIDs `ffskrzljzwr28b` (`observability` schema) and `cfrgthsaa3ev4b` (n8n database, `execution_entity`).
 - Hermes Kanban uses PostgreSQL/TimescaleDB UID `ffskrzljzwr28b` and the Kanban tables in the `observability` schema.
 - The standalone Mac mini dashboard uses the `Prometheus` data source variable and node exporter metrics from the `macmini_node` job.
 - OpenViking uses the data source named `Prometheus` together with OpenViking exporter and container metrics.

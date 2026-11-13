@@ -1,8 +1,7 @@
 apiVersion: 1
 
 templates:
-  - orgId: 1
-    name: Gullinkambi Discord card
+  - name: Gullinkambi Discord card
     template: |
       {{ define "gullinkambi.discord.title" -}}
       {{- if gt (len .Alerts.Firing) 0 -}}
@@ -38,8 +37,7 @@ templates:
       {{- end }}
 
 contactPoints:
-  - orgId: 1
-    name: Gullinkambi Discord
+  - name: Gullinkambi Discord
     receivers:
       - uid: gk_discord
         type: discord
@@ -53,8 +51,7 @@ contactPoints:
             {{ template "gullinkambi.discord.message" . }}
 
 policies:
-  - orgId: 1
-    receiver: Gullinkambi Discord
+  - receiver: Gullinkambi Discord
     group_by:
       - alertname
       - service
