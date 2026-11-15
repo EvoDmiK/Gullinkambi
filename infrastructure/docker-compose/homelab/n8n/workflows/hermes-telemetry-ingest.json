@@ -1,0 +1,82 @@
+{
+  "name": "[Tools] Hermes Telemetry Ingest",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hermes-telemetry",
+        "authentication": "headerAuth",
+        "options": {},
+        "responseMode": "lastNode"
+      },
+      "id": "71cd7af4-f07f-45a5-8713-84706851e77b",
+      "name": "Hermes Telemetry Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "hermes-telemetry"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nif (![2, 3].includes(body.schema_version)) throw new Error('unsupported telemetry schema_version');\nif (typeof body.collector_id !== 'string' || !body.collector_id) throw new Error('collector_id is required');\nif (typeof body.observed_at !== 'string' || !body.observed_at) throw new Error('observed_at is required');\n\nconst specs = [\n  { array: 'runs', kind: 'run', required: ['event_id', 'session_id', 'profile', 'started_at', 'fingerprint'] },\n  { array: 'goal_runs', kind: 'goal_run', required: ['event_id', 'session_id', 'profile', 'model', 'status', 'started_at', 'fingerprint'] },\n  { array: 'hermes_session_samples', kind: 'hermes_session_sample', required: ['event_key', 'session_hash', 'profile', 'source', 'model', 'started_at', 'sampled_at', 'fingerprint'] },\n  { array: 'hermes_tool_events', kind: 'hermes_tool_event', required: ['event_key', 'session_hash', 'profile', 'tool', 'occurred_at', 'fingerprint'] },\n  { array: 'hermes_tool_log_events', kind: 'hermes_tool_log_event', required: ['event_key', 'session_hash', 'profile', 'tool', 'status', 'occurred_at', 'fingerprint'] },\n  { array: 'orca_usage', kind: 'orca_usage', required: ['event_id', 'usage_date', 'agent', 'model', 'project_hash', 'fingerprint'] },\n  { array: 'orca_thread_usage', kind: 'orca_thread_usage', required: ['event_id', 'thread_id', 'usage_date', 'agent', 'model', 'project_hash', 'fingerprint'] },\n  { array: 'orca_call_events', kind: 'orca_call_event', required: ['event_key', 'agent', 'model', 'origin_namespace', 'session_id_hash', 'source_request_id_hash', 'project_key', 'fingerprint'] },\n  { array: 'orca_task_manifests', kind: 'orca_task_manifest', required: ['task_id', 'attempt_id', 'revision', 'producer_id', 'project_key'] },\n  { array: 'orca_task_results', kind: 'orca_task_result', required: ['event_id', 'task_id', 'attempt_id', 'result_revision', 'producer_id'] },\n  { array: 'kanban_tasks', kind: 'kanban_task', required: ['event_id', 'board', 'task_id', 'status', 'fingerprint'] },\n  { array: 'kanban_task_runs', kind: 'kanban_task_run', required: ['event_id', 'board', 'run_id', 'task_id', 'status', 'fingerprint'] },\n  { array: 'kanban_task_events', kind: 'kanban_task_event', required: ['event_id', 'board', 'source_event_id', 'task_id', 'kind', 'fingerprint'] },\n  { array: 'kanban_task_links', kind: 'kanban_task_link', required: ['event_id', 'board', 'parent_id', 'child_id', 'fingerprint'] },\n];\n\nconst items = [];\nfor (const spec of specs) {\n  const values = body[spec.array] ?? [];\n  if (!Array.isArray(values)) throw new Error(`${spec.array} must be an array`);\n  if (values.length > 100) throw new Error(`${spec.array} batch exceeds 100`);\n  for (const item of values) {\n    if (!item || typeof item !== 'object') throw new Error(`${spec.kind} must be an object`);\n    for (const field of spec.required) {\n      if (item[field] === undefined || item[field] === null || item[field] === '') {\n        throw new Error(`${spec.kind}.${field} is required`);\n      }\n    }\n    items.push({ json: { entity_kind: spec.kind, collector_id: body.collector_id, observed_at: body.observed_at, item } });\n  }\n}\nif (items.length === 0) return [{ json: { entity_kind: 'noop', collector_id: body.collector_id, observed_at: body.observed_at, item: {} } }];\nreturn items;"
+      },
+      "id": "5895a915-f554-4860-b9c9-57d8750bb9b0",
+      "name": "Validate and Split Telemetry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT CASE WHEN $1::text = 'noop' THEN false ELSE observability.ingest_hermes_telemetry($1::text, $2::jsonb, $3::text, $4::timestamptz) END AS changed;",
+        "additionalFields": {
+          "queryParams": "entity_kind,item,collector_id,observed_at"
+        }
+      },
+      "id": "b23a6cf7-dfd5-473e-8401-3e655d020015",
+      "name": "Upsert TimescaleDB",
+      "type": "n8n-nodes-base.timescaleDb",
+      "typeVersion": 1,
+      "position": [
+        540,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Hermes Telemetry Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate and Split Telemetry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate and Split Telemetry": {
+      "main": [
+        [
+          {
+            "node": "Upsert TimescaleDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "pinData": {}
+}

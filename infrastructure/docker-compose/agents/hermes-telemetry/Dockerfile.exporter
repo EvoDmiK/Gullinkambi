@@ -1,0 +1,9 @@
+FROM python:3.12-slim
+
+ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
+RUN pip install "mlflow==3.14.0" "psycopg[binary]>=3.2,<4" \
+    && useradd --system --no-create-home exporter
+COPY mlflow_exporter.py orca_pipeline.py orca_attribution.py orca_calls.py orca_snapshot.py /app/
+WORKDIR /app
+USER exporter
+CMD ["python", "mlflow_exporter.py"]
