@@ -38,6 +38,16 @@
 4. 새 TimescaleDB에는 초기화 스크립트, 기존 DB에는 필요한 마이그레이션을 순서대로 적용합니다. 자동 초기화 스크립트만으로 `001`~`011` 마이그레이션이 모두 적용되지는 않습니다. 세부 순서·권한은 SQL과 telemetry README를 확인하고 별도 개발 DB에서 먼저 검증합니다.
 5. n8n import 후 Header Auth·TimescaleDB credential을 연결하고 collector의 webhook URL/token을 호스트에서 설정합니다. 활성화 전에 테스트 이벤트가 DB에 적재되고 Grafana에서 조회되는지 확인합니다.
 
+## 보안 기본값 변경 시 주의
+
+기존 호스트에 다시 배포할 때 아래 변경을 확인합니다.
+
+- `docker.sock`은 `docker-socket-proxy`만 마운트합니다. Alloy와 cAdvisor는 내부 전용 `docker_socket` 네트워크로 읽기 API(`CONTAINERS`, `INFO`, `VERSION`, `EVENTS`, `NETWORKS`)만 사용하고, cAdvisor는 privileged 없이 실행합니다.
+- Mac mini Prometheus는 `MACMINI_PROMETHEUS_BIND_ADDR`(LAN IP)에만 열리고 `--web.enable-lifecycle`이 꺼집니다. 설정을 다시 읽으려면 `/-/reload` 대신 컨테이너를 재시작합니다.
+- 호스트 exporter(`ai-subscription-exporter`, `macos-memory-exporter`)의 기본 bind는 `127.0.0.1`입니다. OrbStack에서는 `host.docker.internal`로 계속 scrape됩니다. 기존 LaunchAgent plist는 다시 설치해야 반영됩니다.
+- MLflow와 TimescaleDB는 기본적으로 `127.0.0.1`에만 바인딩합니다(`MLFLOW_BIND_ADDR`, `TIMESCALE_BIND_ADDR`). `run.sh`는 `MLFLOW_ALLOWED_HOSTS` 목록에 있는 Host만 허용합니다. MLflow 이미지는 UID 10001로 실행하므로, 기존 artifact 디렉터리를 `chown -R 10001:10001` 해야 합니다.
+- collector와 `orca_task`는 webhook 토큰이 비어 있으면 전송하지 않고 종료합니다.
+
 ## 복사 후 검증
 
 저장소 루트에서 실행합니다.

@@ -1,6 +1,22 @@
 name: monitoring
 
 services:
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:0.3.0
+    restart: unless-stopped
+    # Not read_only: the entrypoint renders haproxy.cfg next to its template at start.
+    environment:
+      - CONTAINERS=1
+      - INFO=1
+      - VERSION=1
+      - EVENTS=1 # Docker discovery watches container events.
+      - NETWORKS=1 # Alloy discovery.docker reads network labels.
+      - POST=0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - docker_socket
+
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -88,12 +104,13 @@ services:
       - /etc/alloy/config.alloy
     volumes:
       - /volume3/Gullinkambi/infrastructure/docker-data/monitoring/alloy/config.alloy:/etc/alloy/config.alloy:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
       - alloy_data:/var/lib/alloy/data
     depends_on:
       - loki
+      - docker-socket-proxy
     networks:
       - monitoring
+      - docker_socket
 
   tailscale-grafana:
     image: tailscale/tailscale:latest
@@ -134,19 +151,22 @@ services:
     image: ghcr.io/google/cadvisor:0.55.1
     container_name: cadvisor
     restart: unless-stopped
-    privileged: true
     command:
-      - --docker=unix:///var/run/docker.sock
+      - --docker=tcp://docker-socket-proxy:2375
       - --docker_only=true
       - --docker_root=/volume3/@docker
+    devices:
+      - /dev/kmsg:/dev/kmsg
     volumes:
       - /:/rootfs:ro
-      - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker:/var/lib/docker:ro
       - /volume3/@docker:/volume3/@docker:ro
+    depends_on:
+      - docker-socket-proxy
     networks:
       - monitoring
+      - docker_socket
 
   postgres_exporter:
     image: prometheuscommunity/postgres-exporter:latest
@@ -189,13 +209,12 @@ services:
       - macmini
     restart: unless-stopped
     ports:
-      - "9090:9090"
+      - "${MACMINI_PROMETHEUS_BIND_ADDR:-192.0.2.11}:9090:9090"
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
       - --web.console.libraries=/usr/share/prometheus/console_libraries
       - --web.console.templates=/usr/share/prometheus/consoles
-      - --web.enable-lifecycle
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
@@ -211,9 +230,8 @@ services:
     profiles:
       - macmini
     restart: unless-stopped
-    privileged: true
     command:
-      - --docker=unix:///var/run/docker.sock
+      - --docker=tcp://docker-socket-proxy:2375
       - --docker_only=true
       - --docker_root=/var/lib/docker
       - --containerd=/run/docker/containerd/containerd.sock
@@ -222,12 +240,15 @@ services:
       - /dev/kmsg:/dev/kmsg
     volumes:
       - /:/rootfs:ro
-      - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker:/var/lib/docker:ro
       - /dev/disk:/dev/disk:ro
+      - /run/docker/containerd:/run/docker/containerd:ro
+    depends_on:
+      - docker-socket-proxy
     networks:
       - macmini_monitoring
+      - docker_socket
 
   openviking-exporter:
     build:
@@ -262,6 +283,8 @@ volumes:
   tailscale_grafana_data:
 
 networks:
+  docker_socket:
+    internal: true
   homelab_default:
     external: true
     name: homelab_default

@@ -13,7 +13,7 @@ services:
       - TIMESCALE_BACKUP_PASSWORD=${TIMESCALE_BACKUP_PASSWORD}
       - TZ=${TZ}
     ports:
-      - "5434:5432"
+      - "${TIMESCALE_BIND_ADDR:-127.0.0.1}:5434:5432"
     volumes:
       - timescaledb_data:/var/lib/postgresql/data
       - ./timescaledb/init-timescaledb.sh:/docker-entrypoint-initdb.d/10-init-timescaledb.sh:ro
@@ -36,9 +36,10 @@ services:
       - postgres-n8n
     environment:
       - PYTHONUNBUFFERED=1
+      - MLFLOW_BACKEND_STORE_URI=${MLFLOW_BACKEND_STORE_URI:?set MLFLOW_BACKEND_STORE_URI in .env}
       - MLFLOW_CRYPTO_KEK_PASSPHRASE=${MLFLOW_CRYPTO_KEK_PASSPHRASE}
     ports:
-      - "5000:80"
+      - "${MLFLOW_BIND_ADDR:-127.0.0.1}:5000:80"
     networks:
       - default
       - proxy_manager
@@ -52,13 +53,12 @@ services:
     #   container filesystem, so the MLflow UI cannot see those artifacts.
     command: >
       mlflow server
-      --backend-store-uri ${MLFLOW_BACKEND_STORE_URI:?set MLFLOW_BACKEND_STORE_URI in .env (see .env.example)}
       --serve-artifacts
       --artifacts-destination /mlflow/artifacts
       --host 0.0.0.0
       --port 80
       --workers 1
-      --allowed-hosts "192.0.2.10:5000,mlflow.example.com,localhost:*,mlflow,mlflow:80"
+      --allowed-hosts "${MLFLOW_ALLOWED_HOSTS:-192.0.2.10:5000,mlflow.example.com,localhost:*,mlflow,mlflow:80}"
       --cors-allowed-origins "http://192.0.2.10:5000,https://mlflow.example.com"
     mem_limit: 2g
     restart: unless-stopped

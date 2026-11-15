@@ -9,7 +9,7 @@
     <string>/usr/bin/python3</string>
     <string>/Users/example/Library/Application Support/macos-memory-exporter/exporter.py</string>
     <string>--host</string>
-    <string>0.0.0.0</string>
+    <string>127.0.0.1</string>
     <string>--port</string>
     <string>9092</string>
   </array>

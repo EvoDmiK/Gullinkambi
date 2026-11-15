@@ -4,7 +4,7 @@ logging {
 }
 
 discovery.docker "containers" {
-  host             = "unix:///var/run/docker.sock"
+  host             = "tcp://docker-socket-proxy:2375"
   refresh_interval = "10s"
 }
 
@@ -51,7 +51,7 @@ discovery.relabel "docker_logs" {
 }
 
 loki.source.docker "containers" {
-  host          = "unix:///var/run/docker.sock"
+  host          = "tcp://docker-socket-proxy:2375"
   targets       = discovery.relabel.docker_logs.output
   forward_to    = [loki.process.mask.receiver]
 }
@@ -59,23 +59,47 @@ loki.source.docker "containers" {
 // Secrets must never reach Loki: each expression has one capture group, which is replaced.
 loki.process "mask" {
   stage.replace {
-    expression = `(?i)bearer\s+([A-Za-z0-9._~+/=\-]{16,})`
+    expression = `(?i)(?:api[_-]?key|x-api-key|access[_-]?token|refresh[_-]?token|id[_-]?token|client[_-]?secret|secret|password|passwd|pwd|token|authorization|auth_key)["\x27]?\s*[:=]\s*["\x27]([^"\x27]*)["\x27]`
     replace    = "***"
   }
   stage.replace {
-    expression = `(?i)(?:password|passwd|secret|token|api[_-]?key|authorization|auth_key)["']?\s*[:=]\s*["']?([^\s"',;&]{4,})`
+    expression = `(?i)bearer\s+([^\s"\x27,;]+)`
     replace    = "***"
   }
   stage.replace {
-    expression = `(eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,})`
+    expression = `(?i)(?:api[_-]?key|x-api-key|access[_-]?token|refresh[_-]?token|id[_-]?token|client[_-]?secret|secret|password|passwd|pwd|token|authorization|auth_key)["\x27]?\s*[:=]\s*["\x27]?([^\s"\x27,;&}]+)`
+    replace    = "***"
+  }
+  stage.replace {
+    expression = `\b(sk-(?:ant-|proj-)?[A-Za-z0-9_-]{20,})`
+    replace    = "***"
+  }
+  stage.replace {
+    expression = `\b((?:ghp_|gho_|ghs_|github_pat_)[A-Za-z0-9_]{20,})`
+    replace    = "***"
+  }
+  stage.replace {
+    expression = `\b(xox[abpr]-[A-Za-z0-9-]{10,})`
+    replace    = "***"
+  }
+  stage.replace {
+    expression = `(AKIA[0-9A-Z]{16})`
+    replace    = "***"
+  }
+  stage.replace {
+    expression = `(AIza[0-9A-Za-z_-]{35})`
+    replace    = "***"
+  }
+  stage.replace {
+    expression = `(eyJ[A-Za-z0-9_-]*\.eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+)`
+    replace    = "***"
+  }
+  stage.replace {
+    expression = `https?://(?:discord(?:app)?\.com)/api/webhooks/[^/\s]+/([^\s"\x27/?]+)`
     replace    = "***"
   }
   stage.replace {
     expression = `://[^/\s:@]+:([^@\s]+)@`
-    replace    = "***"
-  }
-  stage.replace {
-    expression = `(sk-[A-Za-z0-9_\-]{20,})`
     replace    = "***"
   }
   forward_to = [loki.write.default.receiver]

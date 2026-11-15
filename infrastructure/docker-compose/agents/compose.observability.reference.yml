@@ -1,5 +1,21 @@
 # Reference excerpt from the Birds-Nest agents stack; merge with your host stack.
 services:
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:0.3.0
+    restart: unless-stopped
+    # Not read_only: the entrypoint renders haproxy.cfg next to its template at start.
+    environment:
+      - CONTAINERS=1
+      - INFO=1
+      - VERSION=1
+      - EVENTS=1 # Docker discovery watches container events.
+      - NETWORKS=1 # Alloy discovery.docker reads network labels.
+      - POST=0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - docker_socket
+
   alloy:
     image: grafana/alloy:latest
     container_name: alloy-macmini
@@ -14,9 +30,13 @@ services:
       - LOKI_PUSH_URL=${LOKI_PUSH_URL:-http://192.0.2.10:3100/loki/api/v1/push}
     volumes:
       - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
       - /Volumes/Example/projects/Birds-Nest/hermes:/opt/hermes:ro
       - alloy_macmini_data:/var/lib/alloy/data
+    depends_on:
+      - docker-socket-proxy
+    networks:
+      - default
+      - docker_socket
 
   hermes-telemetry:
     build:
@@ -75,3 +95,7 @@ services:
 volumes:
   alloy_macmini_data:
   hermes_telemetry_state:
+
+networks:
+  docker_socket:
+    internal: true

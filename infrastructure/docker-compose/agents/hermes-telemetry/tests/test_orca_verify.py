@@ -44,7 +44,7 @@ class VerifyCliTests(unittest.TestCase):
             if post is None:
                 code = verify.main(argv)
             else:
-                with mock.patch.object(verify.orca_task, "post", post), mock.patch.dict(os.environ, {"HERMES_TELEMETRY_WEBHOOK_URL": "https://example.invalid/h"}):
+                with mock.patch.object(verify.orca_task, "post", post), mock.patch.dict(os.environ, {"HERMES_TELEMETRY_WEBHOOK_URL": "https://example.invalid/h", "HERMES_TELEMETRY_WEBHOOK_TOKEN": "test-token"}):
                     code = verify.main(argv)
         return code, out.getvalue(), err.getvalue()
 

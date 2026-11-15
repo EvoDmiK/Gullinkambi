@@ -5,9 +5,10 @@ psql -v ON_ERROR_STOP=1 \
   --username "$POSTGRES_USER" \
   --dbname "$POSTGRES_DB" \
   --set=app_user="$TIMESCALE_APP_USER" \
-  --set=app_password="$TIMESCALE_APP_PASSWORD" \
   --set=backup_user="$TIMESCALE_BACKUP_USER" \
-  --set=backup_password="$TIMESCALE_BACKUP_PASSWORD" <<'SQL'
+  <<'SQL'
+\getenv app_password TIMESCALE_APP_PASSWORD
+\getenv backup_password TIMESCALE_BACKUP_PASSWORD
 CREATE EXTENSION IF NOT EXISTS timescaledb;
 SELECT set_config('timescaledb.app_user', :'app_user', false) \g /dev/null
 SELECT set_config('timescaledb.app_password', :'app_password', false) \g /dev/null

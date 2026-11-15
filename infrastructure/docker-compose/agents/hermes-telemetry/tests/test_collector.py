@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import contextlib
+import io
 import importlib.util
 import json
 import os
@@ -253,6 +255,22 @@ class CollectorTests(unittest.TestCase):
             orca_usage_dir=root / "orca-state",
             collect_orca_usage=False,
         )
+
+    def test_webhook_requires_token_and_warns_once_for_insecure_transport(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            settings = self.settings(Path(temporary))
+            err = io.StringIO()
+            with contextlib.redirect_stderr(err):
+                self.assertEqual(collector.run_once(replace(settings, webhook_token=" ")), 2)
+            self.assertIn("HERMES_TELEMETRY_WEBHOOK_TOKEN is required", err.getvalue())
+            collector.warn_insecure_transport.cache_clear()
+            err = io.StringIO()
+            insecure = replace(settings, webhook_url="http://example.invalid", verify_tls=False)
+            with contextlib.redirect_stderr(err):
+                collector.run_once(insecure)
+                collector.run_once(insecure)
+            self.assertEqual(err.getvalue().count("webhook uses HTTP"), 1)
+            self.assertEqual(err.getvalue().count("TLS verification is disabled"), 1)
 
     def test_discovers_default_and_named_profiles(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
