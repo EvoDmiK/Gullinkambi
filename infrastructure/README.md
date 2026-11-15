@@ -1,8 +1,8 @@
 # Gullinkambi 관측 인프라
 
-Birds-Nest의 관측 파이프라인 구현·설정 중 공개 가능한 파일을 복사한 디렉터리입니다. 원본과 운영 경로는 유지하며, 이 추가만으로 서비스 재시작·워크플로우 활성화·DB 변경은 수행하지 않습니다. 기존 Gullinkambi `Jenkinsfile`도 수정하지 않았습니다.
+관측 파이프라인 구현·설정의 원본(SSOT) 디렉터리입니다. Birds-Nest에서 공개 가능한 파일을 가져와 시작했으며, 이후 변경은 이 저장소에서 하고 Birds-Nest 쪽 사본은 더 이상 원본으로 취급하지 않습니다. 이 디렉터리 추가만으로 서비스 재시작·워크플로우 활성화·DB 변경은 수행하지 않습니다. 기존 Gullinkambi `Jenkinsfile`도 수정하지 않았습니다.
 
-출처는 [source-manifest.json](source-manifest.json)의 저장소·기준 커밋·원본 파일 목록으로 확인합니다. 이후 Birds-Nest 변경은 자동으로 동기화되지 않습니다.
+최초 가져온 출처는 [source-manifest.json](source-manifest.json)의 저장소·기준 커밋·파일 목록에 기록되어 있습니다. 두 저장소는 자동으로 동기화되지 않으므로, Birds-Nest에 남은 사본을 고쳐야 할 일이 생기면 이 저장소를 먼저 고친 뒤 옮깁니다.
 
 ## 포함 범위
 

@@ -103,7 +103,7 @@ Rules:
 - `provisioning/dashboards/git-sync/`: Grafana Git Sync 대시보드(서비스·인프라 모니터링). `main`에서 Grafana가 직접 가져가며 UI 저장 시 Grafana가 파일을 다시 쓴다.
 - `provisioning/dashboards/{hermes-kanban,macmini,openviking}/`, `provisioning/dashboards/dashboards.yml`: 파일 provisioning 대시보드와 provider 설정.
 - `provisioning/alerting/`: 알림 규칙·Discord contact point·notification policy.
-- `infrastructure/`(있는 경우): Birds-Nest에서 복사한 관측 파이프라인 참조본(collector·exporter·TimescaleDB 마이그레이션·n8n workflow·Compose). 출처는 `infrastructure/source-manifest.json` 기준이며 자동 배포 묶음이 아니다.
+- `infrastructure/`: 관측 파이프라인(collector·exporter·TimescaleDB 마이그레이션·n8n workflow·Compose)의 원본(SSOT). Birds-Nest에서 가져와 시작했고(`infrastructure/source-manifest.json`), 이후 변경은 이 저장소에서 한다. Birds-Nest 사본을 직접 고치지 않는다. 자동 배포 묶음이 아니다.
 - `Jenkinsfile`: Jenkins `Gullinkambi-NAS-Deploy`가 5분마다 `main`을 pull하고, `provisioning/alerting/` 또는 `provisioning/dashboards/*.yml`이 바뀌면 NAS Grafana를 재시작한다.
 - `README.md`와 `docs/README_KO.md`는 같은 내용을 유지한다.
 - 이 저장소의 머지만으로 수집기·exporter·DB가 바뀌지 않는다. Mac mini·NAS 수집기, TimescaleDB 마이그레이션, n8n workflow 적용은 실제 설정을 확인한 후 별도 운영 요청 범위에서 변경한다.

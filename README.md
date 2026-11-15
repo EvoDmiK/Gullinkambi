@@ -8,7 +8,7 @@
 
 The project is named after Gullinkambi, the rooster from Norse mythology. In the *Völuspá*, Gullinkambi's crow awakens the warriors of Valhalla—a fitting image for a repository built to watch multiple systems and call attention to important changes.
 
-> Sanitized collectors, ingest workflows, database migrations and infrastructure configuration are included in [`infrastructure/`](infrastructure/README.md). Running services, stored data and credentials remain on their hosts; Birds-Nest originals are retained.
+> Sanitized collectors, ingest workflows, database migrations and infrastructure configuration are included in [`infrastructure/`](infrastructure/README.md). Running services, stored data and credentials remain on their hosts. This repository is the source of truth for this code; make changes here rather than in the Birds-Nest copies.
 
 ## Dashboards
 
@@ -82,7 +82,7 @@ The project is named after Gullinkambi, the rooster from Norse mythology. In the
 │       ├── macmini/               # Mac mini file-provisioned dashboard JSON
 │       ├── openviking/            # OpenViking file-provisioned dashboard JSON
 │       └── dashboards.yml         # Grafana provider definition
-├── infrastructure/                 # Sanitized Birds-Nest collectors, workflows and config
+├── infrastructure/                 # Collectors, workflows and config (source of truth)
 ├── docs/                           # Project documentation
 │   └── README_KO.md               # Korean README
 └── README.md

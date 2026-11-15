@@ -10,7 +10,7 @@ n8n과 Hermes 에이전트의 실행 상태, Hermes Kanban 작업, OpenViking, N
 
 
 
-※ 비밀정보를 제거한 수집기·수집 워크플로우·DB 마이그레이션·인프라 설정은 [`infrastructure/`](../infrastructure/README.md)에 포함합니다. 실행 중인 서비스·저장 데이터·자격 증명은 호스트에서 관리하며 Birds-Nest 원본은 유지합니다.
+※ 비밀정보를 제거한 수집기·수집 워크플로우·DB 마이그레이션·인프라 설정은 [`infrastructure/`](../infrastructure/README.md)에 포함합니다. 실행 중인 서비스·저장 데이터·자격 증명은 호스트에서 관리합니다. 이 코드의 원본은 이 저장소이며, 변경은 Birds-Nest 사본이 아니라 여기서 합니다.
 
 ## 대시보드
 
