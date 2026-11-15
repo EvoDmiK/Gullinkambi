@@ -1,0 +1,3 @@
+tailscale/
+artifacts/
+*.sh

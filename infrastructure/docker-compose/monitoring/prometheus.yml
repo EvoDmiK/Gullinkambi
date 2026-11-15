@@ -1,0 +1,126 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - localhost:9090
+
+  - job_name: macmini_node
+    static_configs:
+      - targets:
+          - host.docker.internal:9100
+        labels:
+          instance: macmini
+          host: macmini
+
+  - job_name: macmini_soc
+    scrape_interval: 5s
+    static_configs:
+      - targets:
+          - host.docker.internal:9091
+        labels:
+          instance: macmini
+          host: macmini
+
+  - job_name: macmini_memory
+    scrape_interval: 5s
+    static_configs:
+      - targets:
+          - host.docker.internal:9092
+        labels:
+          instance: macmini
+          host: macmini
+    relabel_configs:
+      - target_label: job
+        replacement: macmini_soc
+
+  - job_name: cadvisor
+    static_configs:
+      - targets:
+          - macmini-cadvisor:8080
+        labels:
+          machine: macmini
+    relabel_configs:
+      - source_labels: [machine]
+        target_label: instance
+    metric_relabel_configs:
+      - source_labels: [image]
+        regex: docker\.io/library/hermes-agent:mlflow
+        target_label: name
+        replacement: hermes
+      - source_labels: [image]
+        regex: docker\.io/library/hermes-telemetry:latest
+        target_label: name
+        replacement: hermes-telemetry
+      - source_labels: [image]
+        regex: docker\.io/library/hermes-agent:latest
+        target_label: name
+        replacement: hermes-dashboard
+      - source_labels: [image]
+        regex: ghcr\.io/nesquena/hermes-webui:latest
+        target_label: name
+        replacement: hermes-webui
+      - source_labels: [image]
+        regex: ghcr\.io/volcengine/openviking:latest
+        target_label: name
+        replacement: openviking
+      - source_labels: [image]
+        regex: docker\.io/tailscale/tailscale:latest
+        target_label: name
+        replacement: tailscale-hermes-dashboard
+      - source_labels: [image]
+        regex: docker\.io/portainer/agent:latest
+        target_label: name
+        replacement: portainer-agent
+      - source_labels: [image, instance]
+        regex: (docker\.io/)?prom/prometheus:latest;macmini
+        target_label: name
+        replacement: macmini-prometheus
+      - source_labels: [image, instance]
+        regex: ghcr\.io/google/cadvisor:0\.55\.1;macmini
+        target_label: name
+        replacement: macmini-cadvisor
+      - source_labels: [image]
+        regex: docker\.io/grafana/alloy:latest
+        target_label: name
+        replacement: alloy-macmini
+      - source_labels: [image]
+        regex: docker\.io/library/openviking-exporter:latest
+        target_label: name
+        replacement: openviking-exporter
+      - source_labels: [image]
+        regex: docker\.io/library/n8n-test:.+
+        target_label: name
+        replacement: n8n-test
+      - source_labels: [image]
+        regex: docker\.io/library/n8n-runners-test:.+
+        target_label: name
+        replacement: n8n-runners-test
+      - source_labels: [image]
+        regex: docker\.io/library/neo4j:.+
+        target_label: name
+        replacement: neo4j-test
+      - source_labels: [name]
+        regex: "[0-9a-f]{64}"
+        action: drop
+
+  - job_name: openviking_exporter
+    static_configs:
+      - targets:
+          - openviking-exporter:9822
+        labels:
+          instance: macmini
+          service: openviking
+
+  - job_name: ai_subscription_exporter
+    scrape_interval: 60s
+    scrape_timeout: 50s
+    static_configs:
+      - targets:
+          - host.docker.internal:9819
+        labels:
+          instance: macmini
+          service: ai-subscription

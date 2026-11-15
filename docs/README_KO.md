@@ -10,7 +10,7 @@ n8n과 Hermes 에이전트의 실행 상태, Hermes Kanban 작업, OpenViking, N
 
 
 
-※ Grafana 서버, Prometheus·PostgreSQL 같은 데이터 소스, 수집기, 자격 증명은 이 저장소에 포함하지 않습니다.
+※ 비밀정보를 제거한 수집기·수집 워크플로우·DB 마이그레이션·인프라 설정은 [`infrastructure/`](../infrastructure/README.md)에 포함합니다. 실행 중인 서비스·저장 데이터·자격 증명은 호스트에서 관리하며 Birds-Nest 원본은 유지합니다.
 
 ## 대시보드
 
@@ -47,7 +47,7 @@ n8n과 Hermes 에이전트의 실행 상태, Hermes Kanban 작업, OpenViking, N
 - 최신 사용량 데이터의 집계 지연도 함께 표시하여 비용과 사용 패턴뿐 아니라 수집 데이터의 최신성까지 점검할 수 있습니다.
 - Antigravity는 Mac mini에서 모델·프로젝트별 일일 수치와 대화별 수치를 저장소 이름 기준으로 집계합니다. Codex·Claude와 마찬가지로 대화 제목은 쓰레드 이름으로 전송하지만, 프롬프트·응답·경로·원본 대화 ID(해시만 전송)는 telemetry pipeline으로 전송하지 않습니다.
 
-- 하단의 `ORCA 개발 관측` 패널 4개는 작업·시도별 사용량과 결과, 호출별 입력·캐시·출력 분포(p50/p95), 수집 품질과 MLflow 전송 상태, 근거가 있는 재시도·도구 실패·재검증을 보여 줍니다. `observability.orca_call_events`, `orca_attempt_snapshots`, `orca_mlflow_*` 테이블이 필요하며 Birds-Nest의 `homelab/timescaledb/migrations/001~003`을 적용하기 전에는 이 패널들에서 쿼리 오류가 납니다. 값이 없는 칸은 0이 아니라 `N/A`(관측되지 않음)이고, 재시도·도구 실패·재검증은 근거 이벤트가 수집되기 전까지 `N/A`입니다.
+- 하단의 `ORCA 개발 관측` 패널 4개는 작업·시도별 사용량과 결과, 호출별 입력·캐시·출력 분포(p50/p95), 수집 품질과 MLflow 전송 상태, 근거가 있는 재시도·도구 실패·재검증을 보여 줍니다. `observability.orca_call_events`, `orca_attempt_snapshots`, `orca_mlflow_*` 테이블이 필요하며 `infrastructure/docker-compose/homelab/timescaledb/migrations/001~003`을 적용하기 전에는 이 패널들에서 쿼리 오류가 납니다. 값이 없는 칸은 0이 아니라 `N/A`(관측되지 않음)이고, 재시도·도구 실패·재검증은 근거 이벤트가 수집되기 전까지 `N/A`입니다.
 
 #### 1-4. OpenViking 모니터링 대시보드
 
@@ -145,7 +145,7 @@ provider 설정은 각 하위 디렉터리만 읽으며 60초마다 변경을 �
 
 ### AI 구독 모니터링 수집 조건
 
-서비스 모니터링의 `AI 구독` 탭은 아래와 같이 정규화된 Prometheus 메트릭을 사용합니다. exporter와 자격 증명은 이 저장소에 포함하지 않습니다.
+서비스 모니터링의 `AI 구독` 탭은 아래와 같이 정규화된 Prometheus 메트릭을 사용합니다. exporter 소스는 `infrastructure/`에 포함하며 자격 증명은 포함하지 않습니다.
 
 | 메트릭 | 필수 레이블 | 의미 |
 | --- | --- | --- |
@@ -158,7 +158,7 @@ provider 설정은 각 하위 디렉터리만 읽으며 60초마다 변경을 �
 | `ai_subscription_rejections_total` | `provider` | exporter 시작 이후 할당량 초과(HTTP 429)로 거부된 Antigravity 요청 수. agy CLI 로그에서 셉니다 |
 | `ai_subscription_last_rejection_timestamp_seconds` | `provider` | 가장 최근 할당량 거부 시각의 Unix timestamp(초) |
 
-`provider`는 `codex`, `claude`, `antigravity`, `window`는 `session`과 `weekly`를 사용합니다. Antigravity는 `pool="gemini"`, `pool="third_party"`, `pool="argon"`(Gemini 4 Argon 전용 주간 할당량, 플랜에 있을 때만)을 추가하며, 대시보드와 알림은 `third_party`를 제외한 pool을 다룹니다. 배포 수집기는 Codex rate limit, Claude Code OAuth 사용량 endpoint의 계정 전체 사용률(실패 시 Claude Code status line 제한), Antigravity CLI `/usage` JSON을 이 스키마로 정규화합니다. 수집기와 macOS LaunchAgent installer는 `Birds-Nest/docker-compose/monitoring/ai-subscription-exporter`에 있으며, Mac mini Prometheus가 `host.docker.internal:9819`를 scrape하고 NAS Prometheus가 federation으로 정규화 지표를 가져옵니다. 수집기는 신뢰할 수 있는 모니터링 네트워크에서만 사용하고 저장된 로그인 자격 증명을 Grafana에 노출하지 마세요.
+`provider`는 `codex`, `claude`, `antigravity`, `window`는 `session`과 `weekly`를 사용합니다. Antigravity는 `pool="gemini"`, `pool="third_party"`, `pool="argon"`(Gemini 4 Argon 전용 주간 할당량, 플랜에 있을 때만)을 추가하며, 대시보드와 알림은 `third_party`를 제외한 pool을 다룹니다. 배포 수집기는 Codex rate limit, Claude Code OAuth 사용량 endpoint의 계정 전체 사용률(실패 시 Claude Code status line 제한), Antigravity CLI `/usage` JSON을 이 스키마로 정규화합니다. 수집기와 macOS LaunchAgent installer는 `infrastructure/docker-compose/monitoring/ai-subscription-exporter`에 있으며, Mac mini Prometheus가 `host.docker.internal:9819`를 scrape하고 NAS Prometheus가 federation으로 정규화 지표를 가져옵니다. 수집기는 신뢰할 수 있는 모니터링 네트워크에서만 사용하고 저장된 로그인 자격 증명을 Grafana에 노출하지 마세요.
 
 수집기는 Claude Code가 macOS 키체인에 저장한 access token으로 Claude 사용량 endpoint를 5분마다(`CLAUDE_USAGE_INTERVAL_SECONDS`) 조회합니다. 토큰은 읽기만 하고 갱신하지 않으며(갱신하면 Claude Code 로그인 세션이 바뀔 수 있습니다), 로그와 지표에는 출력하지 않습니다. 이 endpoint는 공식 문서화된 API가 아니므로 조회에 실패하면 아래의 status line 캐시로 되돌아갑니다. 계정 전체 값이라 VS Code 확장 등 다른 기기·클라이언트의 사용량도 Mac mini에서 Claude Code가 실행되기를 기다리지 않고 반영됩니다.
 
@@ -205,7 +205,7 @@ GF_SERVER_ROOT_URL=https://monitoring.dove-nest.com/
 
 ### Nginx Proxy Manager 수집 조건
 
-`NPM` 탭의 컨테이너 패널은 NAS `nginx-proxy-manager` 컨테이너의 cAdvisor 메트릭을 사용하므로 별도 설정 없이 동작합니다. 트래픽과 인증서 패널은 아래의 정규화된 Prometheus 메트릭을 사용합니다. AI 구독 exporter와 마찬가지로 수집기는 이 저장소에 포함하지 않습니다. `Birds-Nest/docker-compose/monitoring/npm-exporter`가 `proxy-host-*_access.log`를 이어서 읽고, NPM SQLite DB에서 프록시 호스트와 인증서 만료일을 읽으므로 인증서 개인키는 마운트하지 않습니다. NAS Prometheus는 이를 `npm_exporter` job으로 수집합니다. `host` 레이블은 요청의 Host 헤더가 아니라 NPM에 등록된 프록시 호스트의 첫 번째 도메인을 사용하므로 레이블 수가 제한됩니다. 이 외에 `npm_collector_up`과 `npm_log_parse_errors_total`도 제공합니다.
+`NPM` 탭의 컨테이너 패널은 NAS `nginx-proxy-manager` 컨테이너의 cAdvisor 메트릭을 사용하므로 별도 설정 없이 동작합니다. 트래픽과 인증서 패널은 아래의 정규화된 Prometheus 메트릭을 사용합니다. 수집기 소스인 `infrastructure/docker-compose/monitoring/npm-exporter`가 `proxy-host-*_access.log`를 이어서 읽고, NPM SQLite DB에서 프록시 호스트와 인증서 만료일을 읽으므로 인증서 개인키는 마운트하지 않습니다. NAS Prometheus는 이를 `npm_exporter` job으로 수집합니다. `host` 레이블은 요청의 Host 헤더가 아니라 NPM에 등록된 프록시 호스트의 첫 번째 도메인을 사용하므로 레이블 수가 제한됩니다. 이 외에 `npm_collector_up`과 `npm_log_parse_errors_total`도 제공합니다.
 
 | 메트릭 | 필수 레이블 | 의미 |
 | --- | --- | --- |

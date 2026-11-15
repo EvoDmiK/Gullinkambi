@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.gullinkambi.antigravity-orca-usage</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/opt/python@3.14/bin/python3.14</string>
+    <string>/Users/example/Library/Application Support/Gullinkambi/antigravity_orca_usage.py</string>
+    <string>--output</string>
+    <string>/Volumes/Example/app-data/orca/app-data/orca-antigravity-usage.json</string>
+    <string>--worktree-root</string>
+    <string>/Users/example/orca</string>
+    <string>--worktree-root</string>
+    <string>/Volumes/Example/app-data/orca/kimdove/home/workspaces</string>
+    <string>--worktree-root</string>
+    <string>/Volumes/Example/projects</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>StartInterval</key>
+  <integer>60</integer>
+  <key>StandardOutPath</key>
+  <string>/Users/example/Library/Logs/Gullinkambi/antigravity-orca-usage.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/example/Library/Logs/Gullinkambi/antigravity-orca-usage.error.log</string>
+</dict>
+</plist>

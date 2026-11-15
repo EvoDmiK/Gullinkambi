@@ -12,3 +12,22 @@
 
 # Graphify output (regenerate with `graphify update .`)
 graphify-out/
+
+# Track sanitized configuration examples only.
+!.env.example
+!**/.env.example
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+*.log
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+*.jsonl
+*.pem
+*.key
+infrastructure/**/artifacts/
+infrastructure/**/tailscale/
+infrastructure/docker-data/monitoring/grafana/provisioning/datasources/datasources.yml

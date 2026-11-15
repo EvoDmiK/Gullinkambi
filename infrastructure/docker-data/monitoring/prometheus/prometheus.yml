@@ -1,0 +1,90 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - prometheus:9090
+
+  - job_name: node_exporter
+    static_configs:
+      - targets:
+          - node_exporter:9100
+
+  - job_name: cadvisor
+    static_configs:
+      - targets:
+          - cadvisor:8080
+        labels:
+          host: nas
+    metric_relabel_configs:
+      - target_label: instance
+        replacement: nas
+      - source_labels: [image]
+        regex: (docker\.io/)?grafana/grafana:latest
+        target_label: name
+        replacement: grafana
+      - source_labels: [image]
+        regex: (docker\.io/)?grafana/loki:latest
+        target_label: name
+        replacement: loki
+      - source_labels: [image]
+        regex: (docker\.io/)?grafana/alloy:latest
+        target_label: name
+        replacement: alloy
+      - source_labels: [image]
+        regex: (docker\.io/)?tailscale/tailscale:latest
+        target_label: name
+        replacement: tailscale-grafana
+      - source_labels: [image]
+        regex: (docker\.io/)?prom/node-exporter:latest
+        target_label: name
+        replacement: node-exporter
+      - source_labels: [image]
+        regex: gcr\.io/cadvisor/cadvisor:latest
+        target_label: name
+        replacement: nas-cadvisor
+      - source_labels: [image]
+        regex: (docker\.io/)?prometheuscommunity/postgres-exporter:latest
+        target_label: name
+        replacement: postgres-exporter
+      - source_labels: [image]
+        regex: (docker\.io/)?prom/prometheus:latest
+        target_label: name
+        replacement: prometheus
+      - source_labels: [name]
+        regex: "[0-9a-f]{64}"
+        action: drop
+
+  - job_name: npm_exporter
+    static_configs:
+      - targets:
+          - npm-exporter:9823
+        labels:
+          instance: nas
+          service: nginx-proxy-manager
+
+  - job_name: macmini_container_federate
+    metrics_path: /federate
+    honor_labels: true
+    params:
+      match[]:
+        - '{job=~"macmini_node|macmini_soc"}'
+        - '{__name__=~"container_.*"}'
+        - '{__name__=~"openviking_.*"}'
+        - '{__name__=~"ai_subscription_.*"}'
+    static_configs:
+      - targets:
+          - 192.0.2.11:9090
+        labels:
+          host: macmini
+    metric_relabel_configs:
+      - target_label: instance
+        replacement: macmini
+
+  - job_name: postgres_exporter
+    static_configs:
+      - targets:
+          - postgres_exporter:9187
