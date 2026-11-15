@@ -41,3 +41,5 @@ a RAM pie or stacked-RAM total.
 - **Pressure 가용률**: kernel estimate of memory that is free or reclaimable; it overlaps allocated memory.
 - **Pressure 상태**: discrete macOS state (`1` normal, `2` warning, `4` critical).
 - **Swap**: memory pages currently moved to disk.
+
+기본 bind는 `127.0.0.1`이며 OrbStack은 `host.docker.internal` 요청을 호스트 loopback으로 전달합니다.

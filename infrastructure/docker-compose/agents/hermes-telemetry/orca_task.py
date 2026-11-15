@@ -20,6 +20,7 @@ import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timedelta, timezone
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -111,7 +112,14 @@ def read_env_file(path: Path | None) -> dict[str, str]:
     return values
 
 
+@lru_cache(maxsize=None)
+def warn_insecure_transport(message: str) -> None:
+    print(f"orca_task: warning: {message}", file=sys.stderr)
+
+
 def post(url: str, token: str, manifests: list[dict], results: list[dict], now: datetime) -> None:
+    if not token.strip():
+        raise RuntimeError("HERMES_TELEMETRY_WEBHOOK_TOKEN is required")
     body = {"schema_version": 3, "collector_id": "orca-task-cli", "observed_at": iso(now)}
     if manifests:
         body["orca_task_manifests"] = manifests
@@ -135,8 +143,14 @@ def deliver(args, manifests: list[dict], results: list[dict], now: datetime) -> 
     if not url:
         print("orca_task: HERMES_TELEMETRY_WEBHOOK_URL is required (or use --dry-run)", file=sys.stderr)
         return 2
+    token = env.get("HERMES_TELEMETRY_WEBHOOK_TOKEN", "").strip()
+    if not token:
+        print("orca_task: HERMES_TELEMETRY_WEBHOOK_TOKEN is required", file=sys.stderr)
+        return 2
+    if url.lower().startswith("http://"):
+        warn_insecure_transport("webhook uses HTTP")
     try:
-        post(url, env.get("HERMES_TELEMETRY_WEBHOOK_TOKEN", ""), manifests, results, now)
+        post(url, token, manifests, results, now)
     except (urllib.error.URLError, RuntimeError, OSError) as exc:
         print(f"orca_task: delivery failed: {type(exc).__name__}", file=sys.stderr)
         return 1

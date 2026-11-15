@@ -7,7 +7,7 @@ Codex, Claude Code, Google Antigravity의 개인 구독 사용률을 Prometheus 
 - Codex: `codex app-server`의 `account/rateLimits/read`와 `account/usage/read`
 - Claude: Claude Code OAuth 토큰으로 조회한 계정 전체 5시간·7일 사용률(`/api/oauth/usage`), 실패하면 Claude Code status line 입력의 `rate_limits.five_hour`와 `rate_limits.seven_day`
 - Antigravity: `agy -p "/usage" --output-format json`의 Gemini·Claude/GPT 5시간·주간 quota
-- HTTP: `0.0.0.0:9819/metrics`
+- HTTP: `127.0.0.1:9819/metrics`
 
 Claude는 Claude Code 로그인 토큰(macOS 키체인 `Claude Code-credentials`, 없으면 `~/.claude/.credentials.json`)으로 `https://api.anthropic.com/api/oauth/usage`를 `CLAUDE_USAGE_INTERVAL_SECONDS`(기본 300초)마다 조회합니다. 어느 기기나 클라이언트에서 쓴 사용량도 계정 전체 값으로 반영됩니다. 이 엔드포인트는 공식 문서화된 API가 아니므로 응답 형식이 바뀌면 조회가 실패할 수 있고, 그때는 아래 status line 캐시로 되돌아갑니다. 토큰은 읽기만 하며 갱신하지 않습니다(refresh하면 Claude Code 로그인 세션이 바뀔 수 있습니다). 토큰이 만료된 경우 Claude Code를 한 번 사용하면 갱신됩니다. 토큰 값은 로그나 지표에 출력하지 않습니다.
 
@@ -43,7 +43,7 @@ python3 install.py --uninstall
 
 | 이름 | 기본값 | 설명 |
 | --- | --- | --- |
-| `AI_SUBSCRIPTION_EXPORTER_HOST` | `0.0.0.0` | HTTP bind 주소 |
+| `AI_SUBSCRIPTION_EXPORTER_HOST` | `127.0.0.1` | HTTP bind 주소 |
 | `AI_SUBSCRIPTION_EXPORTER_PORT` | `9819` | HTTP 포트 |
 | `AI_SUBSCRIPTION_CACHE_SECONDS` | `60` | CLI 재조회 간격 |
 | `CODEX_BIN` | `codex` | Codex 실행 파일 |
@@ -71,7 +71,7 @@ Gullinkambi는 `provisioning/alerting/ai-subscription.yml`에서 다음 Grafana-
 
 Claude는 실제 메시지 처리 시 status line이 갱신되므로 15분 stale 규칙을 적용하지 않습니다. 대신 마지막 유효 캐시를 보존하고 기본 24시간 만료 여부를 `ai_subscription_collector_up`에 반영합니다. 빈 `rate_limits` 입력 때문에 collector down 알람이 발생한다면 실행 중인 파일에 캐시 보존 수정이 배포됐는지 확인하세요.
 
-`0.0.0.0` bind는 Mac mini의 OrbStack Prometheus가 `host.docker.internal`로 접근하기 위한 설정입니다. 신뢰할 수 없는 네트워크에서는 macOS 방화벽으로 9819/tcp 접근을 제한하세요.
+OrbStack은 `host.docker.internal` 요청을 호스트 loopback으로 전달하므로 기본 `127.0.0.1` bind로 접근할 수 있습니다.
 
 ## 검증
 

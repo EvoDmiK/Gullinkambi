@@ -42,7 +42,7 @@ class OrcaTaskCliTests(unittest.TestCase):
             if post is None:
                 code = cli.main(list(argv))
             else:
-                with mock.patch.object(cli, "post", post), mock.patch.dict(os.environ, {"HERMES_TELEMETRY_WEBHOOK_URL": "https://example.invalid/hook"}):
+                with mock.patch.object(cli, "post", post), mock.patch.dict(os.environ, {"HERMES_TELEMETRY_WEBHOOK_URL": "https://example.invalid/hook", "HERMES_TELEMETRY_WEBHOOK_TOKEN": "test-token"}):
                     code = cli.main(list(argv))
         return code, out.getvalue(), err.getvalue()
 
@@ -146,6 +146,22 @@ class OrcaTaskCliTests(unittest.TestCase):
         self.assertEqual(code, 2)
         self.assertIn("test_requires_exit_code", err)
         self.assertEqual(len(sent), 1)
+
+    def test_delivery_rejects_empty_token_and_warns_once_for_http(self):
+        from types import SimpleNamespace
+        from datetime import datetime, timezone
+        args = SimpleNamespace(dry_run=False, env_file=None)
+        now = datetime.now(timezone.utc)
+        err = io.StringIO()
+        with mock.patch.dict(os.environ, {"HERMES_TELEMETRY_WEBHOOK_URL": "http://example.invalid", "HERMES_TELEMETRY_WEBHOOK_TOKEN": " "}), contextlib.redirect_stderr(err):
+            self.assertEqual(cli.deliver(args, [], [], now), 2)
+        self.assertIn("HERMES_TELEMETRY_WEBHOOK_TOKEN is required", err.getvalue())
+        cli.warn_insecure_transport.cache_clear()
+        err = io.StringIO()
+        with mock.patch.dict(os.environ, {"HERMES_TELEMETRY_WEBHOOK_URL": "http://example.invalid", "HERMES_TELEMETRY_WEBHOOK_TOKEN": "test-token"}), mock.patch.object(cli, "post"), contextlib.redirect_stderr(err):
+            self.assertEqual(cli.deliver(args, [], [], now), 0)
+            self.assertEqual(cli.deliver(args, [], [], now), 0)
+        self.assertEqual(err.getvalue().count("webhook uses HTTP"), 1)
 
     def test_env_file_reads_only_the_webhook_settings(self):
         env = self.root / "env"

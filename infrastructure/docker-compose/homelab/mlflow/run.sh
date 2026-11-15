@@ -29,10 +29,12 @@ if [ -z "${MLFLOW_BACKEND_STORE_URI:-}" ]; then
     ENCODED_PASSWORD="$(python3 -c 'import os, urllib.parse; print(urllib.parse.quote(os.environ["N8N_POSTGRES_PASSWORD"], safe=""))')"
     MLFLOW_BACKEND_STORE_URI="postgresql+psycopg2://${N8N_POSTGRES_USER}:${ENCODED_PASSWORD}@postgres-n8n:5432/mlflow?sslmode=disable"
 fi
-DB_URI="$MLFLOW_BACKEND_STORE_URI"
+export MLFLOW_BACKEND_STORE_URI
+MLFLOW_ALLOWED_HOSTS="${MLFLOW_ALLOWED_HOSTS:-192.0.2.10:5000,mlflow.example.com,localhost:*,mlflow,mlflow:80}"
 IMAGE_NAME="mlflow-local"
 NETWORK_NAME="homelab_default"
 
+# The bind-mounted artifacts directory must be writable by UID 10001.
 # 2. Build image if it doesn't exist
 if ! docker image inspect "$IMAGE_NAME" >/dev/null 2>&1; then
     echo "Building Docker image $IMAGE_NAME..."
@@ -92,24 +94,26 @@ if [ "$MODE" = "tailscale" ]; then
         --restart unless-stopped \
         tailscale/tailscale:latest
 
+    MLFLOW_ALLOWED_HOSTS="$MLFLOW_ALLOWED_HOSTS,$TS_HOSTNAME_MLFLOW,$TS_HOSTNAME_MLFLOW:*"
+
     # Run mlflow container in tailscale's network namespace
     echo "Starting mlflow..."
     docker run -d \
         --name mlflow \
         --network container:tailscale-mlflow \
         -e PYTHONUNBUFFERED=1 \
+        -e MLFLOW_BACKEND_STORE_URI \
         -v "$SCRIPT_DIR/artifacts:/mlflow/artifacts" \
         --memory 2g \
         --restart unless-stopped \
         "$IMAGE_NAME" \
         mlflow server \
-        --backend-store-uri "$DB_URI" \
         --serve-artifacts \
         --artifacts-destination /mlflow/artifacts \
         --host 0.0.0.0 \
         --port 80 \
         --workers 1 \
-        --allowed-hosts "*" \
+        --allowed-hosts "$MLFLOW_ALLOWED_HOSTS" \
         --cors-allowed-origins "http://192.0.2.10:5000,https://mlflow.example.com"
 
 else
@@ -125,20 +129,20 @@ else
     docker run -d \
         --name mlflow \
         --network "$NETWORK_NAME" \
-        -p "$HOST_PORT:80" \
+        -p "${MLFLOW_BIND_ADDR:-127.0.0.1}:$HOST_PORT:80" \
         -e PYTHONUNBUFFERED=1 \
+        -e MLFLOW_BACKEND_STORE_URI \
         -v "$SCRIPT_DIR/artifacts:/mlflow/artifacts" \
         --memory 2g \
         --restart unless-stopped \
         "$IMAGE_NAME" \
         mlflow server \
-        --backend-store-uri "$DB_URI" \
         --serve-artifacts \
         --artifacts-destination /mlflow/artifacts \
         --host 0.0.0.0 \
         --port 80 \
         --workers 1 \
-        --allowed-hosts "*" \
+        --allowed-hosts "$MLFLOW_ALLOWED_HOSTS" \
         --cors-allowed-origins "http://192.0.2.10:5000,https://mlflow.example.com"
 fi
 

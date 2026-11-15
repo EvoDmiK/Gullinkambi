@@ -562,7 +562,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main() -> int:
-    host = os.environ.get("AI_SUBSCRIPTION_EXPORTER_HOST", "0.0.0.0")
+    host = os.environ.get("AI_SUBSCRIPTION_EXPORTER_HOST", "127.0.0.1")
     port = int(os.environ.get("AI_SUBSCRIPTION_EXPORTER_PORT", "9819"))
     server = ThreadingHTTPServer((host, port), Handler)
     print(f"AI subscription exporter listening on http://{host}:{port}/metrics")

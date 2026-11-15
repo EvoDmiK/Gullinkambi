@@ -17,6 +17,7 @@ from collections import Counter, defaultdict
 from contextlib import closing
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Iterable
 from urllib.error import HTTPError, URLError
@@ -1555,7 +1556,14 @@ def collect_payload_changes(settings: Settings, state: dict[str, Any], now: floa
     return payload_changes
 
 
+@lru_cache(maxsize=None)
+def warn_insecure_transport(message: str) -> None:
+    print(f"telemetry: warning: {message}", file=sys.stderr)
+
+
 def post_batch(settings: Settings, payload_changes: dict[str, list[dict[str, Any]]], observed_at: str) -> None:
+    if not settings.webhook_token.strip():
+        raise RuntimeError("HERMES_TELEMETRY_WEBHOOK_TOKEN is required")
     payload = {
         "schema_version": SCHEMA_VERSION,
         "collector_id": settings.collector_id,
@@ -1585,6 +1593,15 @@ def run_once(settings: Settings, dry_run: bool = False) -> int:
     if not dry_run and not settings.webhook_url:
         print("telemetry: HERMES_TELEMETRY_WEBHOOK_URL is required", file=sys.stderr)
         return 2
+
+    if not dry_run:
+        if not settings.webhook_token.strip():
+            print("telemetry: HERMES_TELEMETRY_WEBHOOK_TOKEN is required", file=sys.stderr)
+            return 2
+        if settings.webhook_url.lower().startswith("http://"):
+            warn_insecure_transport("webhook uses HTTP")
+        if not settings.verify_tls:
+            warn_insecure_transport("TLS verification is disabled")
 
     state = load_state(settings.state_path)
     now = time.time()
