@@ -1,0 +1,109 @@
+# Reference excerpt from the Birds-Nest homelab stack; merge with your host stack.
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: timescaledb
+    environment:
+      - POSTGRES_USER=${TIMESCALE_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${TIMESCALE_POSTGRES_PASSWORD}
+      - POSTGRES_DB=${TIMESCALE_POSTGRES_DB}
+      - TIMESCALE_APP_USER=${TIMESCALE_APP_USER}
+      - TIMESCALE_APP_PASSWORD=${TIMESCALE_APP_PASSWORD}
+      - TIMESCALE_BACKUP_USER=${TIMESCALE_BACKUP_USER}
+      - TIMESCALE_BACKUP_PASSWORD=${TIMESCALE_BACKUP_PASSWORD}
+      - TZ=${TZ}
+    ports:
+      - "${TIMESCALE_BIND_ADDR:-127.0.0.1}:5434:5432"
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+      - ./timescaledb/init-timescaledb.sh:/docker-entrypoint-initdb.d/10-init-timescaledb.sh:ro
+      - ./timescaledb/init-telemetry.sh:/docker-entrypoint-initdb.d/20-init-telemetry.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${TIMESCALE_POSTGRES_USER} -d ${TIMESCALE_POSTGRES_DB}"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    shm_size: '512mb'
+    mem_limit: 2g
+    restart: unless-stopped
+    networks:
+      - default
+
+  mlflow:
+    build: ./mlflow
+    container_name: mlflow
+    depends_on:
+      - postgres-n8n
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MLFLOW_BACKEND_STORE_URI=${MLFLOW_BACKEND_STORE_URI:?set MLFLOW_BACKEND_STORE_URI in .env}
+      - MLFLOW_CRYPTO_KEK_PASSPHRASE=${MLFLOW_CRYPTO_KEK_PASSPHRASE}
+    ports:
+      - "${MLFLOW_BIND_ADDR:-127.0.0.1}:5000:80"
+    networks:
+      - default
+      - proxy_manager
+    volumes:
+      - /volume3/Birds-Nest/docker-data/homelab/mlflow/artifacts:/mlflow/artifacts
+    # NOTE: no "#" lines inside the folded command below. In a YAML block scalar they are
+    # literal text, so they became command-line arguments and MLflow exited with
+    # "Got unexpected extra arguments". Explanation of the flags:
+    #   --serve-artifacts / --artifacts-destination: proxy artifact uploads through the tracking
+    #   server. A plain local default-artifact-root makes remote clients write to their own
+    #   container filesystem, so the MLflow UI cannot see those artifacts.
+    command: >
+      mlflow server
+      --serve-artifacts
+      --artifacts-destination /mlflow/artifacts
+      --host 0.0.0.0
+      --port 80
+      --workers 1
+      --allowed-hosts "${MLFLOW_ALLOWED_HOSTS:-192.0.2.10:5000,mlflow.example.com,localhost:*,mlflow,mlflow:80}"
+      --cors-allowed-origins "http://192.0.2.10:5000,https://mlflow.example.com"
+    mem_limit: 2g
+    restart: unless-stopped
+
+  # ============================
+  # ORCA attempt snapshot -> MLflow exporter (outbox consumer)
+  # Needs migrations 001-004 on TimescaleDB first. Talks to MLflow over the
+  # compose network, so it never uses the public hostname.
+  # ============================
+
+  orca-exporter:
+    build:
+      context: ../agents/hermes-telemetry
+      dockerfile: Dockerfile.exporter
+    container_name: orca-exporter
+    depends_on:
+      - timescaledb
+      - mlflow
+    environment:
+      - ORCA_PIPELINE_DSN=postgresql://${ORCA_EXPORTER_USER}:${ORCA_EXPORTER_PASSWORD}@timescaledb:5432/${TIMESCALE_POSTGRES_DB}?sslmode=disable
+      - MLFLOW_TRACKING_URI=http://mlflow:80
+      - ORCA_EXPORT_ALLOW_REMOTE=1
+      - ORCA_MLFLOW_EXPERIMENT=orca-dev-observability
+      - ORCA_EXPORT_INTERVAL_SECONDS=${ORCA_EXPORT_INTERVAL_SECONDS:-120}
+      # Also attribute calls to the attempts reported via orca_task.py (needs migrations 005-006). Off until 006 is applied.
+      - ORCA_PIPELINE_FROM_DB=${ORCA_PIPELINE_FROM_DB:-0}
+      # Group sessions nobody registered into one automatic attempt (and MLflow Run) each (needs migration 007).
+      - ORCA_AUTO_SESSIONS=${ORCA_AUTO_SESSIONS:-0}
+      - ORCA_APPROVED_VERIFIERS=${ORCA_APPROVED_VERIFIERS:-}
+      # Shared secret for verifier signatures (orca_verify.py). With a key set, evidence_verified needs a valid signature.
+      - ORCA_VERIFIER_KEY=${ORCA_VERIFIER_KEY:-}
+      - TZ=${TZ}
+    mem_limit: 512m
+    restart: unless-stopped
+    networks:
+      - default
+
+  # ============================
+  # MLflow MCP Server for n8n
+  # n8n MCP Client Tool endpoint: http://mlflow-mcp:3020/sse
+  # ============================
+
+volumes:
+  timescaledb_data:
+
+networks:
+  proxy_manager:
+    external: true

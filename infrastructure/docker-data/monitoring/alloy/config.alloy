@@ -1,0 +1,115 @@
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+discovery.docker "containers" {
+  host             = "tcp://docker-socket-proxy:2375"
+  refresh_interval = "10s"
+}
+
+discovery.relabel "docker_logs" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_id"]
+    target_label  = "container_id"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    target_label  = "compose_project"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "compose_service"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_log_stream"]
+    target_label  = "stream"
+  }
+
+  // `service` is the one label to filter by: the compose service name, or the container name.
+  rule {
+    source_labels = ["container"]
+    target_label  = "service"
+  }
+
+  rule {
+    source_labels = ["compose_service"]
+    regex         = "(.+)"
+    target_label  = "service"
+  }
+}
+
+loki.source.docker "containers" {
+  host          = "tcp://docker-socket-proxy:2375"
+  targets       = discovery.relabel.docker_logs.output
+  forward_to    = [loki.process.mask.receiver]
+}
+
+// Secrets must never reach Loki: each expression has one capture group, which is replaced.
+loki.process "mask" {
+  stage.replace {
+    expression = `(?i)(?:api[_-]?key|x-api-key|access[_-]?token|refresh[_-]?token|id[_-]?token|client[_-]?secret|secret|password|passwd|pwd|token|authorization|auth_key)["\x27]?\s*[:=]\s*["\x27]([^"\x27]*)["\x27]`
+    replace    = "***"
+  }
+  stage.replace {
+    expression = `(?i)bearer\s+([^\s"\x27,;]+)`
+    replace    = "***"
+  }
+  stage.replace {
+    expression = `(?i)(?:api[_-]?key|x-api-key|access[_-]?token|refresh[_-]?token|id[_-]?token|client[_-]?secret|secret|password|passwd|pwd|token|authorization|auth_key)["\x27]?\s*[:=]\s*["\x27]?([^\s"\x27,;&}]+)`
+    replace    = "***"
+  }
+  stage.replace {
+    expression = `\b(sk-(?:ant-|proj-)?[A-Za-z0-9_-]{20,})`
+    replace    = "***"
+  }
+  stage.replace {
+    expression = `\b((?:ghp_|gho_|ghs_|github_pat_)[A-Za-z0-9_]{20,})`
+    replace    = "***"
+  }
+  stage.replace {
+    expression = `\b(xox[abpr]-[A-Za-z0-9-]{10,})`
+    replace    = "***"
+  }
+  stage.replace {
+    expression = `(AKIA[0-9A-Z]{16})`
+    replace    = "***"
+  }
+  stage.replace {
+    expression = `(AIza[0-9A-Za-z_-]{35})`
+    replace    = "***"
+  }
+  stage.replace {
+    expression = `(eyJ[A-Za-z0-9_-]*\.eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+)`
+    replace    = "***"
+  }
+  stage.replace {
+    expression = `https?://(?:discord(?:app)?\.com)/api/webhooks/[^/\s]+/([^\s"\x27/?]+)`
+    replace    = "***"
+  }
+  stage.replace {
+    expression = `://[^/\s:@]+:([^@\s]+)@`
+    replace    = "***"
+  }
+  forward_to = [loki.write.default.receiver]
+}
+
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+  external_labels = {
+    host = "nas",
+  }
+}

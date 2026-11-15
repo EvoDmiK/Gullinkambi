@@ -1,0 +1,297 @@
+name: monitoring
+
+services:
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:0.3.0
+    restart: unless-stopped
+    # Not read_only: the entrypoint renders haproxy.cfg next to its template at start.
+    environment:
+      - CONTAINERS=1
+      - INFO=1
+      - VERSION=1
+      - EVENTS=1 # Docker discovery watches container events.
+      - NETWORKS=1 # Alloy discovery.docker reads network labels.
+      - POST=0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - docker_socket
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "192.0.2.10:3002:3000"
+    environment:
+      - GF_DATABASE_TYPE=${GF_DATABASE_TYPE}
+      - GF_DATABASE_HOST=${GF_DATABASE_HOST}
+      - GF_DATABASE_NAME=${GF_DATABASE_NAME}
+      - GF_DATABASE_USER=${GF_DATABASE_USER}
+      - GF_DATABASE_PASSWORD=${GF_DATABASE_PASSWORD}
+      - GF_DATABASE_SSL_MODE=${GF_DATABASE_SSL_MODE}
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=${GF_USERS_ALLOW_SIGN_UP}
+      - GF_SERVER_DOMAIN=${GF_SERVER_DOMAIN}
+      - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL}
+      - GF_DISCORD_WEBHOOK_URL=${GF_DISCORD_WEBHOOK_URL}
+      - OBSERVABILITY_DB_HOST=${OBSERVABILITY_DB_HOST:-timescaledb:5432}
+      - OBSERVABILITY_DB_NAME=${OBSERVABILITY_DB_NAME:-timeseries}
+      - OBSERVABILITY_DB_USER=${OBSERVABILITY_DB_USER:-grafana_reader}
+      - OBSERVABILITY_DB_PASSWORD=${OBSERVABILITY_DB_PASSWORD:-}
+      - N8N_DB_HOST=${N8N_DB_HOST:-postgres-n8n:5432}
+      - N8N_DB_NAME=${N8N_DB_NAME:-n8n}
+      - N8N_DB_USER=${N8N_DB_USER:-grafana_n8n_reader}
+      - N8N_DB_PASSWORD=${N8N_DB_PASSWORD:-}
+      - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=denniskniep-neo4j-datasource
+      - TZ=${TZ}
+    volumes:
+      - /volume3/Gullinkambi/infrastructure/docker-data/monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - /volume3/Gullinkambi/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - /volume3/Gullinkambi/provisioning/alerting:/etc/grafana/provisioning/alerting:ro
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - homelab_default
+      - monitoring
+      - proxy_manager
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - "192.0.2.10:9090:9090"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.console.libraries=/usr/share/prometheus/console_libraries
+      - --web.console.templates=/usr/share/prometheus/consoles
+    volumes:
+      - /volume3/Gullinkambi/infrastructure/docker-data/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - monitoring
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    restart: unless-stopped
+    mem_limit: 768m
+    ports:
+      # LAN only, like Grafana and Prometheus. Other hosts (the Mac mini) push their logs here;
+      # Loki has no auth, so never publish this port beyond the LAN.
+      - "192.0.2.10:3100:3100"
+    command:
+      - -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - /volume3/Gullinkambi/infrastructure/docker-data/monitoring/loki/local-config.yaml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    networks:
+      - monitoring
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+    restart: unless-stopped
+    mem_limit: 384m
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    volumes:
+      - /volume3/Gullinkambi/infrastructure/docker-data/monitoring/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - alloy_data:/var/lib/alloy/data
+    depends_on:
+      - loki
+      - docker-socket-proxy
+    networks:
+      - monitoring
+      - docker_socket
+
+  tailscale-grafana:
+    image: tailscale/tailscale:latest
+    container_name: tailscale-grafana
+    hostname: ${TS_HOSTNAME_GRAFANA}
+    restart: unless-stopped
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+      - TS_AUTH_ONCE=true
+      - TS_SERVE_CONFIG=/config/serve.json
+    volumes:
+      - tailscale_grafana_data:/var/lib/tailscale
+      - /volume3/Gullinkambi/infrastructure/docker-data/monitoring/tailscale-grafana/serve.json:/config/serve.json:ro
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+      - sys_module
+    depends_on:
+      - grafana
+    networks:
+      - monitoring
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    restart: unless-stopped
+    pid: host
+    command:
+      - --path.rootfs=/host
+    volumes:
+      - /:/host:ro,rslave
+    networks:
+      - monitoring
+
+  cadvisor:
+    image: ghcr.io/google/cadvisor:0.55.1
+    container_name: cadvisor
+    restart: unless-stopped
+    command:
+      - --docker=tcp://docker-socket-proxy:2375
+      - --docker_only=true
+      - --docker_root=/volume3/@docker
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /volume3/@docker:/volume3/@docker:ro
+    depends_on:
+      - docker-socket-proxy
+    networks:
+      - monitoring
+      - docker_socket
+
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres_exporter
+    restart: unless-stopped
+    command:
+      - --no-collector.stat_replication
+    environment:
+      - DATA_SOURCE_NAME=${POSTGRES_EXPORTER_DATA_SOURCE_NAME}
+      - TZ=${TZ}
+    networks:
+      - homelab_default
+      - monitoring
+
+  npm-exporter:
+    build:
+      context: ./npm-exporter
+    image: npm-exporter:latest
+    container_name: npm-exporter
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ}
+    volumes:
+      # Only the access logs and the SQLite database; certificate keys stay unmounted.
+      - /volume3/Birds-Nest/docker-data/npm/data/logs:/npm/logs:ro
+      - /volume3/Birds-Nest/docker-data/npm/data/database.sqlite:/npm/database.sqlite:ro
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 64m
+    networks:
+      - monitoring
+
+  macmini-prometheus:
+    image: prom/prometheus:latest
+    container_name: macmini-prometheus
+    profiles:
+      - macmini
+    restart: unless-stopped
+    ports:
+      - "${MACMINI_PROMETHEUS_BIND_ADDR:-192.0.2.11}:9090:9090"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.console.libraries=/usr/share/prometheus/console_libraries
+      - --web.console.templates=/usr/share/prometheus/consoles
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      - macmini-cadvisor
+      - openviking-exporter
+    networks:
+      - macmini_monitoring
+
+  macmini-cadvisor:
+    image: ghcr.io/google/cadvisor:0.55.1
+    container_name: macmini-cadvisor
+    profiles:
+      - macmini
+    restart: unless-stopped
+    command:
+      - --docker=tcp://docker-socket-proxy:2375
+      - --docker_only=true
+      - --docker_root=/var/lib/docker
+      - --containerd=/run/docker/containerd/containerd.sock
+      - --containerd-namespace=moby
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+      - /run/docker/containerd:/run/docker/containerd:ro
+    depends_on:
+      - docker-socket-proxy
+    networks:
+      - macmini_monitoring
+      - docker_socket
+
+  openviking-exporter:
+    build:
+      context: ./openviking-exporter
+    image: openviking-exporter:latest
+    container_name: openviking-exporter
+    profiles:
+      - macmini
+    restart: unless-stopped
+    environment:
+      - OPENVIKING_DATA_DIR=/openviking/data
+      - OPENVIKING_EXPORTER_PORT=9822
+      - TZ=${TZ:-Asia/Seoul}
+    volumes:
+      - /Volumes/Example/projects/Birds-Nest/docker-data/agents/openviking/data:/openviking/data:ro
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    shm_size: 32m
+    mem_limit: 128m
+    networks:
+      - macmini_monitoring
+
+volumes:
+  prometheus_data:
+  loki_data:
+  alloy_data:
+  tailscale_grafana_data:
+
+networks:
+  docker_socket:
+    internal: true
+  homelab_default:
+    external: true
+    name: homelab_default
+  monitoring:
+    name: monitoring_default
+  proxy_manager:
+    external: true
+    name: proxy_manager
+  macmini_monitoring:
+    name: macmini_monitoring

@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ORCA attempt result event (v1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "task_id",
+    "attempt_id",
+    "result_revision",
+    "occurred_at",
+    "producer_id",
+    "producer_type",
+    "evidence_kind",
+    "reported_status",
+    "verification_state"
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "event_id": {
+      "$ref": "#/$defs/id"
+    },
+    "task_id": {
+      "$ref": "#/$defs/id"
+    },
+    "attempt_id": {
+      "$ref": "#/$defs/id"
+    },
+    "producer_id": {
+      "$ref": "#/$defs/id"
+    },
+    "result_revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "producer_type": {
+      "enum": [
+        "agent",
+        "verifier",
+        "test_runner",
+        "human"
+      ]
+    },
+    "evidence_kind": {
+      "enum": [
+        "real",
+        "fixture"
+      ]
+    },
+    "reported_status": {
+      "enum": [
+        "completed",
+        "failed",
+        "cancelled",
+        "blocked",
+        "unknown"
+      ]
+    },
+    "verification_state": {
+      "enum": [
+        "unverified",
+        "evidence_verified",
+        "failed",
+        "unknown"
+      ]
+    },
+    "test": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "test_id",
+        "exit_code"
+      ],
+      "properties": {
+        "test_id": {
+          "$ref": "#/$defs/id"
+        },
+        "exit_code": {
+          "type": "integer"
+        },
+        "passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "artifact_handle": {
+      "$ref": "#/$defs/id"
+    },
+    "artifact_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "signature": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "HMAC-SHA256 over the canonical result document without this field, made by orca_verify.py; required for evidence_verified when ORCA_VERIFIER_KEY is configured"
+    }
+  },
+  "dependentRequired": {
+    "artifact_handle": [
+      "artifact_sha256"
+    ]
+  }
+}

@@ -1,0 +1,101 @@
+# Reference excerpt from the Birds-Nest agents stack; merge with your host stack.
+services:
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:0.3.0
+    restart: unless-stopped
+    # Not read_only: the entrypoint renders haproxy.cfg next to its template at start.
+    environment:
+      - CONTAINERS=1
+      - INFO=1
+      - VERSION=1
+      - EVENTS=1 # Docker discovery watches container events.
+      - NETWORKS=1 # Alloy discovery.docker reads network labels.
+      - POST=0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - docker_socket
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy-macmini
+    restart: unless-stopped
+    mem_limit: 384m
+    command:
+      - run
+      - --server.http.listen-addr=127.0.0.1:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    environment:
+      - LOKI_PUSH_URL=${LOKI_PUSH_URL:-http://192.0.2.10:3100/loki/api/v1/push}
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /Volumes/Example/projects/Birds-Nest/hermes:/opt/hermes:ro
+      - alloy_macmini_data:/var/lib/alloy/data
+    depends_on:
+      - docker-socket-proxy
+    networks:
+      - default
+      - docker_socket
+
+  hermes-telemetry:
+    build:
+      context: ./hermes-telemetry
+    image: hermes-telemetry:latest
+    container_name: hermes-telemetry
+    restart: unless-stopped
+    depends_on:
+      hermes-app:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - HERMES_TELEMETRY_HOME=/opt/data
+      - HERMES_TELEMETRY_STATE_PATH=/var/lib/hermes-telemetry/cursor.json
+      - HERMES_TELEMETRY_INTERVAL_SECONDS=${HERMES_TELEMETRY_INTERVAL_SECONDS:-60}
+      - HERMES_TELEMETRY_INITIAL_BACKFILL_HOURS=${HERMES_TELEMETRY_INITIAL_BACKFILL_HOURS:-24}
+      - HERMES_TELEMETRY_RESCAN_HOURS=${HERMES_TELEMETRY_RESCAN_HOURS:-168}
+      - HERMES_TELEMETRY_WEBHOOK_URL=${HERMES_TELEMETRY_WEBHOOK_URL:-}
+      - HERMES_TELEMETRY_WEBHOOK_TOKEN=${HERMES_TELEMETRY_WEBHOOK_TOKEN:-}
+      - HERMES_TELEMETRY_INCLUDE_KANBAN_TITLES=${HERMES_TELEMETRY_INCLUDE_KANBAN_TITLES:-false}
+      - HERMES_TELEMETRY_COLLECT_ORCA_USAGE=${HERMES_TELEMETRY_COLLECT_ORCA_USAGE:-true}
+      # Per-call ORCA events. Keep false until the DB dispatcher (migration 005) AND the n8n
+      # ingest workflow accept `orca_call_events`; an older workflow silently ignores the array
+      # while the collector records it as delivered.
+      - HERMES_TELEMETRY_COLLECT_ORCA_CALLS=${HERMES_TELEMETRY_COLLECT_ORCA_CALLS:-false}
+      - HERMES_TELEMETRY_ORCA_ORIGIN_NAMESPACE=${HERMES_TELEMETRY_ORCA_ORIGIN_NAMESPACE:-orca-local}
+      - HERMES_TELEMETRY_ORCA_USAGE_DIR=/opt/orca-state
+      - HERMES_TELEMETRY_ORCA_CODEX_SESSIONS_DIR=/opt/orca-raw/codex
+      - HERMES_TELEMETRY_ORCA_CODEX_STATE_DB=/opt/orca-raw/codex-state/threads.sqlite
+      - HERMES_TELEMETRY_ORCA_CLAUDE_PROJECTS_DIR=/opt/orca-raw/claude
+      - HERMES_TELEMETRY_ORCA_WORKTREE_ROOTS=/Users/example/orca,/Volumes/Example/app-data/orca/kimdove/home/workspaces,/Volumes/Example/projects
+      - HERMES_TELEMETRY_EXCLUDED_PROFILES=default,analyzer,critic,devel,orchestrator,quick,reporter,researcher,writer
+    volumes:
+      - /Volumes/Example/projects/Birds-Nest/hermes:/opt/data:ro
+      - "/Volumes/Example/app-data/orca/app-data/orca-codex-usage.json:/opt/orca-state/orca-codex-usage.json:ro"
+      - "/Volumes/Example/app-data/orca/app-data/orca-claude-usage.json:/opt/orca-state/orca-claude-usage.json:ro"
+      - "/Volumes/Example/app-data/orca/app-data/orca-antigravity-usage.json:/opt/orca-state/orca-antigravity-usage.json:ro"
+      - /Users/example/.codex/sessions:/opt/orca-raw/codex:ro
+      # Codex deletes and recreates its WAL files, which breaks single-file bind mounts.
+      # The codex-thread-names LaunchAgent writes a minimal threads snapshot here instead.
+      - "/Users/example/Library/Application Support/Gullinkambi/codex-state:/opt/orca-raw/codex-state:ro"
+      - /Users/example/.claude/projects:/opt/orca-raw/claude:ro
+      - hermes_telemetry_state:/var/lib/hermes-telemetry
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    shm_size: 32m
+    mem_limit: 128m
+
+volumes:
+  alloy_macmini_data:
+  hermes_telemetry_state:
+
+networks:
+  docker_socket:
+    internal: true

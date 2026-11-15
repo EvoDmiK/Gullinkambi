@@ -1,0 +1,6 @@
+{"schema_version": 1, "event_id": "result-0001", "task_id": "task-0001", "attempt_id": "attempt-1",
+ "result_revision": 1, "occurred_at": "2026-10-09T02:30:00Z", "producer_id": "verifier-1",
+ "producer_type": "verifier", "evidence_kind": "fixture", "reported_status": "completed",
+ "verification_state": "evidence_verified",
+ "test": {"test_id": "unit", "exit_code": 0, "passed": 47, "failed": 0, "skipped": 0},
+ "artifact_handle": "summary-0001", "artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000"}

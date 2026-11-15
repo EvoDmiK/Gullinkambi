@@ -8,7 +8,7 @@
 
 The project is named after Gullinkambi, the rooster from Norse mythology. In the *Völuspá*, Gullinkambi's crow awakens the warriors of Valhalla—a fitting image for a repository built to watch multiple systems and call attention to important changes.
 
-> Grafana, data sources such as Prometheus and PostgreSQL, collectors, and credentials are not included in this repository.
+> Sanitized collectors, ingest workflows, database migrations and infrastructure configuration are included in [`infrastructure/`](infrastructure/README.md). Running services, stored data and credentials remain on their hosts. This repository is the source of truth for this code; make changes here rather than in the Birds-Nest copies.
 
 ## Dashboards
 
@@ -82,6 +82,7 @@ The project is named after Gullinkambi, the rooster from Norse mythology. In the
 │       ├── macmini/               # Mac mini file-provisioned dashboard JSON
 │       ├── openviking/            # OpenViking file-provisioned dashboard JSON
 │       └── dashboards.yml         # Grafana provider definition
+├── infrastructure/                 # Collectors, workflows and config (source of truth)
 ├── docs/                           # Project documentation
 │   └── README_KO.md               # Korean README
 └── README.md
@@ -140,7 +141,7 @@ The referenced data sources must already be registered in Grafana.
 
 ### AI subscription monitoring collection requirements
 
-The `AI subscription` tab in the service monitoring dashboard expects normalized Prometheus metrics. Exporters and credentials are intentionally outside this repository.
+The `AI subscription` tab in the service monitoring dashboard expects normalized Prometheus metrics. The exporter source is included under [`infrastructure/`](infrastructure/README.md); credentials stay outside this repository.
 
 | Metric | Required labels | Meaning |
 | --- | --- | --- |
@@ -153,7 +154,7 @@ The `AI subscription` tab in the service monitoring dashboard expects normalized
 | `ai_subscription_rejections_total` | `provider` | Antigravity requests rejected for quota (HTTP 429) since the exporter started, counted from agy CLI logs |
 | `ai_subscription_last_rejection_timestamp_seconds` | `provider` | Unix timestamp of the latest quota rejection |
 
-Use `codex`, `claude`, and `antigravity` for `provider`, and `session` and `weekly` for `window`. Antigravity adds `pool="gemini"`, `pool="third_party"`, or `pool="argon"` (Gemini 4 Argon's separate weekly quota, reported only when the plan has one); the dashboard and alerts track every pool except `third_party`. The deployed collector maps Codex rate limits, account-wide Claude usage from the Claude Code OAuth usage endpoint (falling back to Claude Code status-line limits), and the Antigravity CLI `/usage` JSON into this schema. Its source and macOS LaunchAgent installer live in `Birds-Nest/docker-compose/monitoring/ai-subscription-exporter`; Mac mini Prometheus scrapes it through `host.docker.internal:9819`, and NAS Prometheus imports the normalized metrics through federation. Keep the collector on a trusted monitoring network and never expose stored login credentials to Grafana.
+Use `codex`, `claude`, and `antigravity` for `provider`, and `session` and `weekly` for `window`. Antigravity adds `pool="gemini"`, `pool="third_party"`, or `pool="argon"` (Gemini 4 Argon's separate weekly quota, reported only when the plan has one); the dashboard and alerts track every pool except `third_party`. The deployed collector maps Codex rate limits, account-wide Claude usage from the Claude Code OAuth usage endpoint (falling back to Claude Code status-line limits), and the Antigravity CLI `/usage` JSON into this schema. Its source and macOS LaunchAgent installer live in `infrastructure/docker-compose/monitoring/ai-subscription-exporter`; Mac mini Prometheus scrapes it through `host.docker.internal:9819`, and NAS Prometheus imports the normalized metrics through federation. Keep the collector on a trusted monitoring network and never expose stored login credentials to Grafana.
 
 The collector polls the Claude usage endpoint every 5 minutes (`CLAUDE_USAGE_INTERVAL_SECONDS`) with the access token that Claude Code stores in the macOS keychain. It only reads the token and never refreshes it, because refreshing could change the Claude Code login session, and it never writes the token to logs or metrics. The endpoint is not an officially documented API, so a failed call falls back to the status-line cache described below. Because the value is account-wide, usage from any device or client, including the VS Code extension, is reflected without waiting for Claude Code to run on the Mac mini.
 
@@ -200,7 +201,7 @@ The `macmini_node` target is node exporter running natively on macOS, so CPU, me
 
 ### Nginx Proxy Manager collection requirements
 
-The container panels in the `NPM` tab use cAdvisor metrics for the NAS `nginx-proxy-manager` container and work without extra setup. The traffic and certificate panels expect the following normalized Prometheus metrics. As with the AI subscription exporter, the collector is kept outside this repository: `Birds-Nest/docker-compose/monitoring/npm-exporter` follows the `proxy-host-*_access.log` files and reads proxy hosts and certificate expiry from NPM's SQLite database, so certificate private keys are never mounted. The NAS Prometheus scrapes it as the `npm_exporter` job. The `host` label uses each proxy host's first domain registered in NPM rather than the request's Host header, which keeps label cardinality bounded. It also exposes `npm_collector_up` and `npm_log_parse_errors_total`.
+The container panels in the `NPM` tab use cAdvisor metrics for the NAS `nginx-proxy-manager` container and work without extra setup. The traffic and certificate panels expect the following normalized Prometheus metrics. The included collector at `infrastructure/docker-compose/monitoring/npm-exporter` follows the `proxy-host-*_access.log` files and reads proxy hosts and certificate expiry from NPM's SQLite database, so certificate private keys are never mounted. The NAS Prometheus scrapes it as the `npm_exporter` job. The `host` label uses each proxy host's first domain registered in NPM rather than the request's Host header, which keeps label cardinality bounded. It also exposes `npm_collector_up` and `npm_log_parse_errors_total`.
 
 | Metric | Required labels | Meaning |
 | --- | --- | --- |
